@@ -11,6 +11,7 @@ knitr::opts_chunk$set(echo = TRUE)
 ```{r}
 library(tidyverse)
 library(tidyquant)
+library(quantmod)
 ```
 ```{r}
 stock_list <- tibble(selector = c("SPY", "XLC", "XLY", "XLP"),
