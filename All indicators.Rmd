@@ -1,0 +1,394 @@
+---
+title: "Indicators_Macro"
+output: html_document
+date: "2022-11-30"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r libraries}
+
+library(Quandl)
+library(forecast)
+library(tidyverse)
+library(ggplot2)
+library(rlang)
+library(PortfolioAnalytics)
+library(PerformanceAnalytics)
+library(pROC)
+library(quantmod)
+library(TTR)
+library(tidyquant)
+library(timetk)
+
+```
+
+```{r}
+Quandl.api_key("YE-L2_sxPkntzGfHo3vZ")
+EDate <- as.Date(Sys.Date())
+SDate <- as.Date(EDate-365*80)
+YoY <- as.Date(EDate-365)
+
+EDate
+EFDate <- as.Date(Sys.Date())
+SFDate <- EFDate - 365*80
+SFDate
+EFDate
+```
+
+
+```{r}
+#Leading indicators are: Stock market, House prices, Retail Sales, Interest spread (LT & ST bonds), Building Permits, Consumer expectations, Average weekly hours (manufacturing), Manufacturers new orders.
+```
+
+
+```{r}
+#Stock market (S&P)
+##stockmarket <- getSymbols.yahoo("SPY", from = SDate, to = EDate, periodicity = "daily", auto.assign = F)
+##stockmarket = subset(stockmarket, select = -c(1,2,3,4,5))
+
+stockmarket_2 <- tq_get("^GSPC",
+                      from ="1920-01-01",
+                      get = "stock.prices")
+
+stockmarket_2_returns <- stockmarket_2 %>%
+  tq_transmute(select = adjusted,         
+               mutate_fun = periodReturn,   
+               period = "daily",      
+               col_rename = "SPY_returns")
+
+plot(y= stockmarket_2$adjusted, x= stockmarket_2$date )
+
+stockmarket_2_returns %>%
+  ggplot(aes(x = date, y = SPY_returns)) +
+  geom_line() +
+  theme_classic() +
+  labs(x = "Date", y = "Daily returns") +
+  ggtitle("Daily Returns for SPY") +
+  scale_x_date(date_breaks = "years", date_labels = "%Y") +
+  scale_y_continuous(breaks = seq(-0.5,0.6,0.05),
+                     labels = scales::percent) 
+
+stockmarket_2_returns %>%
+  ggplot(aes(x = SPY_returns)) +
+  geom_histogram(binwidth = 0.015) +
+  theme_classic() +
+  labs(x = "Daily returns") +
+  ggtitle("Daily Returns for SPY") +
+  scale_x_continuous(breaks = seq(-0.5,0.6,0.05),
+                     labels = scales::percent) +
+  annotate(geom = 'text', x = -0.30, y= 200, label = "Extremely\nnegative\nreturns") +
+  annotate(geom = 'text', x = 0.430, y = 200, label = "Extremely\npositive\nreturns")
+```
+
+
+```{r}
+#House prices (Zillow API)
+
+house_ind <- Quandl.datatable("ZILLOW/INDICATORS") #consult here the indicator
+#house_reg <- Quandl.datatable("ZILLOW/REGIONS")
+
+house_values <- Quandl.datatable("ZILLOW/DATA", indicator_id="ZALL", region_id="102001") 
+#"ZALL" = ZHVI All Homes (SFR, Condo/Co-op) Time Series ($) "102001" = US as a whole
+
+house_sales <- Quandl.datatable("ZILLOW/DATA", indicator_id="SAAW", region_id="102001")
+#"SAAW" = Median Sale Price (Smooth & Seasonally Adjusted, All Homes, Weekly View)
+
+#print(house_data)
+#print(house_sales)
+
+plot(x=house_values$date, y=house_values$value)
+plot(x=house_sales$date, y=house_sales$value)
+```
+
+
+```{r}
+
+#Retail Sales (FRED: RSXFS)
+retail_sales <- Quandl("FRED/RSXFS",start_date=SDate, end_date=EDate ,type="xts", collapse = "daily")
+retail_sales_YoY <- Quandl("FRED/RSXFS",start_date=YoY, end_date=EDate ,type="xts", collapse = "daily")
+
+chartSeries(retail_sales)
+
+```
+
+
+```{r}
+
+#Interest spread (TEDRATE / upload all government bonds)
+threemonths <- Quandl("FRED/DTB3",start_date=SDate, end_date=EDate ,type="xts", collapse = "daily")
+DTB3YoY <- Quandl("FRED/DTB3",start_date=YoY, end_date=EDate ,type="xts", collapse = "daily")
+
+DGS5 <- Quandl("FRED/DGS5", start_date=SFDate, end_date=EFDate ,type="xts", collapse = "daily")
+DGS5YoY <- Quandl("FRED/DGS5", start_date=YoY, end_date=EDate ,type="xts", collapse = "daily")
+
+tenyears <- Quandl("FRED/DGS10",start_date=SDate, end_date=EDate,type="xts", collapse = "daily")
+DGS10YoY <- Quandl("FRED/DGS10",start_date=YoY, end_date=EDate ,type="xts", collapse = "daily")
+
+DGS30 <- (Quandl("FRED/DGS30", start_date=SFDate, end_date=EFDate ,type="xts", collapse = "daily"))
+DGS30YoY <- Quandl("FRED/DGS30", start_date=YoY, end_date=EDate ,type="xts", collapse = "daily")
+DGS30return <- na.omit(ROC(DGS30))
+
+plot(DGS30return)
+
+Spread5.3 <- DGS5 - threemonths
+Spread5.3chg <- na.omit(ROC(Spread5.3))
+spread10.3 <- tenyears - threemonths
+spread10.3chg <- na.omit(ROC(spread10.3))
+spread30.3 <- DGS30 - threemonths
+spread30.3chg <- na.omit(ROC(spread30.3))
+
+
+
+#If doesnt work then we will need to do it on excel
+AAA <- Quandl("FRED/BAMLC0A1CAAA", start_date=SFDate, end_date=EFDate,type="xts", collapse = "monthly") #check on FRED
+AA <- #BAMLC0A2CAA
+A <- #BAMLC0A3CA
+BBB <- #BAMLC0A4CBBB
+BB <- #BAMLH0A1HYBB
+B <- #BAMLH0A2HYB
+CCCandLower <- #BAMLH0A3HYC
+ 
+#Building Permits
+
+#Consumer expectations
+ 
+#Average weekly hours (manufacturing)
+ 
+#Manufacturers new orders.
+
+```
+
+```{r}
+
+#Visualisation
+chartSeries(Spread5.3)
+chartSeries(spread10.3)
+chartSeries(spread30.3)
+
+charts.PerformanceSummary() #doesn't work, why?
+```
+
+```{r}
+#Coincident Indicators: Industrial production Index, Real Personal incomes, Manufacturing and trade sales
+
+#Industrial production Index
+IPI <- AAA <- Quandl("FRED/INDPRO", start_date=SDate, end_date=EDate,type="xts", collapse = "monthly")
+chartSeries(IPI)
+```
+
+```{r}
+#Lagging indicators: Average duration of unemployment, Inventory to sales ratio, change in unit labor costs, inflation, average prime lending rate, Ratio of consumer installment debt to income, Commercial and industrial loans outstanding loans.
+```
+
+```{r}
+
+USGdpReal <- Quandl("FRED/GDPC1", start_date=SFDate, end_date=EFDate,type="xts", collapse = "quarterly")
+chartSeries(USGdpReal)
+USGdpRealReturn <- na.omit(Return.calculate(USGdpReal))
+chartSeries(USGdpRealReturn)
+USGdpReal <- as.data.frame(USGdpReal)
+
+```
+
+```{r}
+USGdpRealReturn<- as.ts(USGdpRealReturn)
+ggseasonplot(x=USGdpRealReturn, year.labels=TRUE, year.labels.left=TRUE) +
+  #ylim(-0.025,0.025) +
+  ylab("%Change") +
+  ggtitle("Seasonal plot: GDP Growth")
+```
+
+
+```{r}
+
+#Income and Expenditure
+Personal <- NULL
+
+RealMedianHouseHoldIncome <- Quandl("FRED/MEHOINUSA672N", start_date=SFDate, end_date=EFDate ,type="xts", collapse = "quarterly")
+plot(RealMedianHouseHoldIncome)
+
+RealDiposablePersonalIncome <- Quandl("FRED/DSPIC96", start_date=SFDate, end_date=EFDate ,type="xts", collapse = "quarterly")
+plot(RealDiposablePersonalIncome)
+
+PersonalConsumptionExpenditures <- Quandl("FRED/PCE", start_date=SFDate, end_date=EFDate ,type="xts", collapse = "quarterly")
+plot(PersonalConsumptionExpenditures)
+PersonalConsumptionExpendituresGrowth <- na.omit(Return.calculate(PersonalConsumptionExpenditures))
+
+PCEDurableGoods <- Quandl("FRED/PCEDG", start_date=SFDate, end_date=EFDate,type="xts", collapse = "quarterly")
+plot(PCEDurableGoods)
+PCEDurableGoodsGrowth <- na.omit(Return.calculate(PCEDurableGoods))
+
+Personal <- cbind(RealDiposablePersonalIncome,PersonalConsumptionExpenditures,PCEDurableGoods)
+plot(Personal)
+
+PersonalSavingRate <- Quandl("FRED/PSAVERT", start_date=SFDate, end_date=EFDate,type="xts", collapse = "quarterly")
+plot(PersonalSavingRate)
+PersonalSavingRateGrowth <- na.omit(Return.calculate(PersonalSavingRate))
+
+RealRetailAndFoodSales <- Quandl("FRED/RRSFS",start_date=SFDate, end_date=EFDate ,type="xts", collapse = "quarterly")
+plot(RealRetailAndFoodSales)
+RealRetailAndFoodSalesGrowth <- na.omit(Return.calculate(RealRetailAndFoodSales))
+
+DisposablePersonalIncome <- Quandl("FRED/DSPI",start_date=SFDate, end_date=EFDate ,type="xts", collapse = "quarterly")
+plot(DisposablePersonalIncome)
+DisposablePersonalIncomeGrowth <- na.omit(Return.calculate(DisposablePersonalIncome))
+```
+
+```{r}
+#install.packages("forecast")
+library(forecast)
+```
+
+
+
+
+```{r}
+
+PersonalConsumptionExpendituresGrowth<- as.ts(PersonalConsumptionExpendituresGrowth)
+PCEDurableGoodsGrowth<- as.ts(PCEDurableGoodsGrowth)
+PersonalSavingRateGrowth<- as.ts(PersonalSavingRateGrowth)
+RealRetailAndFoodSalesGrowth<- as.ts(RealRetailAndFoodSalesGrowth)
+DisposablePersonalIncomeGrowth<- as.ts(DisposablePersonalIncomeGrowth)
+
+ggseasonplot(x=PersonalConsumptionExpendituresGrowth, year.labels=TRUE, year.labels.left=TRUE) +
+  ylab("%Change") +
+  ggtitle("Seasonal plot: Personal Consumption Expenditures Growth")
+
+ggseasonplot(x=PCEDurableGoodsGrowth, year.labels=TRUE, year.labels.left=TRUE) +
+  ylab("%Change") +
+  ggtitle("Seasonal plot: PCE Durable Goods Growth")
+
+ggseasonplot(x=PersonalSavingRateGrowth, year.labels=TRUE, year.labels.left=TRUE) +
+  ylab("%Change") +
+  ggtitle("Seasonal plot: Personal Saving Rate Growth")
+
+ggseasonplot(x=RealRetailAndFoodSalesGrowth, year.labels=TRUE, year.labels.left=TRUE) +
+  ylab("%Change") +
+  ggtitle("Seasonal plot: Real Retail And Food Sales Growth")
+
+ggseasonplot(x=DisposablePersonalIncomeGrowth, year.labels=TRUE, year.labels.left=TRUE) +
+  ylab("%Change") +
+  ggtitle("Seasonal plot: Disposable Personal Income Growth")
+
+```
+
+
+```{r}
+#Labor Force
+Employment <- NULL
+
+UNRATE <- Quandl("FRED/UNRATE", start_date=SFDate, end_date=EFDate ,type="xts", collapse = "quarterly")
+NROULT <- Quandl("FRED/NROU", start_date=SFDate, end_date=EFDate ,type="xts", collapse = "quarterly")
+NROUST <- Quandl("FRED/NROUST", start_date=SFDate, end_date=EFDate ,type="xts", collapse = "quarterly")
+
+EMRATIO <- Quandl("FRED/EMRATIO", start_date=SFDate, end_date=EFDate ,type="xts", collapse = "quarterly")
+UNEMPLOY <- Quandl("FRED/UNEMPLOY", start_date=SFDate, end_date=EFDate ,type="xts", collapse = "quarterly")
+
+TotalNonFarm_Employed <- Quandl("FRED/PAYEMS",start_date=SFDate, end_date=EFDate ,type="xts", collapse = "quarterly")
+Manufactoring_Employed <- Quandl("FRED/MANEMP", start_date=SFDate, end_date=EFDate ,type="xts", collapse = "quarterly")
+
+Initial_Claims <- Quandl("FRED/ICSA", start_date=SFDate, end_date=EFDate ,type="xts", collapse = "quarterly")
+
+Employment <- cbind(TotalNonFarm_Employed,Manufactoring_Employed)
+plot(Employment)
+plot(UNRATE)
+```
+
+```{r}
+#Other Economic Indicators
+```
+
+```{r}
+#Debt
+
+
+#GFDEBTN Federal Debt: Total Public Debt
+total_public_debt <- Quandl("FRED/GFDEBTN", start_date=SFDate, end_date=EFDate ,type="xts", collapse = "monthly")
+chartSeries(total_public_debt)
+
+total_public_debt <- as.ts(total_public_debt)
+total_public_debt_Growth <- na.omit(Return.calculate(total_public_debt))
+total_public_debt_Growth <- as.ts(total_public_debt_Growth)
+
+ggseasonplot(x=total_public_debt, year.labels=TRUE, year.labels.left=TRUE) +
+  ylab("%Change") +
+  ggtitle("Seasonal plot: total public debt")
+
+ggseasonplot(x=total_public_debt_Growth, year.labels=TRUE, year.labels.left=TRUE) +
+  ylab("%Change") +
+  ggtitle("Seasonal plot: total public debt growth")
+
+```
+
+
+```{r}
+
+#GFDEGDQ188S Federal Debt: Total Public Debt as Percent of Gross Domestic Product
+total_public_debt_to_GDP <- Quandl("FRED/GFDEGDQ188S", start_date=SFDate, end_date=EFDate ,type="xts", collapse = "monthly")
+chartSeries(total_public_debt_to_GDP)
+
+total_public_debt_to_GDP <- as.ts(total_public_debt_to_GDP)
+total_public_debt_to_GDP_Growth <- na.omit(Return.calculate(total_public_debt_to_GDP))
+total_public_debt_to_GDP_Growth <- as.ts(total_public_debt_to_GDP_Growth)
+
+ggseasonplot(x=total_public_debt_to_GDP, year.labels=TRUE, year.labels.left=TRUE) +
+  ylab("%Change") +
+  ggtitle("Seasonal plot: total public debt to GDP")
+
+ggseasonplot(x=total_public_debt_to_GDP_Growth, year.labels=TRUE, year.labels.left=TRUE) +
+  ylab("%Change") +
+  ggtitle("Seasonal plot: total public debt to GDP growth")
+
+```
+
+
+```{r}
+#EXCSRESNW Excess Reserves of Depository Institutions
+excess_reserves <- Quandl("FRED/EXCSRESNW", start_date=SFDate, end_date=EFDate ,type="xts", collapse = "monthly")
+chartSeries(excess_reserves)
+
+excess_reserves <- as.ts(excess_reserves)
+excess_reserves_Growth <- na.omit(Return.calculate(excess_reserves))
+excess_reserves_Growth <- as.ts(excess_reserves_Growth)
+
+ggseasonplot(x=excess_reserves, year.labels=TRUE, year.labels.left=TRUE) +
+  ylab("%Change") +
+  ggtitle("Seasonal plot: excess reserves")
+
+ggseasonplot(x=excess_reserves_Growth, year.labels=TRUE, year.labels.left=TRUE) +
+  ylab("%Change") +
+  ggtitle("Seasonal plot: excess reserves growth")
+
+```
+
+
+```{r}
+
+#TOTCI Commercial and Industrial Loans, All Commercial Banks
+CommercialandIndustrial_Loans_All_CommercialBanks <- Quandl("FRED/TOTCI", start_date=SFDate, end_date=EFDate ,type="xts", collapse = "monthly")
+chartSeries(CommercialandIndustrial_Loans_All_CommercialBanks)
+
+CommercialandIndustrial_Loans_All_CommercialBanks <- as.ts(CommercialandIndustrial_Loans_All_CommercialBanks)
+CommercialandIndustrial_Loans_All_CommercialBanks_Growth <- na.omit(Return.calculate(CommercialandIndustrial_Loans_All_CommercialBanks))
+CommercialandIndustrial_Loans_All_CommercialBanks_Growth <- as.ts(CommercialandIndustrial_Loans_All_CommercialBanks_Growth)
+
+ggseasonplot(x=CommercialandIndustrial_Loans_All_CommercialBanks, year.labels=TRUE, year.labels.left=TRUE) +
+  ylab("%Change") +
+  ggtitle("Seasonal plot: Commercial and Industrial Loans All Commercial Banks")
+
+ggseasonplot(x=CommercialandIndustrial_Loans_All_CommercialBanks_Growth, year.labels=TRUE, year.labels.left=TRUE) +
+  ylab("%Change") +
+  ggtitle("Seasonal plot: Commercial and Industrial Loans All Commercial Banks Growth")
+
+```
+
+```{r}
+#Trade weighted dollar index
+
+dollar_index <- Quandl("FRED/DTWEXM", start_date=SFDate, end_date=EFDate ,type="xts", collapse = "daily")
+chartSeries(dollar_index)
+```
+
