@@ -1,0 +1,70 @@
+---
+title: "masterThesis"
+output: html_document
+date: '2022-11-29'
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyverse)
+library(tidyquant)
+```
+```{r}
+stock_list <- tibble(selector = c("SPY", "XLC", "XLY", "XLP"),
+                     industry = c("Market", "Communication Services", "Consumer Discretionary", "Consumer Staples"))
+
+daily_returns <- stock_list %>%
+  tq_get(get = "stock.prices", from = "2000-01-01", to = "2022-01-01")
+
+quarterly_returns <- daily_returns %>% 
+  group_by(selector) %>%
+  tq_transmute(select     = adjusted, 
+               mutate_fun = periodReturn, 
+               period     = "quarterly", 
+               col_rename = "quarterly.returns") %>% 
+   mutate(year.qtr = paste0(year(date), "-Q", quarter(date)))
+
+unpivot <- quarterly_returns %>% 
+  filter(quarter == 1) %>% 
+  pivot_wider(names_from = selector, values_from = quarterly.returns) %>% 
+  select(-date, -quarter)
+
+cor_data = cor(unpivot)
+
+quarterly_returns %>%
+    ggplot(aes(x = year(date), y = quarterly.returns, fill = selector)) +
+    geom_bar(position = "dodge", stat = "identity")
+
+quarterly_returns %>%
+    ggplot(aes(x = year(date), y = quarterly.returns, fill = selector)) +
+    geom_bar(position = "dodge", stat = "identity") +
+    labs(title = "FANG: Annual Returns", 
+         subtitle = "Mutating at scale is quick and easy!",
+         y = "Returns", x = "", color = "") +
+    scale_y_continuous(labels = scales::percent) +
+    coord_flip() +
+    theme_tq() +
+    scale_fill_tq()
+```
+
+
+```{r}
+unpivoted <- read_csv("Downloads/unpivoted.csv",
+                      locale = locale(decimal_mark = ","),
+                      col_types = cols(Date = col_datetime(format = "%d/%m/%Y")))
+
+pivoted <- unpivoted %>%
+  select(Date, Sector, LogReturns) %>%
+  pivot_wider(names_from = Sector, values_from = LogReturns) %>% 
+  select(-Communication, -Date)
+
+
+cor_data = cor(pivoted)
+ 
+print("Correlation matrix")
+print(cor_data)
+```
+
