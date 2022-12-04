@@ -1,0 +1,271 @@
+---
+title: "Sectors"
+output: html_document
+date: "2022-12-02"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(Quandl)
+library(forecast)
+library(tidyverse)
+library(ggplot2)
+library(rlang)
+library(PortfolioAnalytics)
+library(PerformanceAnalytics)
+library(pROC)
+library(quantmod)
+library(TTR)
+library(tidyquant)
+library(timetk)
+```
+
+#Important tickers are the following:
+S&P Communication Services Select Sector (XLC) -> DONE
+S&P Consumer Discretionary Select Sector (XLY)
+S&P Consumer Staples Select Sector (XLP)
+S&P Energy Select Sector (XLE) -> DONE
+S&P Financial Select Sector (XLF)
+S&P Health Care Select Sector (XLV)
+S&P Industrial Select Sector (XLI)
+S&P Materials Select Sector (XLB) -> DONE
+S&P Real Estate Select Sector (XLRE) -> DONE
+S&P Technology Select Sector (XLK) -> DONE
+S&P Utilities Select Sector (XLU) -> DONE
+
+```{r}
+#Energy sector - XLE
+
+energy <- tq_get("XLE",
+                      from ="1920-01-01",
+                      get = "stock.prices")
+
+energy_returns <- energy %>%
+  tq_transmute(select = adjusted,         
+               mutate_fun = periodReturn,   
+               period = "daily",      
+               col_rename = "XLE_returns")
+
+plot(y= energy$adjusted, x= energy$date )
+
+energy_returns %>%
+  ggplot(aes(x = date, y = XLE_returns)) +
+  geom_line() +
+  theme_classic() +
+  labs(x = "Date", y = "Daily returns") +
+  ggtitle("Daily Returns for XLE") +
+  scale_x_date(date_breaks = "years", date_labels = "%Y") +
+  scale_y_continuous(breaks = seq(-0.5,0.6,0.05),
+                     labels = scales::percent) 
+
+energy_returns %>%
+  ggplot(aes(x = XLE_returns)) +
+  geom_histogram(binwidth = 0.015) +
+  theme_classic() +
+  labs(x = "Daily returns") +
+  ggtitle("Daily Returns for XLE") +
+  scale_x_continuous(breaks = seq(-0.5,0.6,0.05),
+                     labels = scales::percent) +
+  annotate(geom = 'text', x = -0.30, y= 200, label = "Extremely\nnegative\nreturns") +
+  annotate(geom = 'text', x = 0.430, y = 200, label = "Extremely\npositive\nreturns")
+```
+
+```{r}
+#Utilities sector - XLU
+
+utilities <- tq_get("XLU",
+                      from ="1920-01-01",
+                      get = "stock.prices")
+
+utilities_returns <- utilities %>%
+  tq_transmute(select = adjusted,         
+               mutate_fun = periodReturn,   
+               period = "daily",      
+               col_rename = "XLU_returns")
+
+plot(y= utilities$adjusted, x= utilities$date )
+
+utilities_returns %>%
+  ggplot(aes(x = date, y = XLU_returns)) +
+  geom_line() +
+  theme_classic() +
+  labs(x = "Date", y = "Daily returns") +
+  ggtitle("Daily Returns for XLU") +
+  scale_x_date(date_breaks = "years", date_labels = "%Y") +
+  scale_y_continuous(breaks = seq(-0.5,0.6,0.05),
+                     labels = scales::percent) 
+
+utilities_returns %>%
+  ggplot(aes(x = XLU_returns)) +
+  geom_histogram(binwidth = 0.015) +
+  theme_classic() +
+  labs(x = "Daily returns") +
+  ggtitle("Daily Returns for XLU") +
+  scale_x_continuous(breaks = seq(-0.5,0.6,0.05),
+                     labels = scales::percent) +
+  annotate(geom = 'text', x = -0.30, y= 200, label = "Extremely\nnegative\nreturns") +
+  annotate(geom = 'text', x = 0.430, y = 200, label = "Extremely\npositive\nreturns")
+```
+
+```{r}
+#Technology sector - XLK
+
+technology <- tq_get("XLK",
+                      from ="1920-01-01",
+                      get = "stock.prices")
+
+technology_returns <- technology %>%
+  tq_transmute(select = adjusted,         
+               mutate_fun = periodReturn,   
+               period = "daily",      
+               col_rename = "XLK_returns")
+
+plot(y= technology$adjusted, x= technology$date )
+
+technology_returns %>%
+  ggplot(aes(x = date, y = XLK_returns)) +
+  geom_line() +
+  theme_classic() +
+  labs(x = "Date", y = "Daily returns") +
+  ggtitle("Daily Returns for XLK") +
+  scale_x_date(date_breaks = "years", date_labels = "%Y") +
+  scale_y_continuous(breaks = seq(-0.5,0.6,0.05),
+                     labels = scales::percent) 
+
+technology_returns %>%
+  ggplot(aes(x = XLK_returns)) +
+  geom_histogram(binwidth = 0.015) +
+  theme_classic() +
+  labs(x = "Daily returns") +
+  ggtitle("Daily Returns for XLk") +
+  scale_x_continuous(breaks = seq(-0.5,0.6,0.05),
+                     labels = scales::percent) +
+  annotate(geom = 'text', x = -0.30, y= 200, label = "Extremely\nnegative\nreturns") +
+  annotate(geom = 'text', x = 0.430, y = 200, label = "Extremely\npositive\nreturns")
+
+```
+
+```{r}
+#Real Estate sector - XLRE
+
+real_estate <- tq_get("XLRE",
+                      from ="1920-01-01",
+                      get = "stock.prices")
+
+real_estate_returns <- real_estate %>%
+  tq_transmute(select = adjusted,         
+               mutate_fun = periodReturn,   
+               period = "daily",      
+               col_rename = "XLRE_returns")
+
+plot(y= real_estate$adjusted, x= real_estate$date )
+
+real_estate_returns %>%
+  ggplot(aes(x = date, y = XLRE_returns)) +
+  geom_line() +
+  theme_classic() +
+  labs(x = "Date", y = "Daily returns") +
+  ggtitle("Daily Returns for XLRE") +
+  scale_x_date(date_breaks = "years", date_labels = "%Y") +
+  scale_y_continuous(breaks = seq(-0.5,0.6,0.05),
+                     labels = scales::percent) 
+
+real_estate_returns %>%
+  ggplot(aes(x = XLRE_returns)) +
+  geom_histogram(binwidth = 0.015) +
+  theme_classic() +
+  labs(x = "Daily returns") +
+  ggtitle("Daily Returns for XLRE") +
+  scale_x_continuous(breaks = seq(-0.5,0.6,0.05),
+                     labels = scales::percent) +
+  annotate(geom = 'text', x = -0.30, y= 200, label = "Extremely\nnegative\nreturns") +
+  annotate(geom = 'text', x = 0.430, y = 200, label = "Extremely\npositive\nreturns")
+```
+```{r}
+#Materials sector - XLB
+
+materials <- tq_get("XLB",
+                      from ="1920-01-01",
+                      get = "stock.prices")
+
+materials_returns <- materials %>%
+  tq_transmute(select = adjusted,         
+               mutate_fun = periodReturn,   
+               period = "daily",      
+               col_rename = "XLB_returns")
+
+plot(y= materials$adjusted, x= materials$date )
+
+materials_returns %>%
+  ggplot(aes(x = date, y = XLB_returns)) +
+  geom_line() +
+  theme_classic() +
+  labs(x = "Date", y = "Daily returns") +
+  ggtitle("Daily Returns for XLB") +
+  scale_x_date(date_breaks = "years", date_labels = "%Y") +
+  scale_y_continuous(breaks = seq(-0.5,0.6,0.05),
+                     labels = scales::percent) 
+
+materials_returns %>%
+  ggplot(aes(x = XLB_returns)) +
+  geom_histogram(binwidth = 0.015) +
+  theme_classic() +
+  labs(x = "Daily returns") +
+  ggtitle("Daily Returns for XLB") +
+  scale_x_continuous(breaks = seq(-0.5,0.6,0.05),
+                     labels = scales::percent) +
+  annotate(geom = 'text', x = -0.30, y= 200, label = "Extremely\nnegative\nreturns") +
+  annotate(geom = 'text', x = 0.430, y = 200, label = "Extremely\npositive\nreturns")
+
+```
+
+```{r}
+#Communication sector - XLC
+
+communication <- tq_get("XLC",
+                      from ="1920-01-01",
+                      get = "stock.prices")
+
+communication_returns <- communication %>%
+  tq_transmute(select = adjusted,         
+               mutate_fun = periodReturn,   
+               period = "daily",      
+               col_rename = "XLC_returns")
+
+plot(y= communication$adjusted, x= communication$date )
+
+communication_returns %>%
+  ggplot(aes(x = date, y = XLC_returns)) +
+  geom_line() +
+  theme_classic() +
+  labs(x = "Date", y = "Daily returns") +
+  ggtitle("Daily Returns for XLC") +
+  scale_x_date(date_breaks = "years", date_labels = "%Y") +
+  scale_y_continuous(breaks = seq(-0.5,0.6,0.05),
+                     labels = scales::percent) 
+
+communication_returns %>%
+  ggplot(aes(x = XLC_returns)) +
+  geom_histogram(binwidth = 0.015) +
+  theme_classic() +
+  labs(x = "Daily returns") +
+  ggtitle("Daily Returns for XLC") +
+  scale_x_continuous(breaks = seq(-0.5,0.6,0.05),
+                     labels = scales::percent) +
+  annotate(geom = 'text', x = -0.30, y= 200, label = "Extremely\nnegative\nreturns") +
+  annotate(geom = 'text', x = 0.430, y = 200, label = "Extremely\npositive\nreturns")
+
+```
+
+```{r}
+#install.packages("roptions")
+
+ji <- getOptionChain("SPY", Exp = NULL, src="yahoo")
+
+print(ji)
+```
+
+
