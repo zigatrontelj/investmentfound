@@ -86,6 +86,19 @@ stockmarket_returns %>%
                      labels = scales::percent) +
   annotate(geom = 'text', x = -0.30, y= 200, label = "Extremely\nnegative\nreturns") +
   annotate(geom = 'text', x = 0.430, y = 200, label = "Extremely\npositive\nreturns")
+  
+#Related to Stocks
+
+DivYield <- Quandl('MULTPL/SP500_DIV_YIELD_MONTH', start_date=SDate, end_date=EDate, type = "xts")
+
+PE <- Quandl('MULTPL/SP500_PE_RATIO_MONTH', start_date=SDate, end_date=EDate, type = "xts")
+
+
+SP500Earnings <- Quandl('MULTPL/SP500_EARNINGS_MONTH', start_date=SDate, end_date=EDate, type = "xts")
+
+
+SnP <- na.omit(cbind(ROC(PE),ROC(SP500Earnings)))
+charts.PerformanceSummary(SnP)
 ```
 
 ## House prices
