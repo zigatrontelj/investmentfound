@@ -186,7 +186,7 @@ NewOrders <- Quandl("FRED/AMTMNO", start_date=SDate, end_date=EDate,type="xts", 
 #Coincident Indicators
 * Industrial production Index
 * Real Personal incomes
-* Manufacturing and trade sales **TO DO**
+* Manufacturing and trade sales
 
 ## Industrial production index
 ```{r}
@@ -257,10 +257,18 @@ ggseasonplot(x=DisposablePersonalIncomeGrowth, year.labels=TRUE, year.labels.lef
 
 ```
 
+## Real manufacturing and trade sales
+```{r}
+man_trade_sales <- Quandl("FRED/CMRMTSPL", start_date=SFDate, end_date=EFDate ,type="xts", collapse = "monthly" )
+
+chartSeries(man_trade_sales)
+```
+
+
 #Lagging indicators
 * Real GDP growth
 * Average duration of unemployment **TO DO**
-* Inventory to sales ratio **TO DO**
+* Inventory to sales ratio
 * Change in unit labor costs **TO DO**
 * Inflation **TO DO**
 * Average prime lending rate **TO DO**
@@ -308,6 +316,36 @@ Employment <- cbind(TotalNonFarm_Employed,Manufactoring_Employed)
 plot(Employment)
 plot(UNRATE)
 ```
+
+## Inventories to sales ratio
+```{r}
+# Inventories to sales ratio
+
+retail_inv_to_sales <- Quandl("FRED/RETAILIRSA", start_date=SFDate, end_date=EFDate ,type="xts", collapse = "quarterly")
+
+manufacturing_inv_to_sales <- Quandl("FRED/MNFCTRIRSA", start_date=SFDate, end_date=EFDate ,type="xts", collapse = "quarterly")
+
+total_inv_to_sales <- Quandl("FRED/ISRATIO", start_date=SFDate, end_date=EFDate ,type="xts", collapse = "quarterly")
+
+chartSeries(retail_inv_to_sales)
+chartSeries(manufacturing_inv_to_sales)
+chartSeries(total_inv_to_sales)
+```
+
+## Inflation 
+```{r}
+core_CPI <- Quandl("FRED/CPILFESL", start_date=SFDate, end_date=EFDate ,type="xts", collapse = "quarterly")
+
+CPI <- Quandl("FRED/CPIAUCSL", start_date=SFDate, end_date=EFDate ,type="xts", collapse = "quarterly")
+
+CPI_YOY <- Quandl("FRED/CPIAUCSL", start_date=YoY, end_date=EDate ,type="xts", collapse = "daily")
+
+chartSeries(core_CPI)
+chartSeries(CPI)
+chartSeries(CPI_YOY)
+
+```
+
 
 ## Commercial and Industrial Loans
 ```{r}
