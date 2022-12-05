@@ -315,7 +315,10 @@ Initial_Claims <- Quandl("FRED/ICSA", start_date=SFDate, end_date=EFDate ,type="
 Employment <- cbind(TotalNonFarm_Employed,Manufactoring_Employed)
 plot(Employment)
 plot(UNRATE)
+
 avgDurationUne <- Quandl('FRED/UEMPMEAN', start_date=SDate, end_date=EDate, type = "xts")
+
+UnitLaborCosts <- Quandl('FRED/PRS30006111', start_date=SDate, end_date=EDate, type = "xts")
 ```
 
 ## Inventories to sales ratio
@@ -358,6 +361,8 @@ chartSeries(CommercialandIndustrial_Loans_All_CommercialBanks)
 CommercialandIndustrial_Loans_All_CommercialBanks <- as.ts(CommercialandIndustrial_Loans_All_CommercialBanks)
 CommercialandIndustrial_Loans_All_CommercialBanks_Growth <- na.omit(Return.calculate(CommercialandIndustrial_Loans_All_CommercialBanks))
 CommercialandIndustrial_Loans_All_CommercialBanks_Growth <- as.ts(CommercialandIndustrial_Loans_All_CommercialBanks_Growth)
+
+PrimeLendingRate <- Quandl('FRED/DPRIME', start_date=SDate, end_date=EDate, type = "xts")
 
 ggseasonplot(x=CommercialandIndustrial_Loans_All_CommercialBanks, year.labels=TRUE, year.labels.left=TRUE) +
   ylab("%Change") +
