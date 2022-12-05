@@ -285,9 +285,9 @@ chartSeries(man_trade_sales)
 * Change in unit labor costs 
 * Inflation **TO DO**
 * Average prime lending rate 
-* Ratio of consumer installment debt to income **TO DO**
+* Ratio of consumer installment debt to income
 * Commercial and industrial loans 
-* Outstanding loans **TO DO**
+* Outstanding loans
 * Dollar index
 
 ## Real GDP growth
@@ -363,6 +363,14 @@ chartSeries(CPI_YOY)
 
 ```
 
+## Consumer debt to income
+```{r}
+#consumer debt to income
+consumer_debt_to_income <- Quandl("FRED/TDSP", start_date=SFDate, end_date=EFDate ,type="xts", collapse = "quarterly")
+
+chartSeries(consumer_debt_to_income)
+```
+
 
 ## Commercial and Industrial Loans
 ```{r}
@@ -386,6 +394,15 @@ ggseasonplot(x=CommercialandIndustrial_Loans_All_CommercialBanks_Growth, year.la
   ggtitle("Seasonal plot: Commercial and Industrial Loans All Commercial Banks Growth")
 
 ```
+
+## Oustanding loans
+```{r}
+#outstanding loans
+outstanding_loans <- Quandl("FRED/TOTLL", start_date=SFDate, end_date=EFDate ,type="xts", collapse = "weekly")
+
+chartSeries(outstanding_loans)
+```
+
 
 ## Dollar index
 ```{r}
