@@ -282,9 +282,9 @@ chartSeries(man_trade_sales)
 * Real GDP growth
 * Average duration of unemployment 
 * Inventory to sales ratio
-* Change in unit labor costs **TO DO**
+* Change in unit labor costs 
 * Inflation **TO DO**
-* Average prime lending rate **TO DO**
+* Average prime lending rate 
 * Ratio of consumer installment debt to income **TO DO**
 * Commercial and industrial loans 
 * Outstanding loans **TO DO**
