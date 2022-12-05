@@ -152,12 +152,17 @@ B <- #BAMLH0A2HYB
 CCCandLower <- #BAMLH0A3HYC
  
 #Building Permits
+PERMIT <- Quandl("FRED/PERMIT", start_date=SDate, end_date=EDate,type="xts", collapse = "monthly")
 
 #Consumer expectations
- 
+ConsumerSentiment <- Quandl("UMICH/SOC1", start_date=SDate, end_date=EDate,type="xts", collapse = "monthly")  
+
 #Average weekly hours (manufacturing)
- 
+avgWorkHour <- Quandl("FRED/AWHAEMAN", start_date=SDate, end_date=EDate,type="xts", collapse = "monthly")
+
 #Manufacturers new orders.
+NewOrders <- Quandl("FRED/AMTMNO", start_date=SDate, end_date=EDate,type="xts", collapse = "monthly")
+
 
 ```
 
