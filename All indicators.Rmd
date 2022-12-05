@@ -267,7 +267,7 @@ chartSeries(man_trade_sales)
 
 #Lagging indicators
 * Real GDP growth
-* Average duration of unemployment **TO DO**
+* Average duration of unemployment 
 * Inventory to sales ratio
 * Change in unit labor costs **TO DO**
 * Inflation **TO DO**
