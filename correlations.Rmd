@@ -12,10 +12,12 @@ knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 library(tidyquant)
 library(quantmod)
+library(corrplot)
 ```
+
+
 ```{r}
-stock_list <- tibble(selector = c("SPY", "XLC", "XLY", "XLP"),
-                     industry = c("Market", "Communication Services", "Consumer Discretionary", "Consumer Staples"))
+stock_list <- tibble(selector = c("SPY", "XLC", "XLY", "XLP", "XLE", "XLF", "XLV", "XLI", "XLB", "XLRE", "XLK", "XLU"))
 
 daily_returns <- stock_list %>%
   tq_get(get = "stock.prices", from = "2000-01-01", to = "2022-01-01")
@@ -26,19 +28,53 @@ quarterly_returns <- daily_returns %>%
                mutate_fun = periodReturn, 
                period     = "quarterly", 
                col_rename = "quarterly.returns") %>% 
-   mutate(year.qtr = paste0(year(date), "-Q", quarter(date)))
+   mutate(qtr = quarter(date))
 
 unpivot <- quarterly_returns %>% 
-  filter(quarter == 1) %>% 
   pivot_wider(names_from = selector, values_from = quarterly.returns) %>% 
-  select(-date, -quarter)
+  select(-date)
 
-cor_data = cor(unpivot)
+```
 
-quarterly_returns %>%
-    ggplot(aes(x = year(date), y = quarterly.returns, fill = selector)) +
-    geom_bar(position = "dodge", stat = "identity")
+# Quartrer 1
+```{r}
+unpivot %>% 
+  filter(qtr == 1) %>% 
+  select(-qtr) %>% 
+  cor() %>% 
+  corrplot(method = 'number')
+```
 
+# Quartrer 2
+```{r}
+unpivot %>% 
+  filter(qtr == 2) %>% 
+  select(-qtr) %>% 
+  cor() %>% 
+  corrplot(method = 'number')
+```
+
+# Quartrer 3
+```{r}
+unpivot %>% 
+  filter(qtr == 3) %>% 
+  select(-qtr) %>% 
+  cor() %>% 
+  corrplot(method = 'number')
+```
+
+# Quartrer 4
+```{r}
+unpivot %>% 
+  filter(qtr == 4) %>% 
+  select(-qtr) %>% 
+  cor() %>% 
+  corrplot(method = 'number')
+```
+
+
+
+```{r}
 quarterly_returns %>%
     ggplot(aes(x = year(date), y = quarterly.returns, fill = selector)) +
     geom_bar(position = "dodge", stat = "identity") +
@@ -51,21 +87,4 @@ quarterly_returns %>%
     scale_fill_tq()
 ```
 
-
-```{r}
-unpivoted <- read_csv("Downloads/unpivoted.csv",
-                      locale = locale(decimal_mark = ","),
-                      col_types = cols(Date = col_datetime(format = "%d/%m/%Y")))
-
-pivoted <- unpivoted %>%
-  select(Date, Sector, LogReturns) %>%
-  pivot_wider(names_from = Sector, values_from = LogReturns) %>% 
-  select(-Communication, -Date)
-
-
-cor_data = cor(pivoted)
- 
-print("Correlation matrix")
-print(cor_data)
-```
 
