@@ -13,6 +13,7 @@ library(tidyverse)
 library(tidyquant)
 library(quantmod)
 library(corrplot)
+library(corrr)
 ```
 
 
@@ -72,6 +73,88 @@ unpivot %>%
   corrplot(method = 'number')
 ```
 
+# Quartrer 1
+```{r}
+unpivot %>% 
+  filter(qtr == 1) %>% 
+  select(-qtr) %>% 
+  correlate() %>% 
+  rearrange() %>% 
+  shave() %>% 
+  rplot(print_cor = TRUE)
+```
+
+
+# Quartrer 2
+```{r}
+unpivot %>% 
+  filter(qtr == 1) %>% 
+  select(-qtr) %>% 
+  correlate() %>% 
+  rearrange() %>% 
+  shave() %>% 
+  rplot(print_cor = TRUE)
+```
+
+
+# Quartrer 3
+```{r}
+unpivot %>% 
+  filter(qtr == 1) %>% 
+  select(-qtr) %>% 
+  correlate() %>% 
+  rearrange() %>% 
+  shave() %>% 
+  rplot(print_cor = TRUE)
+```
+
+
+# Quartrer 4
+```{r}
+unpivot %>% 
+  filter(qtr == 1) %>% 
+  select(-qtr) %>% 
+  correlate() %>% 
+  rearrange() %>% 
+  shave() %>% 
+  rplot(print_cor = TRUE)
+```
+#SPY
+```{r}
+qt1 <- unpivot %>% 
+  filter(qtr == 1) %>% 
+  select(-qtr) %>% 
+  correlate() %>% 
+  filter(term == "SPY")
+
+qt2 <- unpivot %>% 
+  filter(qtr == 2) %>% 
+  select(-qtr) %>% 
+  correlate() %>% 
+  filter(term == "SPY")
+
+qt3 <- unpivot %>% 
+  filter(qtr == 3) %>% 
+  select(-qtr) %>% 
+  correlate() %>% 
+  filter(term == "SPY")
+
+qt4 <- unpivot %>% 
+  filter(qtr == 4) %>% 
+  select(-qtr) %>% 
+  correlate() %>% 
+  filter(term == "SPY")
+
+binded <- bind_rows(qt1, qt2, qt3, qt4)
+
+binded %>% 
+  select(-term, -SPY) %>% 
+  mutate(qtr = c(1,2,3,4)) %>% 
+  pivot_longer(!qtr, names_to = "sector", values_to = "correlation") %>% 
+  ggplot(aes(qtr, correlation)) +
+  geom_line(aes(colour = sector))
+
+```
 
 
 ```{r}
