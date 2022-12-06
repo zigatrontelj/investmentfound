@@ -66,7 +66,7 @@ stockmarket_returns <- stockmarket %>%
                period = "daily",      
                col_rename = "SP500_returns")
 
-plot(y= stockmarket$adjusted, x= stockmarket$date )
+plot(y= stockmarket$adjusted, x= stockmarket$date)
 
 stockmarket_returns %>%
   ggplot(aes(x = date, y = SP500_returns)) +
@@ -82,13 +82,11 @@ stockmarket_returns %>%
   ggplot(aes(x = SP500_returns)) +
   geom_histogram(binwidth = 0.015) +
   theme_classic() +
-  labs(x = "Daily returns") +
+  labs(x = "Daily returns", y = "Frequency") +
   ggtitle("Daily Returns for SP500") +
-  scale_x_continuous(breaks = seq(-0.5,0.6,0.05),
-                     labels = scales::percent) +
-  annotate(geom = 'text', x = -0.30, y= 200, label = "Extremely\nnegative\nreturns") +
-  annotate(geom = 'text', x = 0.430, y = 200, label = "Extremely\npositive\nreturns")
-  
+  xlim(-0.15,0.25) +
+  scale_x_continuous(labels = scales::percent)
+
 #Related to Stocks
 
 DivYield <- Quandl('MULTPL/SP500_DIV_YIELD_MONTH', start_date=SDate, end_date=EDate, type = "xts")
@@ -130,24 +128,35 @@ plot(x=house_sales$date, y=house_sales$value)
 retail_sales <- Quandl("FRED/RSXFS",start_date=SDate, end_date=EDate ,type="xts", collapse = "daily")
 #retail_sales_YoY <- Quandl("FRED/RSXFS",start_date=YoY, end_date=EDate ,type="xts", collapse = "daily")
 
-chartSeries(retail_sales)
+chartSeries(retail_sales,
+            type = line,
+            name = "Retail sales")
 ```
 
 ## Interest spread
 ```{r}
 #Interest spread
 
-threemonths <- Quandl("FRED/DTB3",start_date=SDate, end_date=EDate ,type="xts", collapse = "daily")
-DTB3YoY <- Quandl("FRED/DTB3",start_date=YoY, end_date=EDate ,type="xts", collapse = "daily")
+threemonths <- Quandl("FRED/DTB3",start_date=SDate, end_date=EDate ,type="xts", collapse = "monthly")
+#DTB3YoY <- Quandl("FRED/DTB3",start_date=YoY, end_date=EDate ,type="xts", collapse = "daily")
 
-DGS5 <- Quandl("FRED/DGS5", start_date=SFDate, end_date=EFDate ,type="xts", collapse = "daily")
-DGS5YoY <- Quandl("FRED/DGS5", start_date=YoY, end_date=EDate ,type="xts", collapse = "daily")
+chartSeries(threemonths)
 
-tenyears <- Quandl("FRED/DGS10",start_date=SDate, end_date=EDate,type="xts", collapse = "daily")
-DGS10YoY <- Quandl("FRED/DGS10",start_date=YoY, end_date=EDate ,type="xts", collapse = "daily")
+DGS5 <- Quandl("FRED/DGS5", start_date=SFDate, end_date=EFDate ,type="xts", collapse = "monthly")
+#DGS5YoY <- Quandl("FRED/DGS5", start_date=YoY, end_date=EDate ,type="xts", collapse = "daily")
 
-DGS30 <- (Quandl("FRED/DGS30", start_date=SFDate, end_date=EFDate ,type="xts", collapse = "daily"))
-DGS30YoY <- Quandl("FRED/DGS30", start_date=YoY, end_date=EDate ,type="xts", collapse = "daily")
+chartSeries(DGS5)
+
+tenyears <- Quandl("FRED/DGS10",start_date=SDate, end_date=EDate,type="xts", collapse = "monthly")
+#DGS10YoY <- Quandl("FRED/DGS10",start_date=YoY, end_date=EDate ,type="xts", collapse = "daily")
+
+chartSeries(tenyears)
+
+DGS30 <- (Quandl("FRED/DGS30", start_date=SFDate, end_date=EFDate ,type="xts", collapse = "monthly"))
+#DGS30YoY <- Quandl("FRED/DGS30", start_date=YoY, end_date=EDate ,type="xts", collapse = "daily")
+
+chartSeries(DGS30)
+
 DGS30return <- na.omit(ROC(DGS30))
 
 plot(DGS30return)
@@ -164,9 +173,16 @@ chartSeries(Spread5.3)
 chartSeries(spread10.3)
 chartSeries(spread30.3)
 
-charts.PerformanceSummary() #doesn't work, why?
 
-yield_curve <- Quandl("USTREASURY/HQMYC", start_date=SFDate, end_date=EFDate,type="xts", collapse = "daily")
+Performance <- na.omit(cbind(Spread5.3, spread10.3, spread30.3))
+plot(Performance)
+
+rates <- na.omit(cbind(threemonths, DGS5, tenyears, DGS30))
+plot(rates)
+
+charts.PerformanceSummary(Performance) #doesn't work, why?
+
+yield_curve <- Quandl("USTREASURY/HQMYC", start_date=SFDate, end_date=EFDate,type="xts", collapse = "monthly")
 chartSeries(yield_curve)
 
 #If doesnt work then we will need to do it on excel
@@ -226,32 +242,32 @@ chartSeries(IPI)
 #Income and Expenditure
 Personal <- NULL
 
-RealMedianHouseHoldIncome <- Quandl("FRED/MEHOINUSA672N", start_date=SFDate, end_date=EFDate ,type="xts", collapse = "quarterly")
+RealMedianHouseHoldIncome <- Quandl("FRED/MEHOINUSA672N", start_date=SFDate, end_date=EFDate ,type="xts", collapse = "monthly")
 plot(RealMedianHouseHoldIncome)
 
-RealDiposablePersonalIncome <- Quandl("FRED/DSPIC96", start_date=SFDate, end_date=EFDate ,type="xts", collapse = "quarterly")
+RealDiposablePersonalIncome <- Quandl("FRED/DSPIC96", start_date=SFDate, end_date=EFDate ,type="xts", collapse = "monthly")
 plot(RealDiposablePersonalIncome)
 
-PersonalConsumptionExpenditures <- Quandl("FRED/PCE", start_date=SFDate, end_date=EFDate ,type="xts", collapse = "quarterly")
+PersonalConsumptionExpenditures <- Quandl("FRED/PCE", start_date=SFDate, end_date=EFDate ,type="xts", collapse = "monthly")
 plot(PersonalConsumptionExpenditures)
 PersonalConsumptionExpendituresGrowth <- na.omit(Return.calculate(PersonalConsumptionExpenditures))
 
-PCEDurableGoods <- Quandl("FRED/PCEDG", start_date=SFDate, end_date=EFDate,type="xts", collapse = "quarterly")
+PCEDurableGoods <- Quandl("FRED/PCEDG", start_date=SFDate, end_date=EFDate,type="xts", collapse = "monthly")
 plot(PCEDurableGoods)
 PCEDurableGoodsGrowth <- na.omit(Return.calculate(PCEDurableGoods))
 
 Personal <- cbind(RealDiposablePersonalIncome,PersonalConsumptionExpenditures,PCEDurableGoods)
 plot(Personal)
 
-PersonalSavingRate <- Quandl("FRED/PSAVERT", start_date=SFDate, end_date=EFDate,type="xts", collapse = "quarterly")
+PersonalSavingRate <- Quandl("FRED/PSAVERT", start_date=SFDate, end_date=EFDate,type="xts", collapse = "monthly")
 plot(PersonalSavingRate)
 PersonalSavingRateGrowth <- na.omit(Return.calculate(PersonalSavingRate))
 
-RealRetailAndFoodSales <- Quandl("FRED/RRSFS",start_date=SFDate, end_date=EFDate ,type="xts", collapse = "quarterly")
+RealRetailAndFoodSales <- Quandl("FRED/RRSFS",start_date=SFDate, end_date=EFDate ,type="xts", collapse = "monthly")
 plot(RealRetailAndFoodSales)
 RealRetailAndFoodSalesGrowth <- na.omit(Return.calculate(RealRetailAndFoodSales))
 
-DisposablePersonalIncome <- Quandl("FRED/DSPI",start_date=SFDate, end_date=EFDate ,type="xts", collapse = "quarterly")
+DisposablePersonalIncome <- Quandl("FRED/DSPI",start_date=SFDate, end_date=EFDate ,type="xts", collapse = "monthly")
 plot(DisposablePersonalIncome)
 DisposablePersonalIncomeGrowth <- na.omit(Return.calculate(DisposablePersonalIncome))
 
@@ -303,14 +319,15 @@ chartSeries(man_trade_sales)
 * Outstanding loans
 * Dollar index
 
-## Real GDP growth - USGdpRealReturn
+## Real GDP growth - USGdpRealReturn **CAREFUL WITH MONTHS**
 ```{r}
 
-USGdpReal <- Quandl("FRED/GDPC1", start_date=SFDate, end_date=EFDate,type="xts", collapse = "quarterly")
+USGdpReal <- Quandl("FRED/GDPC1", start_date=SFDate, end_date=EFDate,type="xts", collapse = "monthly")
 chartSeries(USGdpReal)
+
 USGdpRealReturn <- na.omit(Return.calculate(USGdpReal))
 chartSeries(USGdpRealReturn)
-USGdpReal <- as.data.frame(USGdpReal)
+USGdpReal <- as.data.frame(USGdpReal) #**TO BE CONVERTED**
 
 USGdpRealReturn<- as.ts(USGdpRealReturn)
 ggseasonplot(x=USGdpRealReturn, year.labels=TRUE, year.labels.left=TRUE) +
@@ -321,22 +338,22 @@ ggseasonplot(x=USGdpRealReturn, year.labels=TRUE, year.labels.left=TRUE) +
 ```
 
 
-## Employment - avgDurationUne & UnitLaborCosts
+## Employment - avgDurationUne & UnitLaborCosts **BE CAREFUL WITH MONTHS**
 ```{r}
 #Labor Force
 Employment <- NULL
 
-UNRATE <- Quandl("FRED/UNRATE", start_date=SFDate, end_date=EFDate ,type="xts", collapse = "quarterly")
-NROULT <- Quandl("FRED/NROU", start_date=SFDate, end_date=EFDate ,type="xts", collapse = "quarterly")
-NROUST <- Quandl("FRED/NROUST", start_date=SFDate, end_date=EFDate ,type="xts", collapse = "quarterly")
+UNRATE <- Quandl("FRED/UNRATE", start_date=SFDate, end_date=EFDate ,type="xts", collapse = "monthly")
+NROULT <- Quandl("FRED/NROU", start_date=SFDate, end_date=EFDate ,type="xts", collapse = "monthly")
+NROUST <- Quandl("FRED/NROUST", start_date=SFDate, end_date=EFDate ,type="xts", collapse = "monthly")
 
-EMRATIO <- Quandl("FRED/EMRATIO", start_date=SFDate, end_date=EFDate ,type="xts", collapse = "quarterly")
-UNEMPLOY <- Quandl("FRED/UNEMPLOY", start_date=SFDate, end_date=EFDate ,type="xts", collapse = "quarterly")
+EMRATIO <- Quandl("FRED/EMRATIO", start_date=SFDate, end_date=EFDate ,type="xts", collapse = "monthly")
+UNEMPLOY <- Quandl("FRED/UNEMPLOY", start_date=SFDate, end_date=EFDate ,type="xts", collapse = "monthly")
 
-TotalNonFarm_Employed <- Quandl("FRED/PAYEMS",start_date=SFDate, end_date=EFDate ,type="xts", collapse = "quarterly")
-Manufactoring_Employed <- Quandl("FRED/MANEMP", start_date=SFDate, end_date=EFDate ,type="xts", collapse = "quarterly")
+TotalNonFarm_Employed <- Quandl("FRED/PAYEMS",start_date=SFDate, end_date=EFDate ,type="xts", collapse = "monthly")
+Manufactoring_Employed <- Quandl("FRED/MANEMP", start_date=SFDate, end_date=EFDate ,type="xts", collapse = "monthly")
 
-Initial_Claims <- Quandl("FRED/ICSA", start_date=SFDate, end_date=EFDate ,type="xts", collapse = "quarterly")
+Initial_Claims <- Quandl("FRED/ICSA", start_date=SFDate, end_date=EFDate ,type="xts", collapse = "monthly")
 
 Employment <- cbind(TotalNonFarm_Employed,Manufactoring_Employed)
 plot(Employment)
@@ -345,7 +362,7 @@ plot(UNRATE)
 avgDurationUne <- Quandl('FRED/UEMPMEAN', start_date=SDate, end_date=EDate, type = "xts")
 chartSeries(avgDurationUne)
 
-UnitLaborCosts <- Quandl('FRED/PRS30006111', start_date=SDate, end_date=EDate, type = "xts")
+UnitLaborCosts <- Quandl('FRED/PRS30006111', start_date=SDate, end_date=EDate, type = "xts", collapse = "monthly") #**CONVERT**
 chartSeries(UnitLaborCosts)
 ```
 
@@ -353,11 +370,11 @@ chartSeries(UnitLaborCosts)
 ```{r}
 # Inventories to sales ratio
 
-retail_inv_to_sales <- Quandl("FRED/RETAILIRSA", start_date=SFDate, end_date=EFDate ,type="xts", collapse = "quarterly")
+retail_inv_to_sales <- Quandl("FRED/RETAILIRSA", start_date=SFDate, end_date=EFDate ,type="xts", collapse = "monthly")
 
-manufacturing_inv_to_sales <- Quandl("FRED/MNFCTRIRSA", start_date=SFDate, end_date=EFDate ,type="xts", collapse = "quarterly")
+manufacturing_inv_to_sales <- Quandl("FRED/MNFCTRIRSA", start_date=SFDate, end_date=EFDate ,type="xts", collapse = "monthly")
 
-total_inv_to_sales <- Quandl("FRED/ISRATIO", start_date=SFDate, end_date=EFDate ,type="xts", collapse = "quarterly")
+total_inv_to_sales <- Quandl("FRED/ISRATIO", start_date=SFDate, end_date=EFDate ,type="xts", collapse = "monthly")
 
 chartSeries(retail_inv_to_sales)
 chartSeries(manufacturing_inv_to_sales)
@@ -371,7 +388,7 @@ core_CPI <- Quandl("FRED/CPILFESL", start_date=SFDate, end_date=EFDate ,type="xt
 CPI <- Quandl("FRED/CPIAUCSL", start_date=SFDate, end_date=EFDate ,type="xts", collapse = "monthly")
 
 #CPI_YOY <- CPI %>%
-  group_by()
+  #group_by()
 
 chartSeries(core_CPI)
 chartSeries(CPI)
@@ -382,7 +399,7 @@ chartSeries(CPI)
 ## Consumer debt to income - consumer_debt_to_income
 ```{r}
 #consumer debt to income
-consumer_debt_to_income <- Quandl("FRED/TDSP", start_date=SFDate, end_date=EFDate ,type="xts", collapse = "quarterly")
+consumer_debt_to_income <- Quandl("FRED/TDSP", start_date=SFDate, end_date=EFDate ,type="xts", collapse = "monthly") #**TO CHANGE**
 
 chartSeries(consumer_debt_to_income)
 ```
@@ -415,7 +432,7 @@ ggseasonplot(x=CommercialandIndustrial_Loans_All_CommercialBanks_Growth, year.la
 ## Oustanding loans - outstanding_loans
 ```{r}
 #outstanding loans
-outstanding_loans <- Quandl("FRED/TOTLL", start_date=SFDate, end_date=EFDate ,type="xts", collapse = "weekly")
+outstanding_loans <- Quandl("FRED/TOTLL", start_date=SFDate, end_date=EFDate ,type="xts", collapse = "monthly")
 
 chartSeries(outstanding_loans)
 ```
@@ -428,6 +445,7 @@ chartSeries(outstanding_loans)
 dollar_index <- tq_get("DX-Y.NYB",
                        get = "stock.prices",
                        from = "1920-01-01")
+                       #**TO BE CONVERTED**
 
 plot(x=dollar_index$date, y=dollar_index$adjusted)
 ```
