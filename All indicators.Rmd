@@ -96,6 +96,9 @@ PE <- Quandl('MULTPL/SP500_PE_RATIO_MONTH', start_date=SDate, end_date=EDate, ty
 
 SP500Earnings <- Quandl('MULTPL/SP500_EARNINGS_MONTH', start_date=SDate, end_date=EDate, type = "xts")
 
+Div <- Quandl('MULTPL/SP500_DIV_MONTH', start_date=SDate, end_date=EDate, type = "xts")
+
+PayoutRatio <- Div/SP500Earnings
 
 SnP <- na.omit(cbind(ROC(PE),ROC(SP500Earnings)))
 charts.PerformanceSummary(SnP)
