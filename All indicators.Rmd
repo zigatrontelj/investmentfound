@@ -385,10 +385,18 @@ chartSeries(total_inv_to_sales)
 ```{r}
 core_CPI <- Quandl("FRED/CPILFESL", start_date=SFDate, end_date=EFDate ,type="xts", collapse = "monthly")
 
-CPI <- Quandl("FRED/CPIAUCSL", start_date=SFDate, end_date=EFDate ,type="xts", collapse = "monthly")
+CPI <- Quandl("FRED/CPIAUCSL", start_date=SFDate, end_date=EFDate , collapse = "monthly")
 
-#CPI_YOY <- CPI %>%
-  #group_by()
+#CPI_YOY
+CPI$Date  <- as.POSIXct(CPI$Date)
+
+library(dplyr)  
+library(lubridate)
+
+CPI <- CPI %>% group_by(month=month(Date)) %>%
+  arrange(Date) %>%
+  mutate(yearOverYear=Value/lag(Value,1)-1)
+
 
 chartSeries(core_CPI)
 chartSeries(CPI)
