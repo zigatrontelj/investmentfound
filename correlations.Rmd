@@ -9,6 +9,7 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 ```{r}
+#install.packages(corrplot)
 library(tidyverse)
 library(tidyquant)
 library(quantmod)
@@ -88,7 +89,7 @@ unpivot %>%
 # Quartrer 2
 ```{r}
 unpivot %>% 
-  filter(qtr == 1) %>% 
+  filter(qtr == 2) %>% 
   select(-qtr) %>% 
   correlate() %>% 
   rearrange() %>% 
@@ -100,7 +101,7 @@ unpivot %>%
 # Quartrer 3
 ```{r}
 unpivot %>% 
-  filter(qtr == 1) %>% 
+  filter(qtr == 3) %>% 
   select(-qtr) %>% 
   correlate() %>% 
   rearrange() %>% 
@@ -112,7 +113,7 @@ unpivot %>%
 # Quartrer 4
 ```{r}
 unpivot %>% 
-  filter(qtr == 1) %>% 
+  filter(qtr == 4) %>% 
   select(-qtr) %>% 
   correlate() %>% 
   rearrange() %>% 
