@@ -25,7 +25,7 @@ library(quantmod)
 library(TTR)
 library(tidyquant)
 library(timetk)
-
+library(zoo)
 ```
 
 ```{r}
@@ -321,9 +321,25 @@ chartSeries(man_trade_sales)
 
 ## Real GDP growth - USGdpRealReturn **CAREFUL WITH MONTHS**
 ```{r}
+start_date <- as.Date("1947-01-01")
+end_date <- EFDate
 
-USGdpReal <- Quandl("FRED/GDPC1", start_date=SFDate, end_date=EFDate,type="xts", collapse = "monthly")
+datesRange <- as.tibble(seq(start_date, end_date, "months"))
+datesRangFloored <- datesRange %>% 
+  rename(Date = value) %>% 
+  mutate(Date = as.Date(Date))
+
+USGdpReal <- Quandl("FRED/GDPC1", start_date=start_date, end_date=end_date, type="raw", collapse = "monthly")
 chartSeries(USGdpReal)
+
+USGdpRealFloored <- USGdpReal %>%  
+  mutate(Date = floor_date(Date, unit = "month"))
+
+joined <- datesRangFloored %>%
+  left_join(USGdpRealFloored, by = "Date")
+
+joined %>% 
+  mutate(Value = na.approx(Value)) #ne dela
 
 USGdpRealReturn <- na.omit(Return.calculate(USGdpReal))
 chartSeries(USGdpRealReturn)
@@ -537,6 +553,13 @@ ggseasonplot(x=excess_reserves_Growth, year.labels=TRUE, year.labels.left=TRUE) 
 ```
 
 
+```{r}
+my_values <- c(4, 9, 10, NA, NA, 5, 12, NA, 7, 11, 8) #test
+my_df <- data.frame(my_values)
+
+my_df %>% 
+  mutate(my_values = na.approx(my_values))
+```
 
 
 
