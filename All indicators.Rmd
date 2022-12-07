@@ -133,7 +133,7 @@ chartSeries(retail_sales,
             name = "Retail sales")
 ```
 
-## Interest spread
+## Interest spread - spread5.3, spread10.3, spread30.3
 ```{r}
 #Interest spread
 
@@ -383,7 +383,7 @@ chartSeries(total_inv_to_sales)
 
 ## Inflation - core_CPI
 ```{r}
-core_CPI <- Quandl("FRED/CPILFESL", start_date=SFDate, end_date=EFDate ,type="xts", collapse = "monthly")
+core_CPI <- Quandl("FRED/CPILFESL", start_date=SFDate, end_date=EFDate, collapse = "monthly")
 
 CPI <- Quandl("FRED/CPIAUCSL", start_date=SFDate, end_date=EFDate , collapse = "monthly")
 
@@ -397,9 +397,20 @@ CPI <- CPI %>% group_by(month=month(Date)) %>%
   arrange(Date) %>%
   mutate(yearOverYear=Value/lag(Value,1)-1)
 
+core_CPI$Date  <- as.POSIXct(core_CPI$Date)
+CPI_CORE <- core_CPI %>% group_by(month=month(Date)) %>%
+  arrange(Date) %>%
+  mutate(yearOverYear=Value/lag(Value,1)-1)
 
-chartSeries(core_CPI)
-chartSeries(CPI)
+plot(x= CPI_CORE$Date, y=CPI_CORE$yearOverYear)
+plot(x= CPI$Date, y=CPI$yearOverYear)
+
+cpi_spread <- merge.data.frame(CPI, CPI_CORE, by = "Date")
+spread <- cpi_spread$yearOverYear.x - cpi_spread$yearOverYear.y
+cpi_spread$spread <- spread
+
+plot(x= cpi_spread$Date, y=cpi_spread$spread)
+
 #chartSeries(CPI_YOY)
 
 ```
