@@ -1,0 +1,93 @@
+---
+title: "Indexation XLC"
+output: html_document
+date: "2022-12-06"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+#install.packages("simfinapi")
+library(simfinapi)
+library(tidyquant)
+sfa_set_cache_dir(("Macro_Indicators/"), create = T)
+
+```
+
+```{r}
+df <- sfa_get_shares(ticker = c("META","GOOG", "GOOGL", "NFLX", "T", "CHTR", "CMCSA", "TMUS", "ATVI", "DIS", "VZ", "EA", "WBD", "TTWO", "OMC", "MTCH", "IPG", "LYV", "PARA", "FOXA", "NWSA", "LUMN", "FOX", "DISH", "NWS"),
+               type = "common",
+               fyear = data.table::year(Sys.Date()) - 1L,
+               api_key = "kAEB9Q0uGC57cZqqoXroJW9hO3nVFj0T",
+               cache_dir = getOption("sfa_cache_dir"))
+```
+```{r}
+prices <- tq_get(c("META","GOOG", "GOOGL", "NFLX", "T", "CHTR", "CMCSA",
+                   "TMUS", "ATVI", "DIS", "VZ", "EA", "WBD", "TTWO", "OMC",
+                   "MTCH", "IPG","LYV", "PARA", "FOXA", "NWSA", "LUMN","FOX",
+                   "DISH", "NWS"),
+       get = "stock.prices",
+       from = "2006-01-01")
+colnames(prices)[1] <- "ticker"
+```
+
+```{r}
+quarter1 <- zoo::as.yearqtr(prices$date)
+quarter2 <- zoo::as.yearqtr(df$date)
+
+df$quarter = quarter2
+prices$quarter = quarter1
+
+data <- merge.data.frame(df, prices, by = c("ticker", "quarter"))
+data_mkt_cap <- data[,c(-3,-4,-7,-8,-9,-10,-11)]
+
+marketcap = data_mkt_cap$shares_outstanding_common*data_mkt_cap$adjusted
+data_mkt_cap$marketcap = marketcap
+
+share_market_cap <- data_mkt_cap[,-3]
+```
+
+```{r}
+library(ggplot2)
+library(dplyr)
+share_market_cap %>%
+  group_by(ticker) %>%
+  ggplot(aes(x = quarter, y = marketcap)) +
+  geom_line()
+
+ggplot(share_market_cap,
+       aes(x = quarter, y = marketcap)) +
+  geom_line()
+
+```
+
+
+```{r}
+dff <- share_market_cap %>%
+  group_by(date) %>% 
+  filter(n() < 15)
+```
+
+```{r}
+quarter <- zoo::as.yearqtr(share_market_cap$date)
+share_market_cap$quarter = quarter
+
+library(dplyr)
+share_market_cap <-  share_market_cap %>% 
+    group_by(quarter) %>% 
+    filter(ticker==max(ticker)) %>%
+  ggplot((aes(x = quarter, y = marketcap)) +
+  geom_line())
+ 
+```
+
+
+```{r}
+library(dplyr)
+  share_market_cap%>%
+  group_by(quarter)%>%
+  summarize(n=n())
+```
+
