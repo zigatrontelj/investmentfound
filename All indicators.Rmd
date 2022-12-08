@@ -59,22 +59,23 @@ EFDate
 stockmarket <- tq_get("^GSPC",
                       from ="1920-01-01",
                       get = "stock.prices")
+stockmarket %>% 
+  ggplot(aes(x = date, y = adjusted))+
+           geom_line()
 
 stockmarket_returns <- stockmarket %>%
   tq_transmute(select = adjusted,         
                mutate_fun = periodReturn,   
-               period = "daily",      
+               period = "monthly",      
                col_rename = "SP500_returns")
-
-plot(y= stockmarket$adjusted, x= stockmarket$date)
 
 stockmarket_returns %>%
   ggplot(aes(x = date, y = SP500_returns)) +
   geom_line() +
   theme_classic() +
-  labs(x = "Date", y = "Daily returns") +
-  ggtitle("Daily Returns for SP500") +
-  scale_x_date(date_breaks = "years", date_labels = "%Y") +
+  labs(x = "Date", y = "Monthly returns") +
+  ggtitle("Monthly Returns for SP500") +
+  scale_x_date(date_breaks = "11 years", date_labels = "%Y") +
   scale_y_continuous(breaks = seq(-0.5,0.6,0.05),
                      labels = scales::percent) 
 
@@ -82,8 +83,8 @@ stockmarket_returns %>%
   ggplot(aes(x = SP500_returns)) +
   geom_histogram(binwidth = 0.015) +
   theme_classic() +
-  labs(x = "Daily returns", y = "Frequency") +
-  ggtitle("Daily Returns for SP500") +
+  labs(x = "Monthly returns", y = "Frequency") +
+  ggtitle("Monthly Returns for SP500") +
   xlim(-0.15,0.25) +
   scale_x_continuous(labels = scales::percent)
 
@@ -100,6 +101,8 @@ Div <- Quandl('MULTPL/SP500_DIV_MONTH', start_date=SDate, end_date=EDate, type =
 
 PayoutRatio <- Div/SP500Earnings
 
+chartSeries(PayoutRatio,
+            theme = chartTheme("black"))
 SnP <- na.omit(cbind(ROC(PE),ROC(SP500Earnings)))
 charts.PerformanceSummary(SnP)
 ```
@@ -113,11 +116,16 @@ charts.PerformanceSummary(SnP)
 house_ind <- Quandl.datatable("ZILLOW/INDICATORS")
 #house_reg <- Quandl.datatable("ZILLOW/REGIONS")
 
-house_values <- Quandl.datatable("ZILLOW/DATA", indicator_id="ZALL", region_id="102001") 
+house_values_data <- Quandl.datatable("ZILLOW/DATA", indicator_id="ZALL",
+                                      region_id="102001")
+
+house_values <- xts(x = house_values_data, 
+                    order.by= house_values_data$date)
+house_values <- house_values [,4]
 
 house_sales <- Quandl.datatable("ZILLOW/DATA", indicator_id="SAAW", region_id="102001") #**Not included in analysis**
 
-plot(x=house_values$date, y=house_values$value)
+chartSeries(house_values)
 plot(x=house_sales$date, y=house_sales$value)
 ```
 
@@ -125,7 +133,7 @@ plot(x=house_sales$date, y=house_sales$value)
 ```{r}
 #Retail Sales
 
-retail_sales <- Quandl("FRED/RSXFS",start_date=SDate, end_date=EDate ,type="xts", collapse = "daily")
+retail_sales <- Quandl("FRED/RSXFS",start_date=SDate, end_date=EDate ,type="xts", collapse = "monthly")
 #retail_sales_YoY <- Quandl("FRED/RSXFS",start_date=YoY, end_date=EDate ,type="xts", collapse = "daily")
 
 chartSeries(retail_sales,
@@ -312,7 +320,7 @@ chartSeries(man_trade_sales)
 * Average duration of unemployment 
 * Inventory to sales ratio
 * Change in unit labor costs 
-* Inflation **TO DO**
+* Inflation
 * Average prime lending rate 
 * Ratio of consumer installment debt to income
 * Commercial and industrial loans 
@@ -489,7 +497,23 @@ chartSeries(outstanding_loans)
 dollar_index <- tq_get("DX-Y.NYB",
                        get = "stock.prices",
                        from = "1920-01-01")
+
+dollar_index <- dollar_index %>%
+  tq_transmute(select = adjusted,         
+               mutate_fun = periodReturn,   
+               period = "monthly",      
+               col_rename = "Index_returns")
+
+dollar_index %>%
+  ggplot(aes(x = date, y = Index_returns)) +
+  geom_line() +
+  theme_classic() +
+  labs(x = "Date", y = "Monthly returns") +
+  ggtitle("Monthly Returns for dollar index") +
+  scale_x_date(date_breaks = "11 years", date_labels = "%Y")
+
                        #**TO BE CONVERTED**
+                  
 
 plot(x=dollar_index$date, y=dollar_index$adjusted)
 ```
