@@ -9,5 +9,5 @@
 * Rule 7: Mahdi has to pick up the porchetta
 * Rule 8: Mahdi's electricity was cut off by falling trees
 * Rule 9: Mahdi's car is broken
-* Rule 10: The dog escaped.
-*Make something more productive than this
+* Rule 10: The dog escaped. 
+* Rule 11: Make something more productive than this.
