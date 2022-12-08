@@ -25,7 +25,6 @@ library(quantmod)
 library(TTR)
 library(tidyquant)
 library(timetk)
-library(zoo)
 ```
 
 ```{r}
@@ -119,14 +118,20 @@ house_ind <- Quandl.datatable("ZILLOW/INDICATORS")
 house_values_data <- Quandl.datatable("ZILLOW/DATA", indicator_id="ZALL",
                                       region_id="102001")
 
-house_values <- xts(x = house_values_data, 
+house_values <- xts(x = house_values_data$value, 
                     order.by= house_values_data$date)
-house_values <- house_values [,4]
 
 house_sales <- Quandl.datatable("ZILLOW/DATA", indicator_id="SAAW", region_id="102001") #**Not included in analysis**
 
 chartSeries(house_values)
 plot(x=house_sales$date, y=house_sales$value)
+
+house_values %>%
+  as.data.frame() %>%
+  rownames_to_column("date") %>%
+  ggplot(aes(x=as.POSIXct(date), y=V1)) +
+  geom_line()
+
 ```
 
 ## Retail sales - retail_sales
