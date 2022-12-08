@@ -373,6 +373,14 @@ ggseasonplot(x=USGdpRealReturn, year.labels=TRUE, year.labels.left=TRUE) +
 
 ## Employment - avgDurationUne & UnitLaborCosts **BE CAREFUL WITH MONTHS**
 ```{r}
+start_date <- as.Date("1988-01-01")
+end_date <- as.Date("2021-01-01")
+
+datesRange <- as.tibble(seq(start_date, end_date, "months"))
+datesRangFloored <- datesRange %>% 
+  rename(Date = value) %>% 
+  mutate(Date = as.Date(Date))
+
 #Labor Force
 Employment <- NULL
 
@@ -395,8 +403,26 @@ plot(UNRATE)
 avgDurationUne <- Quandl('FRED/UEMPMEAN', start_date=SDate, end_date=EDate, type = "xts")
 chartSeries(avgDurationUne)
 
-UnitLaborCosts <- Quandl('FRED/PRS30006111', start_date=SDate, end_date=EDate, type = "xts", collapse = "monthly") #**TO CHANGE**
-chartSeries(UnitLaborCosts)
+UnitLaborCosts <- Quandl('FRED/PRS30006111', start_date=SDate, end_date=EDate, type = "raw", collapse = "monthly") #**TO CHANGE**
+
+UnitLaborCostsFloored <- UnitLaborCosts %>%  
+  mutate(Date = floor_date(Date, unit = "month"))
+
+joined <- datesRangFloored %>%
+  left_join(UnitLaborCostsFloored, by = "Date")
+
+joinedApprox <- joined %>%
+  mutate(Value = na.approx(Value))
+
+joinedApprox %>%
+  ggplot(aes(x = Date, y = Value)) +
+  geom_line() +
+  theme_classic() +
+  labs(x = "Date", y = "Unit Labor Costs") +
+  ggtitle("Unit Labor Costs") +
+  scale_x_date(date_breaks = "10 years", date_labels = "%Y") +
+  scale_y_continuous(breaks = seq(-0.5,0.6,0.05),
+                     labels = scales::percent) 
 ```
 
 ## Inventories to sales ratio - total_inv_to_sales
