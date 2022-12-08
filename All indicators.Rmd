@@ -10,6 +10,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```{r libraries}
 
+library(anytime)
 library(lubridate)
 library(timechange)
 library(xts)
@@ -45,7 +46,7 @@ EFDate
 * Stock market
 * House prices
 * Retail Sales
-* Interest spread (LT & ST bonds) **TO FINISH**
+* Interest spread (LT & ST bonds)
 * Building Permits
 * Consumer expectations
 * Average weekly hours (manufacturing)
@@ -58,15 +59,37 @@ EFDate
 stockmarket <- tq_get("^GSPC",
                       from ="1920-01-01",
                       get = "stock.prices")
-stockmarket %>% 
-  ggplot(aes(x = date, y = adjusted))+
-           geom_line()
+
+stockmarket_xts <- xts(x = stockmarket$adjusted, 
+                    order.by= stockmarket$date)
+
+stockmarket_xts %>%
+  as.data.frame() %>%
+  rownames_to_column("date") %>%
+  ggplot(aes(x=as.POSIXct(date), y=V1)) +
+  geom_line()
 
 stockmarket_returns <- stockmarket %>%
   tq_transmute(select = adjusted,         
                mutate_fun = periodReturn,   
                period = "monthly",      
                col_rename = "SP500_returns")
+
+stockmarket_returns_xts <- xts(x = stockmarket_returns$SP500_returns, 
+                    order.by= stockmarket_returns$date)
+
+stockmarket_returns_xts %>%
+  as.data.frame() %>%
+  rownames_to_column("date") %>%
+  ggplot(aes(x=as.Date(date), y=V1)) +
+  geom_line() +
+  theme_classic() +
+  labs(x = "Date", y = "Monthly returns") +
+  ggtitle("Monthly Returns for SP500") +
+  scale_x_date(date_breaks = "11 years", date_labels = "%Y") +
+  scale_y_continuous(breaks = seq(-0.5,0.6,0.05),
+                     labels = scales::percent) 
+
 
 stockmarket_returns %>%
   ggplot(aes(x = date, y = SP500_returns)) +
@@ -86,6 +109,12 @@ stockmarket_returns %>%
   ggtitle("Monthly Returns for SP500") +
   xlim(-0.15,0.25) +
   scale_x_continuous(labels = scales::percent)
+
+summary(stockmarket_returns$SP500_returns)
+
+stockmarket_returns %>% 
+  ggplot(aes(y=SP500_returns))+
+  geom_boxplot()
 
 #Related to Stocks
 
@@ -123,8 +152,9 @@ house_values <- xts(x = house_values_data$value,
 
 house_sales <- Quandl.datatable("ZILLOW/DATA", indicator_id="SAAW", region_id="102001") #**Not included in analysis**
 
-chartSeries(house_values)
-plot(x=house_sales$date, y=house_sales$value)
+house_sales %>% 
+  ggplot(aes(x=date, y=value)) +
+  geom_line()
 
 house_values %>%
   as.data.frame() %>%
@@ -134,12 +164,17 @@ house_values %>%
 
 ```
 
-## Retail sales - retail_sales
+## Retail sales - retail_sales **PROBLEM ASK ALEX**
 ```{r}
 #Retail Sales
 
 retail_sales <- Quandl("FRED/RSXFS",start_date=SDate, end_date=EDate ,type="xts", collapse = "monthly")
-#retail_sales_YoY <- Quandl("FRED/RSXFS",start_date=YoY, end_date=EDate ,type="xts", collapse = "daily")
+
+retail_sales %>% #**DOESN'T WORK**
+  as.data.frame() %>%
+  rownames_to_column("date") %>%
+  ggplot(aes(x=as.POSIXct(date), y=V1)) +
+  geom_line()
 
 chartSeries(retail_sales,
             type = line,
@@ -454,9 +489,6 @@ CPI <- Quandl("FRED/CPIAUCSL", start_date=SFDate, end_date=EFDate , collapse = "
 #CPI_YOY
 CPI$Date  <- as.POSIXct(CPI$Date)
 
-library(dplyr)  
-library(lubridate)
-
 CPI <- CPI %>% group_by(month=month(Date)) %>%
   arrange(Date) %>%
   mutate(yearOverYear=Value/lag(Value,1)-1)
@@ -466,16 +498,21 @@ CPI_CORE <- core_CPI %>% group_by(month=month(Date)) %>%
   arrange(Date) %>%
   mutate(yearOverYear=Value/lag(Value,1)-1)
 
-plot(x= CPI_CORE$Date, y=CPI_CORE$yearOverYear)
-plot(x= CPI$Date, y=CPI$yearOverYear)
-
 cpi_spread <- merge.data.frame(CPI, CPI_CORE, by = "Date")
 spread <- cpi_spread$yearOverYear.x - cpi_spread$yearOverYear.y
 cpi_spread$spread <- spread
 
-plot(x= cpi_spread$Date, y=cpi_spread$spread)
+CPI %>% 
+  ggplot(aes(x=Date, y= yearOverYear)) +
+  geom_line()
 
-#chartSeries(CPI_YOY)
+CPI_CORE %>% 
+  ggplot(aes(x=Date, y= yearOverYear)) +
+  geom_line()
+
+cpi_spread %>% 
+  ggplot(aes(x=Date, y= spread)) +
+  geom_line()
 
 ```
 
@@ -544,9 +581,6 @@ dollar_index %>%
   scale_x_date(date_breaks = "11 years", date_labels = "%Y")
 
                        #**TO BE CONVERTED**
-                  
-
-plot(x=dollar_index$date, y=dollar_index$adjusted)
 ```
 
 
