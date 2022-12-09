@@ -1,1 +1,47 @@
+SDate <- "1971-01-01"
+EDate <- "2020-01-01"
+#National Bureau of Economic Research - Business Cycle 
+
+#real personal income less transfers, (FRED/W875RX1)
+realpersonalincomelesstransfers <- Quandl('FRED/W875RX1', start_date=SDate, end_date=EDate, collapse = "monthly")
+
+plot(realpersonalincomelesstransfers)
+
+#nonfarm payroll employment, (PAYEMS)
+nonfarmpayrollemployment <- Quandl('FRED/PAYEMS', start_date=SDate, end_date=EDate, collapse = "monthly")
+
+plot(nonfarmpayrollemployment)
+
+#employment as measured by the household survey, (CE16OV) // unemployment (UNEMPLOY) 
+unemployment <- Quandl('FRED/UNEMPLOY', start_date=SDate, end_date=EDate, collapse = "monthly")
+
+plot(unemployment)
+
+#real personal consumption expenditures, (PCEC96)
+realpersonalconsumptionexpenditures <- Quandl('FRED/DPCERA3M086SBEA', start_date=SDate, end_date=EDate, collapse = "monthly")
+
+plot(realpersonalconsumptionexpenditures)
+
+#wholesale-retail sales adjusted for price changes, (PPI?)
+ProducerPriceIndex <- Quandl('FRED/PPIACO', start_date=SDate, end_date=EDate, collapse = "monthly")
+
+plot(ProducerPriceIndex)
+
+#industrial production. (IPI?)
+IPI  <- Quandl("FRED/INDPRO", start_date=SDate, end_date=EDate, collapse = "monthly")
+
+plot(IPI)
+
+
+BusinessCycle <- cbind(realpersonalincomelesstransfers,nonfarmpayrollemployment$Value,unemployment$Value,realpersonalconsumptionexpenditures$Value, ProducerPriceIndex$Value,IPI$Value)
+
+plot(BusinessCycle)
+
+#BusinessCycle$Date <- as.POSIXct(BusinessCycle$Date)
+BusinessCyclen <- BusinessCycle %>%
+  as.data.frame() %>%
+  rownames_to_column("date") 
+
+#Comparison of business cycle indicators obtained with four different methods: the Hodrick–Prescott (HP) filter, the Baxter–King (BK) filter, a structural time series (STS) model, and our method, the multivariate approach with a band-pass filter (MBP). All cycles are given at quarterly frequency. NBER recession dates are represented by the vertical bands
+
 
