@@ -60,36 +60,17 @@ stockmarket <- tq_get("^GSPC",
                       from ="1920-01-01",
                       get = "stock.prices")
 
-stockmarket_xts <- xts(x = stockmarket$adjusted, 
-                    order.by= stockmarket$date)
-
-stockmarket_xts %>%
-  as.data.frame() %>%
-  rownames_to_column("date") %>%
-  ggplot(aes(x=as.POSIXct(date), y=V1)) +
-  geom_line()
-
 stockmarket_returns <- stockmarket %>%
   tq_transmute(select = adjusted,         
                mutate_fun = periodReturn,   
                period = "monthly",      
                col_rename = "SP500_returns")
 
-stockmarket_returns_xts <- xts(x = stockmarket_returns$SP500_returns, 
-                    order.by= stockmarket_returns$date)
-
-stockmarket_returns_xts %>%
-  as.data.frame() %>%
-  rownames_to_column("date") %>%
-  ggplot(aes(x=as.Date(date), y=V1)) +
-  geom_line() +
-  theme_classic() +
-  labs(x = "Date", y = "Monthly returns") +
-  ggtitle("Monthly Returns for SP500") +
-  scale_x_date(date_breaks = "11 years", date_labels = "%Y") +
-  scale_y_continuous(breaks = seq(-0.5,0.6,0.05),
-                     labels = scales::percent) 
-
+stockmarket_returns <- stockmarket %>%
+  tq_transmute(select = adjusted,         
+               mutate_fun = periodReturn,   
+               period = "monthly",      
+               col_rename = "SP500_returns")
 
 stockmarket_returns %>%
   ggplot(aes(x = date, y = SP500_returns)) +
@@ -113,7 +94,8 @@ stockmarket_returns %>%
 summary(stockmarket_returns$SP500_returns)
 
 stockmarket_returns %>% 
-  ggplot(aes(y=SP500_returns))+
+  mutate(month = month(date, label = TRUE)) %>% 
+  ggplot(aes(x=month ,y=SP500_returns)) +
   geom_boxplot()
 
 #Related to Stocks
@@ -121,7 +103,7 @@ stockmarket_returns %>%
 DivYield <- Quandl('MULTPL/SP500_DIV_YIELD_MONTH', start_date=SDate, end_date=EDate, type = "xts")
 
 PE <- Quandl('MULTPL/SP500_PE_RATIO_MONTH', start_date=SDate, end_date=EDate, type = "xts")
-
+PEXts <- Quandl('MULTPL/SP500_PE_RATIO_MONTH', start_date=SDate, end_date=EDate, type = "xts")
 
 SP500Earnings <- Quandl('MULTPL/SP500_EARNINGS_MONTH', start_date=SDate, end_date=EDate, type = "xts")
 
@@ -131,7 +113,9 @@ PayoutRatio <- Div/SP500Earnings
 
 chartSeries(PayoutRatio,
             theme = chartTheme("black"))
-SnP <- na.omit(cbind(ROC(PE),ROC(SP500Earnings)))
+
+SnP <- na.omit(cbind(ROC(PEXts),ROC(SP500Earnings)))
+
 charts.PerformanceSummary(SnP)
 ```
 
@@ -168,17 +152,11 @@ house_values %>%
 ```{r}
 #Retail Sales
 
-retail_sales <- Quandl("FRED/RSXFS",start_date=SDate, end_date=EDate ,type="xts", collapse = "monthly")
+retail_sales <- Quandl("FRED/RSXFS",start_date=SDate, end_date=EDate, type="raw", collapse = "monthly")
 
-retail_sales %>% #**DOESN'T WORK**
-  as.data.frame() %>%
-  rownames_to_column("date") %>%
-  ggplot(aes(x=as.POSIXct(date), y=V1)) +
+retail_sales %>% 
+  ggplot(aes(x=Date, y=Value)) +
   geom_line()
-
-chartSeries(retail_sales,
-            type = line,
-            name = "Retail sales")
 ```
 
 ## Interest spread - spread5.3, spread10.3, spread30.3
@@ -378,7 +356,7 @@ datesRangFloored <- datesRange %>%
   mutate(Date = as.Date(Date))
 
 USGdpReal <- Quandl("FRED/GDPC1", start_date=start_date, end_date=end_date, type="raw", collapse = "monthly")
-chartSeries(USGdpReal)
+USGdpRealXts <- Quandl("FRED/GDPC1", start_date=start_date, end_date=end_date, type="xts", collapse = "monthly")
 
 USGdpRealFloored <- USGdpReal %>%  
   mutate(Date = floor_date(Date, unit = "month"))
@@ -399,7 +377,7 @@ joinedApprox %>%
   scale_y_continuous(breaks = seq(-0.5,0.6,0.05),
                      labels = scales::percent) 
 
-USGdpRealReturn <- na.omit(Return.calculate(USGdpReal))
+USGdpRealReturn <- na.omit(Return.calculate(USGdpRealXts))
 chartSeries(USGdpRealReturn)
 USGdpReal <- as.data.frame(USGdpReal) #**TO BE CONVERTED**
 
@@ -650,14 +628,6 @@ ggseasonplot(x=excess_reserves_Growth, year.labels=TRUE, year.labels.left=TRUE) 
 
 ```
 
-
-```{r}
-my_values <- c(4, 9, 10, NA, NA, 5, 12, NA, 7, 11, 8) #test
-my_df <- data.frame(my_values)
-
-my_df %>% 
-  mutate(my_values = na.approx(my_values))
-```
 
 
 
