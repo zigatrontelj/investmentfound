@@ -86,7 +86,7 @@ SP500_Earnings <- Quandl('MULTPL/SP500_EARNINGS_MONTH',
                         start_date=SDate, 
                         end_date=EDate)
 
-PayoutRatio <- Div$Value/SP500Earnings$Value ##
+#PayoutRatio <- Div$Value/SP500Earnings$Value ##
 
 
 ```
@@ -141,7 +141,7 @@ thirtyyears_IR <- Quandl("FRED/DGS30",
 ## Interest spreads
 
 # Five years three months spread
-Spread5.3 <- DGS5 - threemonths ##
+#Spread5.3 <- DGS5 - threemonths ##
 ```
 
 ## Building permits
@@ -273,8 +273,8 @@ man_trade_sales <- Quandl("FRED/CMRMTSPL",
 
 # Real GDP
 GDP_real <- Quandl("FRED/GDPC1", 
-                   start_date=start_date, 
-                   end_date=end_date, 
+                   start_date=SFDate, 
+                   end_date=EFDate, 
                    collapse = "monthly")
 
 GDP_real_growth <- GDP_real %>% 
@@ -404,11 +404,11 @@ core_CPI <- core_CPI %>%
   mutate(yearOverYear=Value/lag(Value,1)-1)
 
 # Core inflation spread
-CPI_spread <- merge.data.frame(CPI, CPI_CORE, by = "Date")
+CPI_spread <- merge.data.frame(CPI, core_CPI, by = "Date")
 
-spread <- cpi_spread$yearOverYear.x - cpi_spread$yearOverYear.y
+spread <- CPI_spread$yearOverYear.x - CPI_spread$yearOverYear.y
 
-cpi_spread$spread <- spread
+CPI_spread$spread <- spread
 
 ```
 
@@ -493,4 +493,74 @@ excess_reserves <- Quandl("FRED/EXCSRESNW",
 
 ```
 
+# FINAL DATA FRAME
+```{r}
+data_all <- merge.data.frame(avg_dur_unem, 
+                             avg_weekly_hours_man, 
+                             building_permits,
+                             comm_ind_loans_all_banks,
+                             consumer_debt_to_income,
+                             consumer_sentiment,
+                             core_CPI,
+                             disp_pers_income,
+                             dollar_index,
+                             em_ratio,
+                             fiveyears_IR,
+                             GDP_real_growth,
+                             house_values,
+                             ind_prod_ind,
+                             initial_claims,
+                             man_trade_sales,
+                             manufacturing_inv_to_sales,
+                             med_house_income,
+                             new_orders_man,
+                             outstanding_loans,
+                             pers_cons_exp,
+                             pers_save_rate,
+                             prime_lend_rate,
+                             ret_food_sales,
+                             retail_inv_to_sales,
+                             retail_sales,
+                             SP500_Div,
+                             SP500_Div_Yield,
+                             SP500_Earnings,
+                             SP500_PE,
+                             stockmarket_returns,
+                             tenyears_IR,
+                             thirtyyears_IR,
+                             threemonths_IR,
+                             tot_man_employed,
+                             tot_non_farm_employed,
+                             total_inv_to_sales,
+                             total_public_debt_to_GDP,
+                             un_rate,
+                             unemployment,
+                             by = "Date")
+```
+
+```{r}
+data_all <- merge.data.frame(stockmarket_returns,
+                             house_values,
+                             retail_sales,
+                             building_permits,
+                             consumer_sentiment,
+                             avg_weekly_hours_man,
+                             new_orders_man,
+                             threemonths_IR,
+                             fiveyears_IR,
+                             tenyears_IR,
+                             thirtyyears_IR,
+                             ind_prod_ind,
+                             disp_pers_income,
+                             man_trade_sales,
+                             total_inv_to_sales,
+                             avg_dur_unem,
+                             core_CPI,
+                             prime_lend_rate,
+                             consumer_debt_to_income,
+                             comm_ind_loans_all_banks,
+                             outstanding_loans,
+                             by = "Date"
+                             )
+```
 
