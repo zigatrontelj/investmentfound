@@ -1,0 +1,496 @@
+---
+title: "Data fetching"
+output: html_document
+date: "2022-12-10"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+
+library(anytime)
+library(lubridate)
+library(timechange)
+library(xts)
+library(zoo)
+library(Quandl)
+library(forecast)
+library(tidyverse)
+library(ggplot2)
+library(rlang)
+library(PortfolioAnalytics)
+library(PerformanceAnalytics)
+library(quantmod)
+library(TTR)
+library(tidyquant)
+library(timetk)
+
+```
+
+```{r}
+Quandl.api_key("YE-L2_sxPkntzGfHo3vZ")
+EDate <- as.Date(Sys.Date())
+SDate <- as.Date(EDate-365*100)
+YoY <- as.Date(EDate-365)
+
+EDate
+EFDate <- as.Date(Sys.Date())
+SFDate <- EFDate - 365*100
+SFDate
+EFDate
+```
+
+#Leading indicators are
+* Stock market
+* House prices
+* Retail Sales
+* Interest spread (LT & ST bonds)
+* Building Permits
+* Consumer expectations
+* Average weekly hours (manufacturing)
+* Manufacturers new orders.
+
+## Stock market
+```{r}
+# S&P500 Prices
+stockmarket <- tq_get("^GSPC",
+                      from ="1920-01-01",
+                      get = "stock.prices")
+
+# S&P500 Returns
+stockmarket_returns <- stockmarket %>%
+  tq_transmute(select = adjusted,         
+               mutate_fun = periodReturn,   
+               period = "monthly",      
+               col_rename = "SP500_returns")
+
+# S&P500 Dividends
+SP500_Div <- Quandl('MULTPL/SP500_DIV_MONTH', 
+              start_date=SDate, 
+              end_date=EDate)
+
+# S&P500 Dividend Yield
+SP500_Div_Yield <- Quandl('MULTPL/SP500_DIV_YIELD_MONTH', 
+                   start_date=SDate, 
+                   end_date=EDate)
+
+# S&P500 PE Ratios
+SP500_PE <- Quandl('MULTPL/SP500_PE_RATIO_MONTH', 
+             start_date=SDate, 
+             end_date=EDate)
+
+# S&P500 Earnings
+SP500_Earnings <- Quandl('MULTPL/SP500_EARNINGS_MONTH', 
+                        start_date=SDate, 
+                        end_date=EDate)
+
+PayoutRatio <- Div$Value/SP500Earnings$Value ##
+
+
+```
+
+## House prices
+```{r}
+
+# Zillow home values index
+house_values <- Quandl.datatable("ZILLOW/DATA", 
+                                 indicator_id="ZALL",
+                                 region_id="102001")
+
+```
+
+## Retail Sales
+```{r}
+
+# FRED retail sales
+retail_sales <- Quandl("FRED/RSXFS",
+                       start_date=SDate, 
+                       end_date=EDate ,
+                       collapse = "monthly")
+
+```
+
+## Interest rates
+```{r}
+
+# T-Bills
+threemonths_IR <- Quandl("FRED/DTB3",
+                         start_date=SDate, 
+                         end_date=EDate, 
+                         collapse = "monthly")
+
+# Five-y Bonds
+fiveyears_IR <- Quandl("FRED/DGS5", 
+                       start_date=SFDate, 
+                       end_date=EFDate, 
+                       collapse = "monthly")
+
+# Ten-y Bonds
+tenyears_IR <- Quandl("FRED/DGS10",
+                      start_date=SDate, 
+                      end_date=EDate,
+                      collapse = "monthly")
+# Thirty-y Bonds
+thirtyyears_IR <- Quandl("FRED/DGS30",
+                          start_date=SFDate,
+                          end_date=EFDate ,
+                          collapse = "monthly")
+
+## Interest spreads
+
+# Five years three months spread
+Spread5.3 <- DGS5 - threemonths ##
+```
+
+## Building permits
+```{r}
+
+# FRED Building Permits
+building_permits <- Quandl("FRED/PERMIT",
+                           start_date=SDate,
+                           end_date=EDate,
+                           collapse = "monthly")
+
+```
+
+## Consumer sentiment
+```{r}
+
+# Index of consumer sentiment
+consumer_sentiment <- Quandl("UMICH/SOC1", 
+                             start_date=SDate, 
+                             end_date=EDate,
+                             collapse = "monthly")
+
+```
+
+## Average weekly hours of manufacturing
+```{r}
+
+# FRED average weekly hours of manufacturing
+avg_weekly_hours_man <- Quandl("FRED/AWHAEMAN", 
+                               start_date=SDate, 
+                               end_date=EDate,
+                               collapse = "monthly")
+
+```
+
+## Manufacturers new orders
+```{r}
+
+# FRED manufacturers new orders.
+new_orders_man <- Quandl("FRED/AMTMNO",
+                         start_date=SDate, 
+                         end_date=EDate,
+                         collapse = "monthly")
+
+```
+
+# Coincident Indicators
+* Industrial production Index
+* Real Personal incomes
+* Manufacturing and trade sales
+
+## Industrial production
+```{r}
+
+# Industrial Production Index
+ind_prod_ind <- Quandl("FRED/INDPRO", 
+                       start_date=SDate, 
+                       end_date=EDate,
+                       collapse = "monthly")
+
+```
+
+##
+```{r}
+
+# Real median household income
+med_house_income <- Quandl("FRED/MEHOINUSA672N", 
+                           start_date=SFDate, 
+                           end_date=EFDate ,
+                           collapse = "monthly")
+
+# Real disposable personal income
+disp_pers_income <- Quandl("FRED/DSPIC96", 
+                           start_date=SFDate, 
+                           end_date=EFDate ,
+                           collapse = "monthly")
+
+# Personal consumption expenditures
+pers_cons_exp <- Quandl("FRED/PCE", 
+                        start_date=SFDate, 
+                        end_date=EFDate ,
+                        collapse = "monthly")
+
+# Personal consumption expenditures on durable goods
+pers_cons_exp_durable <- Quandl("FRED/PCEDG", 
+                                start_date=SFDate,
+                                end_date=EFDate,
+                                collapse = "monthly")
+# Personal savings rate
+pers_save_rate <- Quandl("FRED/PSAVERT", 
+                         start_date=SFDate, 
+                         end_date=EFDate,
+                         collapse = "monthly")
+
+# Retail and food sales
+ret_food_sales <- Quandl("FRED/RRSFS",
+                                 start_date=SFDate, 
+                                 end_date=EFDate ,
+                                 collapse = "monthly")
+
+
+```
+
+## Real manufacturing and trade sales
+```{r}
+
+# FRED Manufacturing and trade sales
+man_trade_sales <- Quandl("FRED/CMRMTSPL", 
+                          start_date=SFDate, 
+                          end_date=EFDate ,
+                          collapse = "monthly" )
+
+```
+
+# Lagging indicators
+* Real GDP growth
+* Average duration of unemployment 
+* Inventory to sales ratio
+* Change in unit labor costs 
+* Inflation
+* Average prime lending rate 
+* Ratio of consumer installment debt to income
+* Commercial and industrial loans 
+* Outstanding loans
+* Dollar index
+
+## Real GDP growth
+```{r}
+
+# Real GDP
+GDP_real <- Quandl("FRED/GDPC1", 
+                   start_date=start_date, 
+                   end_date=end_date, 
+                   collapse = "monthly")
+
+GDP_real_growth <- GDP_real %>% 
+  tq_transmute(select = Value,         
+               mutate_fun = periodReturn,   
+               period = "monthly",      
+               col_rename = "GDP Growth")
+  
+```
+
+## Employment
+```{r}
+
+# Unemployment rate
+un_rate <- Quandl("FRED/UNRATE", 
+                 start_date=SFDate, 
+                 end_date=EFDate ,
+                 collapse = "monthly")
+
+# Natural rate of unemployment long term
+nat_un_lt <- Quandl("FRED/NROU", 
+                    start_date=SFDate, 
+                    end_date=EFDate ,
+                    collapse = "monthly")
+
+# Natural rate of unemployment short term
+nat_un_st <- Quandl("FRED/NROUST", 
+                    start_date=SFDate, 
+                    end_date=EFDate ,
+                    collapse = "monthly")
+
+# Civilian employment population ratio
+em_ratio <- Quandl("FRED/EMRATIO", 
+                  start_date=SFDate, 
+                  end_date=EFDate ,
+                  collapse = "monthly")
+
+# Unemployed
+unemployment <- Quandl("FRED/UNEMPLOY", 
+                       start_date=SFDate, 
+                       end_date=EFDate ,
+                       collapse = "monthly")
+
+# Total non farm employed
+tot_non_farm_employed <- Quandl("FRED/PAYEMS",
+                                start_date=SFDate, 
+                                end_date=EFDate ,
+                                collapse = "monthly")
+
+# Total manufacturing employed
+tot_man_employed <- Quandl("FRED/MANEMP",
+                           start_date=SFDate, 
+                           end_date=EFDate ,
+                           collapse = "monthly")
+
+# Initial claims
+initial_claims <- Quandl("FRED/ICSA", 
+                         start_date=SFDate, 
+                         end_date=EFDate ,
+                         collapse = "monthly")
+
+# Average duration of unemployment
+avg_dur_unem <- Quandl('FRED/UEMPMEAN', 
+                       start_date=SDate, 
+                       end_date=EDate,
+                       collapse = "monthly")
+
+# Unit labor costs
+un_labor_costs <- Quandl('FRED/PRS30006111', 
+                         start_date=SDate, 
+                         end_date=EDate, 
+                         collapse = "monthly")
+```
+
+## Inventories to sales ratio
+```{r}
+
+# Retail inventories to sales
+retail_inv_to_sales <- Quandl("FRED/RETAILIRSA", 
+                              start_date=SFDate, 
+                              end_date=EFDate ,
+                              collapse = "monthly")
+
+# Manufacturing inventories to sales
+manufacturing_inv_to_sales <- Quandl("FRED/MNFCTRIRSA", 
+                                     start_date=SFDate, 
+                                     end_date=EFDate ,
+                                     collapse = "monthly")
+
+# Total inventories to sales
+total_inv_to_sales <- Quandl("FRED/ISRATIO", 
+                             start_date=SFDate, 
+                             end_date=EFDate ,
+                             collapse = "monthly")
+
+```
+
+## Inflation
+```{r}
+
+# Core inflation
+core_CPI <- Quandl("FRED/CPILFESL", 
+                   start_date=SFDate, 
+                   end_date=EFDate, 
+                   collapse = "monthly")
+
+# Inflation
+CPI <- Quandl("FRED/CPIAUCSL", 
+              start_date=SFDate, 
+              end_date=EFDate , 
+              collapse = "monthly")
+
+# Year over year inflation
+CPI$Date  <- as.POSIXct(CPI$Date)
+
+CPI <- CPI %>% 
+  group_by(month=month(Date)) %>%
+  arrange(Date) %>%
+  mutate(yearOverYear=Value/lag(Value,1)-1)
+
+# Year over year core inflation
+core_CPI$Date  <- as.POSIXct(core_CPI$Date)
+
+core_CPI <- core_CPI %>% 
+  group_by(month=month(Date)) %>%
+  arrange(Date) %>%
+  mutate(yearOverYear=Value/lag(Value,1)-1)
+
+# Core inflation spread
+CPI_spread <- merge.data.frame(CPI, CPI_CORE, by = "Date")
+
+spread <- cpi_spread$yearOverYear.x - cpi_spread$yearOverYear.y
+
+cpi_spread$spread <- spread
+
+```
+
+## Consumer debt to income
+```{r}
+
+# FRED consumer debt to income
+consumer_debt_to_income <- Quandl("FRED/TDSP", 
+                                  start_date=SFDate, 
+                                  end_date=EFDate ,
+                                  collapse = "monthly")
+
+```
+
+## Commercial and industrial loans
+```{r}
+
+# All commercial banks
+comm_ind_loans_all_banks <- Quandl("FRED/TOTCI", 
+                                   start_date=SFDate, 
+                                   end_date=EFDate ,
+                                   collapse = "monthly")
+
+# Prime lending rate
+prime_lend_rate <- Quandl('FRED/DPRIME', 
+                          start_date=SDate, 
+                          end_date=EDate,
+                          collapse = "monthly")
+```
+
+## Outstanding loans
+```{r}
+
+# FRED Outstanding loans
+outstanding_loans <- Quandl("FRED/TOTLL", 
+                            start_date=SFDate, 
+                            end_date=EFDate ,
+                            collapse = "monthly")
+
+```
+
+## Dollar index
+```{r}
+
+#Trade weighted dollar index
+dollar_index <- tq_get("DX-Y.NYB",
+                       get = "stock.prices",
+                       from = "1920-01-01")
+
+#Trade weighted dollar index growth
+dollar_index <- dollar_index %>%
+  tq_transmute(select = adjusted,         
+               mutate_fun = periodReturn,   
+               period = "monthly",      
+               col_rename = "Index_growth")
+```
+
+# Other economic indicators
+* Total public debt
+* Total public debt to GDP
+* Excess reserves
+
+```{r}
+
+# Federal Debt: Total Public Debt
+total_public_debt <- Quandl("FRED/GFDEBTN", 
+                            start_date=SFDate, 
+                            end_date=EFDate ,
+                            collapse = "monthly")
+
+# Federal Debt: Total Public Debt as Percent of Gross Domestic Product
+total_public_debt_to_GDP <- Quandl("FRED/GFDEGDQ188S", 
+                                   start_date=SFDate, 
+                                   end_date=EFDate ,
+                                   collapse = "monthly")
+
+# Excess Reserves of Depository Institutions
+excess_reserves <- Quandl("FRED/EXCSRESNW", 
+                          start_date=SFDate, 
+                          end_date=EFDate ,
+                          collapse = "monthly")
+
+```
+
+
