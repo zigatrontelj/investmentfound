@@ -9,7 +9,6 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 ```{r}
-
 library(anytime)
 library(lubridate)
 library(timechange)
@@ -64,7 +63,7 @@ stockmarket_returns <- stockmarket %>%
   tq_transmute(select = adjusted,         
                mutate_fun = periodReturn,   
                period = "monthly",      
-               col_rename = "SP500_returns") %>% 
+               col_rename = "SP500Returns") %>% 
   rename(Date = date) %>% 
   mutate(Date = floor_date(Date, unit = "month"))
 
@@ -471,7 +470,7 @@ excess_reserves <- Quandl("FRED/EXCSRESNW",
 
 # FINAL DATA FRAME
 ```{r}
-data_all <- merge.data.frame(avg_dur_unem, 
+data_all <- merge.data.frame(avg_dur_unem, #NE DELA
                              avg_weekly_hours_man, 
                              building_permits,
                              comm_ind_loans_all_banks,
@@ -539,8 +538,36 @@ dataAll <- stockmarket_returns %>%
     left_join(outstanding_loans, by='Date') %>% 
     na.omit()
 ```
+
+```{r}
+dataAllPctChange <- dataAll %>% 
+  mutate(SP500Returns_pct_change = (SP500Returns/lag(SP500Returns) - 1) * 100) %>% 
+  mutate(HouseValue_pct_change = (HouseValue/lag(HouseValue) - 1) * 100) %>% 
+  mutate(RetailSales_pct_change = (RetailSales/lag(RetailSales) - 1) * 100) %>% 
+  mutate(BuildingPermits_pct_change = (BuildingPermits/lag(BuildingPermits) - 1) * 100) %>% 
+  mutate(ConsumerSentiment_pct_change = (ConsumerSentiment/lag(ConsumerSentiment) - 1) * 100) %>% 
+  mutate(AvgWeeklyHoursMan_pct_change = (AvgWeeklyHoursMan/lag(AvgWeeklyHoursMan) - 1) * 100) %>% 
+  mutate(NewOrdersMan_pct_change = (NewOrdersMan/lag(NewOrdersMan) - 1) * 100) %>% 
+  mutate(ThreemonthsIR_pct_change = (ThreemonthsIR/lag(ThreemonthsIR) - 1) * 100) %>% 
+  mutate(FiveyearsIR_pct_change = (FiveyearsIR/lag(FiveyearsIR) - 1) * 100) %>% 
+  mutate(TenyearsIR_pct_change = (TenyearsIR/lag(TenyearsIR) - 1) * 100) %>% 
+  mutate(ThirtyyearsIR_pct_change = (ThirtyyearsIR/lag(ThirtyyearsIR) - 1) * 100) %>% 
+  mutate(IndProdInd_pct_change = (IndProdInd/lag(IndProdInd) - 1) * 100) %>% 
+  mutate(DispPersIncome_pct_change = (DispPersIncome/lag(DispPersIncome) - 1) * 100) %>% 
+  mutate(ManTradeSales_pct_change = (ManTradeSales/lag(ManTradeSales) - 1) * 100) %>% 
+  mutate(TotalInvToSales_pct_change = (TotalInvToSales/lag(TotalInvToSales) - 1) * 100) %>% 
+  mutate(AvgDurUnem_pct_change = (AvgDurUnem/lag(AvgDurUnem) - 1) * 100) %>% 
+  mutate(YOYCoreCPI_pct_change = (YOYCoreCPI/lag(YOYCoreCPI) - 1) * 100) %>% 
+  mutate(PrimeLendRate_pct_change = (PrimeLendRate/lag(PrimeLendRate) - 1) * 100) %>% 
+  mutate(CommNndLoansAllBanks_pct_change = (CommNndLoansAllBanks/lag(CommNndLoansAllBanks) - 1) * 100) %>% 
+  mutate(OutstandingLoans_pct_change = (OutstandingLoans/lag(OutstandingLoans) - 1) * 100) %>% 
+  mutate(CommNndLoansAllBanks_pct_change = (CommNndLoansAllBanks/lag(CommNndLoansAllBanks) - 1) * 100) %>% 
+  mutate(CommNndLoansAllBanks_pct_change = (CommNndLoansAllBanks/lag(CommNndLoansAllBanks) - 1) * 100)
+```
+
 ```{r}
   write_csv(dataAll, "mergedData.csv")
+  write_csv(dataAllPctChange, "mergedDataPctChange.csv")
 ```
 
 

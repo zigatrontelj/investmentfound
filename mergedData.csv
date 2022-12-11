@@ -1,4 +1,4 @@
-Date,SP500_returns,HouseValue,RetailSales,BuildingPermits,ConsumerSentiment,AvgWeeklyHoursMan,NewOrdersMan,ThreemonthsIR,FiveyearsIR,TenyearsIR,ThirtyyearsIR,IndProdInd,DispPersIncome,ManTradeSales,TotalInvToSales,AvgDurUnem,YOYCoreCPI,PrimeLendRate,CommNndLoansAllBanks,OutstandingLoans
+Date,SP500Returns,HouseValue,RetailSales,BuildingPermits,ConsumerSentiment,AvgWeeklyHoursMan,NewOrdersMan,ThreemonthsIR,FiveyearsIR,TenyearsIR,ThirtyyearsIR,IndProdInd,DispPersIncome,ManTradeSales,TotalInvToSales,AvgDurUnem,YOYCoreCPI,PrimeLendRate,CommNndLoansAllBanks,OutstandingLoans
 2006-03-01,0.011095810459249567,209368,320869,2118,88.9,39.8,430457,4.52,4.82,4.86,4.9,98.5915,11195.7,1285689,1.26,17.1,0.020989505247376306,7.75,1072.8866,5364.8572
 2006-04-01,0.012155652737941391,210541,322561,1998,87.4,39.8,418625,4.65,4.92,5.07,5.17,98.9042,11190.3,1273540,1.27,16.7,0.022977022977023198,7.75,1090.6462,5419.0718
 2006-05-01,-0.030916916141150885,211621,321794,1905,79.1,40,423472,4.74,5.04,5.12,5.21,98.8999,11182.7,1284007,1.27,17.1,0.0244389027431422,8,1105.7727,5479.8736
