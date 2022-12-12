@@ -49,3 +49,22 @@ BusinessCyclen <- BusinessCycle %>%
 #Comparison of business cycle indicators obtained with four different methods: the Hodrick–Prescott (HP) filter, the Baxter–King (BK) filter, a structural time series (STS) model, and our method, the multivariate approach with a band-pass filter (MBP). All cycles are given at quarterly frequency. NBER recession dates are represented by the vertical bands
 
 ```
+```{r}
+library(bea.R)
+
+beaKey <- "F7BBC785-47FD-4482-8C1B-41A47FB4A780"
+
+beaSpecs <- list(
+	'UserID' = beaKey ,
+	'Method' = 'GetData',
+	'datasetname' = 'NIPA',
+	'TableName' = 'T20305',
+	'Frequency' = 'Q',
+	'Year' = 'X',
+	'ResultFormat' = 'json'
+);
+
+beaLong <- beaGet(beaSpecs, asWide = FALSE)
+
+```
+
