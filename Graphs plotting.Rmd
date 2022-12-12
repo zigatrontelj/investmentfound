@@ -96,7 +96,6 @@ SP500_Div_Yield <- Quandl('MULTPL/SP500_DIV_YIELD_MONTH',
   mutate(Date = floor_date(Date, unit = "month"))
 
 ## Plotting Dividends and Dividend yields
-
 SP500_Div %>%
   left_join(SP500_Div_Yield, by='Date')%>% 
   ggplot(aes(x = Date, y = Value.x)) +
@@ -222,7 +221,34 @@ thirtyyears_IR <- Quandl("FRED/DGS30", start_date=SFDate, end_date=EFDate, colla
   rename(ThirtyyearsIR = Value) %>% 
   mutate(Date = floor_date(Date, unit = "month"))
 
+## Plotting interest rates
+threemonths_IR %>%
+  left_join(fiveyears_IR, by='Date')%>% 
+  left_join(tenyears_IR, by='Date')%>% 
+  left_join(thirtyyears_IR, by='Date')%>% 
+  ggplot(aes(x = Date, y = ThreemonthsIR)) +
+  geom_line(color = 'black') + 
+  geom_line(aes(y = FiveyearsIR, color = 'dodgerblue1')) + 
+  geom_line(aes(y = TenyearsIR, color = 'red')) +
+  geom_line(aes(y = ThirtyyearsIR, color = 'yellow')) +
+  scale_y_continuous('Interest rates') +
+  scale_x_date(name = 'Dates') +
+  ggtitle('Historical Interest rates for US bonds')
+
 ## Interest spreads
+
+threemonths_IR %>%
+  left_join(fiveyears_IR, by='Date')%>% 
+  left_join(tenyears_IR, by='Date')%>% 
+  left_join(thirtyyears_IR, by='Date')%>% 
+  ggplot(aes(x = Date, y = ThreemonthsIR)) +
+  geom_line(color = 'black') + 
+  geom_line(aes(y = FiveyearsIR - ThreemonthsIR, color = 'dodgerblue1')) + 
+  geom_line(aes(y = TenyearsIR - ThreemonthsIR, color = 'red')) +
+  geom_line(aes(y = ThirtyyearsIR - ThreemonthsIR, color = 'yellow')) +
+  scale_y_continuous('Interest rates') +
+  scale_x_date(name = 'Dates') +
+  ggtitle('Historical Interest rates for US bonds')
 
 # Five years three months spread
 #Spread5.3 <- DGS5 - threemonths ##
