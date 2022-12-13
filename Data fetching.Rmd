@@ -103,12 +103,12 @@ house_values <- Quandl.datatable("ZILLOW/DATA", indicator_id="ZALL", region_id="
 
 ```
 
-## All-Transactions House Price Index for the United States NOT FINISHED, NEED TO ADD INSTEAD OF HOUSE PRICES
+## All-Transactions House Price Index for the United States NOT FINISHED, NEED TO ADD INSTEAD OF HOUSE PRICES AND INTERPOLATE
 ```{r}
 
 # FRED All-Transactions House Price Index for the United States 
-retail_sales <- Quandl("FRED/USSTHPI", start_date=SDate,end_date=EDate, collapse = "monthly") %>% 
-  rename(RetailSales = Value) %>% 
+house_price_index <- Quandl("FRED/USSTHPI", start_date=SDate,end_date=EDate, collapse = "monthly") %>% 
+  rename(HousePriceIndex = Value) %>% 
   mutate(Date = floor_date(Date, unit = "month"))
 ```
 
@@ -552,7 +552,7 @@ data_all <- merge.data.frame(avg_dur_unem, #NE DELA
 ```{r}
 #join the three data frames
 dataAll <- stockmarket_returns %>%
-    left_join(house_values, by='Date') %>%
+    left_join(house_price_index, by='Date') %>%
     left_join(retail_trade, by='Date') %>% 
     left_join(building_permits, by='Date') %>% 
     left_join(consumer_sentiment, by='Date') %>% 
@@ -571,14 +571,20 @@ dataAll <- stockmarket_returns %>%
     left_join(prime_lend_rate, by='Date') %>% 
     #left_join(consumer_debt_to_income, by='Date') %>% 
     left_join(comm_ind_loans_all_banks, by='Date') %>% 
-    left_join(outstanding_loans, by='Date') %>% 
-    na.omit()
+    left_join(outstanding_loans, by='Date')
 ```
+
+```{r}
+dataAllInterpolated <- dataAll %>% 
+  mutate(HousePriceIndex = na.spline(HousePriceIndex))%>% 
+  na.omit()
+```
+
 
 ```{r}
 dataAllPctChange <- dataAll %>% 
   mutate(SP500Returns_pct_change = (SP500Returns/lag(SP500Returns) - 1)) %>% 
-  mutate(HouseValue_pct_change = (HouseValue/lag(HouseValue) - 1)) %>% 
+  mutate(HousePriceIndex_pct_change = (HousePriceIndex/lag(HousePriceIndex) - 1)) %>% 
   mutate(RetailTrade_pct_change = (RetailTrade/lag(RetailTrade) - 1)) %>% 
   mutate(BuildingPermits_pct_change = (BuildingPermits/lag(BuildingPermits) - 1)) %>% 
   mutate(ConsumerSentiment_pct_change = (ConsumerSentiment/lag(ConsumerSentiment) - 1)) %>% 
