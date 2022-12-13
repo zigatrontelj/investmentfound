@@ -64,8 +64,8 @@ stockmarket <- tq_get("^GSPC",
 ggplot(data = stockmarket, aes(date, adjusted)) + 
   geom_line() +
   scale_x_date(name = "Year", date_minor_breaks = "10 year") + 
-  scale_y_continuous(name = "S&P 500 Adjusted ($)") +
-  ggtitle('Historical value of the S&P 500 index') 
+  scale_y_continuous(name = "S&P 500 Adjusted", labels = scales::label_dollar()) +
+  ggtitle('Historical value of the S&P 500 index')
 
 # S&P500 Returns
 stockmarket_returns <- stockmarket %>%
@@ -101,7 +101,7 @@ SP500_Div %>%
   ggplot(aes(x = Date, y = Value.x)) +
   geom_line(color = 'black') + 
   geom_line(aes(y = Value.y*5), color = 'dodgerblue1') + 
-  scale_y_continuous('Dividends', sec.axis = sec_axis(~./5, name="Dividend Yield")) +
+  scale_y_continuous('Dividends',labels = scales::label_dollar(), sec.axis = sec_axis(~./500, name="Dividend Yield", labels = scales::percent)) +
   scale_x_date(name = 'Dates') +
   theme(axis.title.y.left=element_text(color="black"),
         axis.text.y.left=element_text(color="black"), 
@@ -136,13 +136,13 @@ SP500_Earnings %>%
   ggtitle('Historical Earnings and PE ratios of the S&P 500 index')
 
 
-## Plotting Earnings and Dividends of the S&P 500 Index
+## Plotting Earnings and Payout ratios of the S&P 500 Index
 SP500_Earnings %>%
   left_join(SP500_Div, by='Date')%>% 
   ggplot(aes(x = Date, y = Value.x)) +
   geom_line(color = 'black') + 
   geom_line(aes(y = (Value.y/Value.x)*80), color = 'dodgerblue1') + 
-  scale_y_continuous('Earnings', sec.axis = sec_axis(~./80, name="Payout Ratio")) +
+  scale_y_continuous('Earnings', labels = scales::label_dollar(), sec.axis = sec_axis(~./80, name="Payout Ratio", labels = scales::percent)) +
   scale_x_date(name = 'Dates') +
   theme(axis.title.y.left=element_text(color="black"),
         axis.text.y.left=element_text(color="black"), 
@@ -226,29 +226,29 @@ threemonths_IR %>%
   left_join(fiveyears_IR, by='Date')%>% 
   left_join(tenyears_IR, by='Date')%>% 
   left_join(thirtyyears_IR, by='Date')%>% 
-  ggplot(aes(x = Date, y = ThreemonthsIR)) +
+  ggplot(aes(x = Date, y = ThreemonthsIR/100)) +
   geom_line(color = 'black') + 
-  geom_line(aes(y = FiveyearsIR, color = 'dodgerblue1')) + 
-  geom_line(aes(y = TenyearsIR, color = 'red')) +
-  geom_line(aes(y = ThirtyyearsIR, color = 'yellow')) +
-  scale_y_continuous('Interest rates') +
+  geom_line(aes(y = FiveyearsIR/100, color = 'dodgerblue1')) + 
+  geom_line(aes(y = TenyearsIR/100, color = 'red')) +
+  geom_line(aes(y = ThirtyyearsIR/100, color = 'yellow')) +
+  scale_y_continuous('Interest rates', labels = scales::percent) +
   scale_x_date(name = 'Dates') +
   ggtitle('Historical Interest rates for US bonds')
 
-## Interest spreads
+## Plotting interest spreads
 
 threemonths_IR %>%
   left_join(fiveyears_IR, by='Date')%>% 
   left_join(tenyears_IR, by='Date')%>% 
   left_join(thirtyyears_IR, by='Date')%>% 
-  ggplot(aes(x = Date, y = ThreemonthsIR)) +
+  ggplot(aes(x = Date, y = FiveyearsIR - ThreemonthsIR)) +
   geom_line(color = 'black') + 
   geom_line(aes(y = FiveyearsIR - ThreemonthsIR, color = 'dodgerblue1')) + 
   geom_line(aes(y = TenyearsIR - ThreemonthsIR, color = 'red')) +
   geom_line(aes(y = ThirtyyearsIR - ThreemonthsIR, color = 'yellow')) +
-  scale_y_continuous('Interest rates') +
+  scale_y_continuous('Interest rates spreads') +
   scale_x_date(name = 'Dates') +
-  ggtitle('Historical Interest rates for US bonds')
+  ggtitle('Historical Interest rate spreads for US bonds')
 
 # Five years three months spread
 #Spread5.3 <- DGS5 - threemonths ##
@@ -309,6 +309,14 @@ new_orders_man <- Quandl("FRED/AMTMNO", start_date=SDate, end_date=EDate, collap
 future_new_orders <- Quandl("FRED/NOFDFSA066MSFRBPHI", start_date=SDate, end_date=EDate, collapse = "monthly") %>% 
   rename(FutureNewOrders = Value) %>% 
   mutate(Date = floor_date(Date, unit = "month"))
+
+## Plotting future new orders
+future_new_orders %>% 
+  ggplot(aes(Date, FutureNewOrders)) +
+  geom_line() +
+  scale_x_date(name = "Year", date_minor_breaks = "10 year") + 
+  scale_y_continuous(name = "Future new orders") +
+  ggtitle('Historical future new orders') 
 ```
 
 # Coincident Indicators
@@ -333,7 +341,9 @@ ind_prod_ind <- Quandl("FRED/INDPRO", start_date=SDate, end_date=EDate, collapse
 med_house_income <- Quandl("FRED/MEHOINUSA672N", 
                            start_date=SFDate, 
                            end_date=EFDate ,
-                           collapse = "monthly")
+                           collapse = "monthly") %>%    
+  rename(DispPersIncome = Value) %>% 
+  mutate(Date = floor_date(Date, unit = "month"))
 
 # Real disposable personal income
 disp_pers_income <- Quandl("FRED/DSPIC96", start_date=SFDate, end_date=EFDate, collapse = "monthly") %>% 
@@ -344,24 +354,33 @@ disp_pers_income <- Quandl("FRED/DSPIC96", start_date=SFDate, end_date=EFDate, c
 pers_cons_exp <- Quandl("FRED/PCE", 
                         start_date=SFDate, 
                         end_date=EFDate ,
-                        collapse = "monthly")
+                        collapse = "monthly")%>%    
+  rename(DispPersIncome = Value) %>% 
+  mutate(Date = floor_date(Date, unit = "month"))
 
 # Personal consumption expenditures on durable goods
 pers_cons_exp_durable <- Quandl("FRED/PCEDG", 
                                 start_date=SFDate,
                                 end_date=EFDate,
-                                collapse = "monthly")
+                                collapse = "monthly")%>%    
+  rename(DispPersIncome = Value) %>% 
+  mutate(Date = floor_date(Date, unit = "month"))
+
 # Personal savings rate
 pers_save_rate <- Quandl("FRED/PSAVERT", 
                          start_date=SFDate, 
                          end_date=EFDate,
-                         collapse = "monthly")
+                         collapse = "monthly")%>%    
+  rename(DispPersIncome = Value) %>% 
+  mutate(Date = floor_date(Date, unit = "month"))
 
 # Retail and food sales
 ret_food_sales <- Quandl("FRED/RRSFS",
                                  start_date=SFDate, 
                                  end_date=EFDate ,
-                                 collapse = "monthly")
+                                 collapse = "monthly")%>%    
+  rename(DispPersIncome = Value) %>% 
+  mutate(Date = floor_date(Date, unit = "month"))
 
 
 ```
