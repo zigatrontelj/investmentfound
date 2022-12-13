@@ -25,7 +25,6 @@ library(quantmod)
 library(TTR)
 library(tidyquant)
 library(timetk)
-
 ```
 
 ```{r}
@@ -164,7 +163,7 @@ ind_prod_ind <- Quandl("FRED/INDPRO", start_date=SDate, end_date=EDate, collapse
 
 ```
 
-##
+## Real disposable personal income
 ```{r}
 # Real disposable personal income
 disp_pers_income <- Quandl("FRED/DSPIC96", start_date=SFDate, end_date=EFDate, collapse = "monthly") %>% 
@@ -194,7 +193,7 @@ man_trade_sales <- Quandl("FRED/CMRMTSPL", start_date=SFDate, end_date=EFDate ,c
 * Outstanding loans
 * Dollar index
 
-## Real GDP growth
+## Real GDP growth TODO: needs to be interpolated and added to final df
 ```{r}
 
 # Real GDP
@@ -294,6 +293,9 @@ total_inv_to_sales <- Quandl("FRED/ISRATIO", start_date=SFDate, end_date=EFDate,
   rename(TotalInvToSales = Value) %>% 
   mutate(Date = floor_date(Date, unit = "month"))
 
+
+#TODO add csv invtosales
+inv_to_sales <- read_csv("~/Desktop/masterThesis/investmentfound/invtosales.csv", col_types = cols(Date = col_date(format = "%Y-%m-%d")))
 ```
 
 ## Inflation
@@ -364,7 +366,7 @@ outstanding_loans <- Quandl("FRED/TOTLL", start_date=SFDate, end_date=EFDate, co
 ## Dollar index
 ```{r}
 
-#Trade weighted dollar index
+#Trade weighted dollar index TODO change to first of the month
 dollar_index <- tq_get("DX-Y.NYB",
                        get = "stock.prices",
                        from = "1920-01-01")
@@ -377,77 +379,6 @@ dollar_index <- dollar_index %>%
                col_rename = "Index_growth")
 ```
 
-# Other economic indicators
-* Total public debt
-* Total public debt to GDP
-* Excess reserves
-
-```{r}
-
-# Federal Debt: Total Public Debt
-total_public_debt <- Quandl("FRED/GFDEBTN", 
-                            start_date=SFDate, 
-                            end_date=EFDate ,
-                            collapse = "monthly")
-
-# Federal Debt: Total Public Debt as Percent of Gross Domestic Product
-total_public_debt_to_GDP <- Quandl("FRED/GFDEGDQ188S", 
-                                   start_date=SFDate, 
-                                   end_date=EFDate ,
-                                   collapse = "monthly")
-
-# Excess Reserves of Depository Institutions
-excess_reserves <- Quandl("FRED/EXCSRESNW", 
-                          start_date=SFDate, 
-                          end_date=EFDate ,
-                          collapse = "monthly")
-
-```
-
-# FINAL DATA FRAME
-```{r}
-data_all <- merge.data.frame(avg_dur_unem, #NE DELA
-                             avg_weekly_hours_man, 
-                             building_permits,
-                             comm_ind_loans_all_banks,
-                             consumer_debt_to_income,
-                             consumer_sentiment,
-                             core_CPI,
-                             disp_pers_income,
-                             dollar_index,
-                             em_ratio,
-                             fiveyears_IR,
-                             GDP_real_growth,
-                             house_values,
-                             ind_prod_ind,
-                             initial_claims,
-                             man_trade_sales,
-                             manufacturing_inv_to_sales,
-                             med_house_income,
-                             new_orders_man,
-                             outstanding_loans,
-                             pers_cons_exp,
-                             pers_save_rate,
-                             prime_lend_rate,
-                             ret_food_sales,
-                             retail_inv_to_sales,
-                             retail_sales,
-                             SP500_Div,
-                             SP500_Div_Yield,
-                             SP500_Earnings,
-                             SP500_PE,
-                             stockmarket_returns,
-                             tenyears_IR,
-                             thirtyyears_IR,
-                             threemonths_IR,
-                             tot_man_employed,
-                             tot_non_farm_employed,
-                             total_inv_to_sales,
-                             total_public_debt_to_GDP,
-                             un_rate,
-                             unemployment,
-                             by = "Date")
-```
 
 ```{r}
 #join the three data frames
@@ -465,7 +396,7 @@ dataAll <- stockmarket_returns %>%
     left_join(ind_prod_ind, by='Date') %>% 
     left_join(disp_pers_income, by='Date') %>% 
     left_join(man_trade_sales, by='Date') %>% 
-    left_join(total_inv_to_sales, by='Date') %>% 
+    left_join(inv_to_sales, by='Date') %>% 
     left_join(avg_dur_unem, by='Date') %>% 
     left_join(YOYCoreCPI, by='Date') %>% 
     left_join(prime_lend_rate, by='Date') %>% 
@@ -476,13 +407,12 @@ dataAll <- stockmarket_returns %>%
 
 ```{r}
 dataAllInterpolated <- dataAll %>% 
-  mutate(HousePriceIndex = na.spline(HousePriceIndex))%>% 
-  na.omit()
+  mutate(HousePriceIndex = na.spline(HousePriceIndex))
 ```
 
 
 ```{r}
-dataAllPctChange <- dataAll %>% 
+dataAllPctChange <- dataAllInterpolated %>% 
   mutate(SP500Returns_pct_change = (SP500Returns/lag(SP500Returns) - 1)) %>% 
   mutate(HousePriceIndex_pct_change = (HousePriceIndex/lag(HousePriceIndex) - 1)) %>% 
   mutate(RetailTrade_pct_change = (RetailTrade/lag(RetailTrade) - 1)) %>% 
@@ -497,7 +427,7 @@ dataAllPctChange <- dataAll %>%
   mutate(IndProdInd_pct_change = (IndProdInd/lag(IndProdInd) - 1)) %>% 
   mutate(DispPersIncome_pct_change = (DispPersIncome/lag(DispPersIncome) - 1)) %>% 
   mutate(ManTradeSales_pct_change = (ManTradeSales/lag(ManTradeSales) - 1)) %>% 
-  mutate(TotalInvToSales_pct_change = (TotalInvToSales/lag(TotalInvToSales) - 1)) %>% 
+  mutate(InvToSales_pct_change = (InvToSales/lag(InvToSales) - 1)) %>% 
   mutate(AvgDurUnem_pct_change = (AvgDurUnem/lag(AvgDurUnem) - 1)) %>% 
   mutate(YOYCoreCPI_pct_change = (YOYCoreCPI/lag(YOYCoreCPI) - 1)) %>% 
   mutate(PrimeLendRate_pct_change = (PrimeLendRate/lag(PrimeLendRate) - 1)) %>% 
