@@ -34,11 +34,8 @@ EDate <- as.Date(Sys.Date())
 SDate <- as.Date(EDate-365*100)
 YoY <- as.Date(EDate-365)
 
-EDate
 EFDate <- as.Date(Sys.Date())
 SFDate <- EFDate - 365*100
-SFDate
-EFDate
 ```
 
 #Leading indicators are
@@ -66,41 +63,6 @@ stockmarket_returns <- stockmarket %>%
                col_rename = "SP500Returns") %>% 
   rename(Date = date) %>% 
   mutate(Date = floor_date(Date, unit = "month"))
-
-# S&P500 Dividends
-SP500_Div <- Quandl('MULTPL/SP500_DIV_MONTH', 
-              start_date=SDate, 
-              end_date=EDate)
-
-# S&P500 Dividend Yield
-SP500_Div_Yield <- Quandl('MULTPL/SP500_DIV_YIELD_MONTH', 
-                   start_date=SDate, 
-                   end_date=EDate)
-
-# S&P500 PE Ratios
-SP500_PE <- Quandl('MULTPL/SP500_PE_RATIO_MONTH', 
-             start_date=SDate, 
-             end_date=EDate)
-
-# S&P500 Earnings
-SP500_Earnings <- Quandl('MULTPL/SP500_EARNINGS_MONTH', 
-                        start_date=SDate, 
-                        end_date=EDate)
-
-#PayoutRatio <- Div$Value/SP500Earnings$Value ##
-
-
-```
-
-## House prices
-```{r}
-
-# Zillow home values index
-house_values <- Quandl.datatable("ZILLOW/DATA", indicator_id="ZALL", region_id="102001") %>% 
-  rename(Date = date, HouseValue = value) %>% 
-  select(Date, HouseValue) %>% 
-  mutate(Date = floor_date(Date, unit = "month"))
-
 ```
 
 ## All-Transactions House Price Index for the United States NOT FINISHED, NEED TO ADD INSTEAD OF HOUSE PRICES AND INTERPOLATE
@@ -109,15 +71,6 @@ house_values <- Quandl.datatable("ZILLOW/DATA", indicator_id="ZALL", region_id="
 # FRED All-Transactions House Price Index for the United States 
 house_price_index <- Quandl("FRED/USSTHPI", start_date=SDate,end_date=EDate, collapse = "monthly") %>% 
   rename(HousePriceIndex = Value) %>% 
-  mutate(Date = floor_date(Date, unit = "month"))
-```
-
-## Retail Sales
-```{r}
-
-# FRED retail sales
-retail_sales <- Quandl("FRED/RSXFS", start_date=SDate,end_date=EDate, collapse = "monthly") %>% 
-  rename(RetailSales = Value) %>% 
   mutate(Date = floor_date(Date, unit = "month"))
 ```
 
@@ -167,7 +120,6 @@ thirtyyears_IR <- Quandl("FRED/DGS30", start_date=SFDate, end_date=EFDate, colla
 building_permits <- Quandl("FRED/PERMIT", start_date=SDate, end_date=EDate, collapse = "monthly") %>% 
   rename(BuildingPermits = Value) %>% 
   mutate(Date = floor_date(Date, unit = "month"))
-
 ```
 
 ## Consumer sentiment
@@ -177,17 +129,6 @@ building_permits <- Quandl("FRED/PERMIT", start_date=SDate, end_date=EDate, coll
 consumer_sentiment <- Quandl("UMICH/SOC1",start_date=SDate, end_date=EDate, collapse = "monthly") %>% 
   rename(ConsumerSentiment = Index) %>% 
   mutate(Date = floor_date(Date, unit = "month"))
-
-```
-
-## Average weekly hours of manufacturing
-```{r}
-
-# FRED average weekly hours of manufacturing
-avg_weekly_hours_man <- Quandl("FRED/AWHAEMAN", start_date=SDate, end_date=EDate, collapse = "monthly") %>% 
-  rename(AvgWeeklyHoursMan = Value) %>% 
-  mutate(Date = floor_date(Date, unit = "month"))
-
 ```
 
 ## Average Weekly Hours of Production and Nonsupervisory Employees, Manufacturing
@@ -196,15 +137,6 @@ avg_weekly_hours_man <- Quandl("FRED/AWHAEMAN", start_date=SDate, end_date=EDate
 # FRED average weekly hours of Production and Nonsupervisory Employees, Manufacturing
 avg_weekly_hours_prod <- Quandl("FRED/AWHMAN", start_date=SDate, end_date=EDate, collapse = "monthly") %>% 
   rename(AvgWeeklyHoursProd = Value) %>% 
-  mutate(Date = floor_date(Date, unit = "month"))
-```
-
-## Manufacturers new orders
-```{r}
-
-# FRED manufacturers new orders.
-new_orders_man <- Quandl("FRED/AMTMNO", start_date=SDate, end_date=EDate, collapse = "monthly") %>% 
-  rename(NewOrdersMan = Value) %>% 
   mutate(Date = floor_date(Date, unit = "month"))
 ```
 
@@ -234,42 +166,10 @@ ind_prod_ind <- Quandl("FRED/INDPRO", start_date=SDate, end_date=EDate, collapse
 
 ##
 ```{r}
-
-# Real median household income
-med_house_income <- Quandl("FRED/MEHOINUSA672N", 
-                           start_date=SFDate, 
-                           end_date=EFDate ,
-                           collapse = "monthly")
-
 # Real disposable personal income
 disp_pers_income <- Quandl("FRED/DSPIC96", start_date=SFDate, end_date=EFDate, collapse = "monthly") %>% 
   rename(DispPersIncome = Value) %>% 
   mutate(Date = floor_date(Date, unit = "month"))
-
-# Personal consumption expenditures
-pers_cons_exp <- Quandl("FRED/PCE", 
-                        start_date=SFDate, 
-                        end_date=EFDate ,
-                        collapse = "monthly")
-
-# Personal consumption expenditures on durable goods
-pers_cons_exp_durable <- Quandl("FRED/PCEDG", 
-                                start_date=SFDate,
-                                end_date=EFDate,
-                                collapse = "monthly")
-# Personal savings rate
-pers_save_rate <- Quandl("FRED/PSAVERT", 
-                         start_date=SFDate, 
-                         end_date=EFDate,
-                         collapse = "monthly")
-
-# Retail and food sales
-ret_food_sales <- Quandl("FRED/RRSFS",
-                                 start_date=SFDate, 
-                                 end_date=EFDate ,
-                                 collapse = "monthly")
-
-
 ```
 
 ## Real manufacturing and trade sales
