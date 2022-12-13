@@ -429,7 +429,7 @@ dataAllPctChange <- dataAllInterpolated %>%
   mutate(ManTradeSales_pct_change = (ManTradeSales/lag(ManTradeSales) - 1)) %>% 
   mutate(InvToSales_pct_change = (InvToSales/lag(InvToSales) - 1)) %>% 
   mutate(AvgDurUnem_pct_change = (AvgDurUnem/lag(AvgDurUnem) - 1)) %>% 
-  mutate(YOYCoreCPI_pct_change = (YOYCoreCPI/lag(YOYCoreCPI) - 1)) %>% 
+  mutate(YOYCoreCPI_pct_change = (YOYCoreCPI/lag(YOYCoreCPI) - 1)) %>% # TODO remove, because percent of percentx
   mutate(PrimeLendRate_pct_change = (PrimeLendRate/lag(PrimeLendRate) - 1)) %>% 
   mutate(CommNndLoansAllBanks_pct_change = (CommNndLoansAllBanks/lag(CommNndLoansAllBanks) - 1)) %>% 
   mutate(OutstandingLoans_pct_change = (OutstandingLoans/lag(OutstandingLoans) - 1)) %>% 
