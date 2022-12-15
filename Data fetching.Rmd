@@ -62,6 +62,8 @@ stockmarket_returns <- stockmarket %>%
                col_rename = "SP500Returns") %>% 
   rename(Date = date) %>% 
   mutate(Date = floor_date(Date, unit = "month"))
+
+tail(stockmarket)
 ```
 
 ## All-Transactions House Price Index for the United States
@@ -73,7 +75,7 @@ house_price_index <- Quandl("FRED/USSTHPI", start_date=SDate,end_date=EDate, col
   mutate(Date = floor_date(Date, unit = "month"))
 ```
 
-## All Employees, Retail Trade
+## All Employees, Retail Trade ##TODO WRONG INDICATOR
 ```{r}
 
 # FRED All Employees, Retail Trade
@@ -114,7 +116,7 @@ IR_Spread <- thirtyyears_IR %>%
   select(-ThirtyyearsIR, -ThreemonthsIR)
 ```
 
-## Building permits
+## Building permits ##TODO check if we can get more recent data
 ```{r}
 
 # FRED Building Permits
@@ -132,20 +134,28 @@ consumer_sentiment <- Quandl("UMICH/SOC1",start_date=SDate, end_date=EDate, coll
   mutate(Date = floor_date(Date, unit = "month"))
 ```
 
-## Average Weekly Hours of Production and Nonsupervisory Employees, Manufacturing
+## Average Weekly Hours of Production and Nonsupervisory Employees, Manufacturing ##TODO check more frequent data
 ```{r}
 
 # FRED average weekly hours of Production and Nonsupervisory Employees, Manufacturing
-avg_weekly_hours_prod <- Quandl("FRED/AWHMAN", start_date=SDate, end_date=EDate, collapse = "monthly") %>% 
+avg_weekly_hours_prod <- tq_get("AWHMAN", 
+                            from ="1920-01-01", 
+                            get = "economic.data")
+
+  Quandl("FRED/AWHMAN", start_date=SDate, end_date=EDate, collapse = "monthly") %>% 
   rename(AvgWeeklyHoursProd = Value) %>% 
   mutate(Date = floor_date(Date, unit = "month"))
 ```
 
-## Future New Orders; Diffusion Index for Federal Reserve District 3: Philadelphia
+## Future New Orders; Diffusion Index for Federal Reserve District 3: Philadelphia ##TODO check more frequent data
 ```{r}
 
 # FRED Future New Orders; Diffusion Index for Federal Reserve District 3: Philadelphia
-future_new_orders <- Quandl("FRED/NOFDFSA066MSFRBPHI", start_date=SDate, end_date=EDate, collapse = "monthly") %>% 
+future_new_orders <- tq_get("NOFDFSA066MSFRBPHI", 
+                            from ="1920-01-01", 
+                            get = "economic.data")
+  
+  Quandl("FRED/NOFDFSA066MSFRBPHI", start_date=SDate, end_date=EDate, collapse = "monthly") %>% 
   rename(FutureNewOrders = Value) %>% 
   mutate(Date = floor_date(Date, unit = "month"))
 ```
@@ -155,11 +165,15 @@ future_new_orders <- Quandl("FRED/NOFDFSA066MSFRBPHI", start_date=SDate, end_dat
 * Real Personal incomes
 * Manufacturing and trade sales
 
-## Industrial production
+## Industrial production ##TODO check more frequent data
 ```{r}
 
 # Industrial Production Index
-ind_prod_ind <- Quandl("FRED/INDPRO", start_date=SDate, end_date=EDate, collapse = "monthly") %>% 
+ind_prod_ind <- tq_get("INDPRO", 
+                            from ="1920-01-01", 
+                            get = "economic.data")
+  
+  Quandl("FRED/INDPRO", start_date=SDate, end_date=EDate, collapse = "monthly") %>% 
   rename(IndProdInd = Value) %>% 
   mutate(Date = floor_date(Date, unit = "month"))
 
@@ -168,7 +182,11 @@ ind_prod_ind <- Quandl("FRED/INDPRO", start_date=SDate, end_date=EDate, collapse
 ## Real disposable personal income
 ```{r}
 # Real disposable personal income
-disp_pers_income <- Quandl("FRED/DSPIC96", start_date=SFDate, end_date=EFDate, collapse = "monthly") %>% 
+disp_pers_income <- tq_get("DSPIC96", 
+                            from ="1920-01-01", 
+                            get = "economic.data")
+  
+  Quandl("FRED/DSPIC96", start_date=SFDate, end_date=EFDate, collapse = "monthly") %>% 
   rename(DispPersIncome = Value) %>% 
   mutate(Date = floor_date(Date, unit = "month"))
 ```
