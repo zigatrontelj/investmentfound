@@ -64,7 +64,7 @@ stockmarket_returns <- stockmarket %>%
                col_rename = "SP500Returns")
 ```
 
-## All-Transactions House Price Index for the United States ##TODO interpolate
+## All-Transactions House Price Index for the United States
 ```{r}
 
 # FRED All-Transactions House Price Index for the United States 
@@ -131,7 +131,7 @@ IR_Spread <- thirtyyears_IR %>%
   select(-ThirtyyearsIR, -ThreemonthsIR)
 ```
 
-## Building permits ##TODO check if we can get more recent data
+## Building permits
 ```{r}
 
 # FRED Building Permits
@@ -152,7 +152,7 @@ consumer_sentiment <- Quandl("UMICH/SOC1",start_date=SDate, end_date=EDate, coll
   mutate(Date = floor_date(Date, unit = "month"))
 ```
 
-## Average Weekly Hours of Production and Nonsupervisory Employees, Manufacturing ##TODO check more frequent data
+## Average Weekly Hours of Production and Nonsupervisory Employees, Manufacturing
 ```{r}
 
 # FRED average weekly hours of Production and Nonsupervisory Employees, Manufacturing
@@ -164,7 +164,7 @@ avg_weekly_hours_prod <- tq_get("AWHMAN",
   rename(Date = date)
 ```
 
-## Future New Orders; Diffusion Index for Federal Reserve District 3: Philadelphia ##TODO check more frequent data
+## Future New Orders; Diffusion Index for Federal Reserve District 3: Philadelphia
 ```{r}
 
 # FRED Future New Orders; Diffusion Index for Federal Reserve District 3: Philadelphia
@@ -181,7 +181,7 @@ future_new_orders <- tq_get("NOFDFSA066MSFRBPHI",
 * Real Personal incomes
 * Manufacturing and trade sales
 
-## Industrial production ##TODO check more frequent data
+## Industrial production
 ```{r}
 
 # Industrial Production Index
@@ -227,7 +227,7 @@ man_trade_sales <- tq_get("CMRMTSPL",
 * Outstanding loans
 * Dollar index
 
-## Real GDP
+## Real GDP #LAG one to three quarters
 ```{r}
 
 # Real GDP
@@ -239,7 +239,7 @@ GDP_real <- tq_get("GDPC1",
   rename(Date = date)
 ```
 
-## Employment
+## Employment #Lag a few quarters
 ```{r}
 
 # Average duration of unemployment
@@ -276,7 +276,7 @@ core_CPI_YoY <- core_CPI %>%
   select(-CoreCPI)
 ```
 
-## Consumer debt to income ##TODO fix interpolation
+## Consumer debt to income
 ```{r}
 
 # FRED consumer debt to income
@@ -318,11 +318,6 @@ outstanding_loans <- tq_get("TOTLL",
   tq_transmute(select = price, mutate_fun = to.monthly, indexAt = "firstof") %>% 
   rename(OutstandingLoans = price) %>% 
   rename(Date = date)
-  
-  Quandl("FRED/TOTLL", start_date=SFDate, end_date=EFDate, collapse = "monthly") %>% 
-  rename(OutstandingLoans = Value) %>% 
-  mutate(Date = floor_date(Date, unit = "month"))
-
 ```
 
 ## Dollar index
