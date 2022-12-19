@@ -47,39 +47,44 @@ SFDate <- EFDate - 365*100
 * Average weekly hours (manufacturing)
 * Future new orders
 
-## Stock market ##TODO convert to monthly
+## Stock market
 ```{r}
 # S&P500 Prices
 stockmarket <- tq_get("^GSPC",
-                      from ="1920-01-01",
-                      get = "stock.prices")
+                      from = SDate,
+                      get = "stock.prices") %>% 
+  tq_transmute(select = adjusted, mutate_fun = to.monthly, indexAt = "firstof")%>% 
+  rename(Date = date)
 
 # S&P500 Returns
 stockmarket_returns <- stockmarket %>%
   tq_transmute(select = adjusted,         
                mutate_fun = periodReturn,   
                period = "monthly",      
-               col_rename = "SP500Returns") %>% 
-  rename(Date = date) %>% 
-  mutate(Date = floor_date(Date, unit = "month"))
-
-tail(stockmarket)
+               col_rename = "SP500Returns")
 ```
 
-## All-Transactions House Price Index for the United States
+## All-Transactions House Price Index for the United States ##TODO interpolate
 ```{r}
 
 # FRED All-Transactions House Price Index for the United States 
-house_price_index <- Quandl("FRED/USSTHPI", start_date=SDate,end_date=EDate, collapse = "monthly") %>% 
-  rename(HousePriceIndex = Value) %>% 
-  mutate(Date = floor_date(Date, unit = "month"))
+house_price_index <- tq_get("USSTHPI",
+                            from = SDate,
+                            "economic.data") %>% 
+  tq_transmute(select = price, mutate_fun = to.monthly, indexAt = "firstof") %>% 
+  rename(HousePriceIndex = price)%>% 
+  rename(Date = date)
 ```
 
 ## All Employees, Retail Trade ##TODO WRONG INDICATOR
 ```{r}
 
 # FRED All Employees, Retail Trade
-retail_trade <- Quandl("FRED/USTRADE", start_date=SDate,end_date=EDate, collapse = "monthly") %>% 
+retail_trade <- tq_get("",
+                            from = SDate,
+                            "economic.data") 
+  
+  Quandl("FRED/USTRADE", start_date=SDate,end_date=EDate, collapse = "monthly") %>% 
   rename(RetailTrade = Value) %>% 
   mutate(Date = floor_date(Date, unit = "month"))
 
@@ -89,24 +94,36 @@ retail_trade <- Quandl("FRED/USTRADE", start_date=SDate,end_date=EDate, collapse
 ```{r}
 
 # T-Bills
-threemonths_IR <- Quandl("FRED/DTB3", start_date=SDate, end_date=EDate, collapse = "monthly") %>% 
-  rename(ThreemonthsIR = Value) %>% 
-  mutate(Date = floor_date(Date, unit = "month"))
+threemonths_IR <- tq_get("DTB3",
+                         from = SDate,
+                         "economic.data") %>% 
+  tq_transmute(select = price, mutate_fun = to.monthly, indexAt = "firstof") %>% 
+  rename(ThreemonthsIR = price) %>% 
+  rename(Date = date)
 
 # Five-y Bonds
-fiveyears_IR <- Quandl("FRED/DGS5", start_date=SFDate, end_date=EFDate, collapse = "monthly") %>% 
-  rename(FiveyearsIR = Value) %>% 
-  mutate(Date = floor_date(Date, unit = "month"))
+fiveyears_IR <-  tq_get("DGS5",
+                         from = SDate,
+                         "economic.data") %>% 
+  tq_transmute(select = price, mutate_fun = to.monthly, indexAt = "firstof") %>% 
+  rename(FiveyearsIR = price) %>% 
+  rename(Date = date)
 
 # Ten-y Bonds
-tenyears_IR <- Quandl("FRED/DGS10", start_date=SDate, end_date=EDate, collapse = "monthly") %>% 
-   rename(TenyearsIR = Value) %>% 
-  mutate(Date = floor_date(Date, unit = "month"))
+tenyears_IR <-  tq_get("DGS10",
+                         from = SDate,
+                         "economic.data") %>% 
+  tq_transmute(select = price, mutate_fun = to.monthly, indexAt = "firstof") %>% 
+  rename(TenyearsIR = price) %>% 
+  rename(Date = date)
   
 # Thirty-y Bonds
-thirtyyears_IR <- Quandl("FRED/DGS30", start_date=SFDate, end_date=EFDate, collapse = "monthly") %>% 
-  rename(ThirtyyearsIR = Value) %>% 
-  mutate(Date = floor_date(Date, unit = "month"))
+thirtyyears_IR <- tq_get("DGS30",
+                         from = SDate,
+                         "economic.data") %>% 
+  tq_transmute(select = price, mutate_fun = to.monthly, indexAt = "firstof") %>% 
+  rename(ThirtyyearsIR = price) %>% 
+  rename(Date = date)
 
 # 30y - 3m spread
 
@@ -120,9 +137,12 @@ IR_Spread <- thirtyyears_IR %>%
 ```{r}
 
 # FRED Building Permits
-building_permits <- Quandl("FRED/PERMIT", start_date=SDate, end_date=EDate, collapse = "monthly") %>% 
-  rename(BuildingPermits = Value) %>% 
-  mutate(Date = floor_date(Date, unit = "month"))
+building_permits <-  tq_get("PERMIT",
+                         from = SDate,
+                         "economic.data") %>% 
+  tq_transmute(select = price, mutate_fun = to.monthly, indexAt = "firstof") %>% 
+  rename(BuildingPermits = price) %>% 
+  rename(Date = date)
 ```
 
 ## Consumer sentiment
@@ -139,12 +159,11 @@ consumer_sentiment <- Quandl("UMICH/SOC1",start_date=SDate, end_date=EDate, coll
 
 # FRED average weekly hours of Production and Nonsupervisory Employees, Manufacturing
 avg_weekly_hours_prod <- tq_get("AWHMAN", 
-                            from ="1920-01-01", 
-                            get = "economic.data")
-
-  Quandl("FRED/AWHMAN", start_date=SDate, end_date=EDate, collapse = "monthly") %>% 
-  rename(AvgWeeklyHoursProd = Value) %>% 
-  mutate(Date = floor_date(Date, unit = "month"))
+                            from =SDate, 
+                            get = "economic.data") %>% 
+  tq_transmute(select = price, mutate_fun = to.monthly, indexAt = "firstof") %>% 
+  rename(AvgWeeklyHoursProd = price) %>% 
+  rename(Date = date)
 ```
 
 ## Future New Orders; Diffusion Index for Federal Reserve District 3: Philadelphia ##TODO check more frequent data
@@ -152,12 +171,11 @@ avg_weekly_hours_prod <- tq_get("AWHMAN",
 
 # FRED Future New Orders; Diffusion Index for Federal Reserve District 3: Philadelphia
 future_new_orders <- tq_get("NOFDFSA066MSFRBPHI", 
-                            from ="1920-01-01", 
-                            get = "economic.data")
-  
-  Quandl("FRED/NOFDFSA066MSFRBPHI", start_date=SDate, end_date=EDate, collapse = "monthly") %>% 
-  rename(FutureNewOrders = Value) %>% 
-  mutate(Date = floor_date(Date, unit = "month"))
+                            from =SDate, 
+                            get = "economic.data")%>% 
+  tq_transmute(select = price, mutate_fun = to.monthly, indexAt = "firstof") %>% 
+  rename(FutureNewOrders = price) %>% 
+  rename(Date = date)
 ```
 
 # Coincident Indicators
@@ -170,13 +188,11 @@ future_new_orders <- tq_get("NOFDFSA066MSFRBPHI",
 
 # Industrial Production Index
 ind_prod_ind <- tq_get("INDPRO", 
-                            from ="1920-01-01", 
-                            get = "economic.data")
-  
-  Quandl("FRED/INDPRO", start_date=SDate, end_date=EDate, collapse = "monthly") %>% 
-  rename(IndProdInd = Value) %>% 
-  mutate(Date = floor_date(Date, unit = "month"))
-
+                            from =SDate, 
+                            get = "economic.data")%>% 
+  tq_transmute(select = price, mutate_fun = to.monthly, indexAt = "firstof") %>% 
+  rename(IndProdInd = price) %>% 
+  rename(Date = date)
 ```
 
 ## Real disposable personal income
@@ -184,21 +200,22 @@ ind_prod_ind <- tq_get("INDPRO",
 # Real disposable personal income
 disp_pers_income <- tq_get("DSPIC96", 
                             from ="1920-01-01", 
-                            get = "economic.data")
-  
-  Quandl("FRED/DSPIC96", start_date=SFDate, end_date=EFDate, collapse = "monthly") %>% 
-  rename(DispPersIncome = Value) %>% 
-  mutate(Date = floor_date(Date, unit = "month"))
+                            get = "economic.data")%>% 
+  tq_transmute(select = price, mutate_fun = to.monthly, indexAt = "firstof") %>% 
+  rename(DispPersIncome = price) %>% 
+  rename(Date = date)
 ```
 
 ## Real manufacturing and trade sales
 ```{r}
 
 # FRED Manufacturing and trade sales
-man_trade_sales <- Quandl("FRED/CMRMTSPL", start_date=SFDate, end_date=EFDate ,collapse = "monthly") %>% 
-  rename(ManTradeSales = Value) %>% 
-  mutate(Date = floor_date(Date, unit = "month"))
-
+man_trade_sales <- tq_get("CMRMTSPL", 
+                            from =SDate, 
+                            get = "economic.data")%>% 
+  tq_transmute(select = price, mutate_fun = to.monthly, indexAt = "firstof") %>% 
+  rename(ManTradeSales = price) %>% 
+  rename(Date = date)
 ```
 
 # Lagging indicators
@@ -216,21 +233,24 @@ man_trade_sales <- Quandl("FRED/CMRMTSPL", start_date=SFDate, end_date=EFDate ,c
 ```{r}
 
 # Real GDP
-GDP_real <- Quandl("FRED/GDPC1", 
-                   start_date=SFDate, 
-                   end_date=EFDate, 
-                   collapse = "monthly") %>% 
-  rename(RealGDP = Value) %>% 
-  mutate(Date = floor_date(Date, unit = "month"))
+GDP_real <- tq_get("GDPC1", 
+                            from =SDate, 
+                            get = "economic.data")%>% 
+  tq_transmute(select = price, mutate_fun = to.monthly, indexAt = "firstof") %>% 
+  rename(RealGDP = price) %>% 
+  rename(Date = date)
 ```
 
 ## Employment
 ```{r}
 
 # Average duration of unemployment
-avg_dur_unem <- Quandl('FRED/UEMPMEAN', start_date=SDate, end_date=EDate, collapse = "monthly") %>% 
-  rename(AvgDurUnem = Value) %>% 
-  mutate(Date = floor_date(Date, unit = "month"))
+avg_dur_unem <- tq_get("UEMPMEAN", 
+                            from =SDate, 
+                            get = "economic.data")%>% 
+  tq_transmute(select = price, mutate_fun = to.monthly, indexAt = "firstof") %>% 
+  rename(AvgDurUnem = price) %>% 
+  rename(Date = date)
 ```
 
 ## Inventories to sales ratio ### Remember to change directory
@@ -244,12 +264,15 @@ inv_to_sales <- read_csv("invtosales.csv", col_types = cols(Date = col_date(form
 ```{r}
 
 # Core inflation
-core_CPI <- Quandl("FRED/CPILFESL", start_date=SFDate, end_date=EFDate, collapse = "monthly") %>% 
-  rename(CoreCPI = Value)
+core_CPI <- tq_get("CPILFESL", 
+                            from =SDate, 
+                            get = "economic.data")%>% 
+  tq_transmute(select = price, mutate_fun = to.monthly, indexAt = "firstof") %>% 
+  rename(CoreCPI = price) %>% 
+  rename(Date = date)
 
 # Year over year core inflation
 core_CPI_YoY <- core_CPI %>%
-  mutate(Date = floor_date(Date, unit = "month")) %>% 
   arrange(Date) %>%
   mutate(YOYCoreCPI=CoreCPI/lag(CoreCPI,12)-1) %>% 
   select(-CoreCPI)
@@ -259,31 +282,46 @@ core_CPI_YoY <- core_CPI %>%
 ```{r}
 
 # FRED consumer debt to income
-consumer_debt_to_income <- Quandl("FRED/TDSP",start_date=SFDate, end_date=EFDate, collapse = "monthly") %>% 
-  rename(ConsumerDebtToIncome = Value) %>% 
-  mutate(Date = floor_date(Date, unit = "month"))
-plot(consumer_debt_to_income)
+consumer_debt_to_income <- tq_get("TDSP", 
+                            from =SDate, 
+                            get = "economic.data")%>% 
+  tq_transmute(select = price, mutate_fun = to.monthly, indexAt = "firstof") %>% 
+  rename(ConsumerDebtToIncome = price) %>% 
+  rename(Date = date)
 ```
 
 ## Commercial and industrial loans & Prime lending rate
 ```{r}
 
 # All commercial banks
-comm_ind_loans_all_banks <- Quandl("FRED/TOTCI", start_date=SFDate, end_date=EFDate, collapse = "monthly") %>% 
-  rename(CommNndLoansAllBanks = Value) %>% 
-  mutate(Date = floor_date(Date, unit = "month"))
+comm_ind_loans_all_banks <- tq_get("TOTCI", 
+                            from =SDate, 
+                            get = "economic.data")%>% 
+  tq_transmute(select = price, mutate_fun = to.monthly, indexAt = "firstof") %>% 
+  rename(CommNndLoansAllBanks = price) %>% 
+  rename(Date = date)
 
 # Prime lending rate
-prime_lend_rate <- Quandl('FRED/DPRIME', start_date=SDate, end_date=EDate, collapse = "monthly") %>% 
-  rename(PrimeLendRate = Value) %>% 
-  mutate(Date = floor_date(Date, unit = "month"))
+prime_lend_rate <- tq_get("DPRIME", 
+                            from =SDate, 
+                            get = "economic.data")%>% 
+  tq_transmute(select = price, mutate_fun = to.monthly, indexAt = "firstof") %>% 
+  rename(PrimeLendRate = price) %>% 
+  rename(Date = date)
 ```
 
 ## Outstanding loans
 ```{r}
 
 # FRED Outstanding loans
-outstanding_loans <- Quandl("FRED/TOTLL", start_date=SFDate, end_date=EFDate, collapse = "monthly") %>% 
+outstanding_loans <- tq_get("TOTLL", 
+                            from =SDate, 
+                            get = "economic.data")%>% 
+  tq_transmute(select = price, mutate_fun = to.monthly, indexAt = "firstof") %>% 
+  rename(OutstandingLoans = price) %>% 
+  rename(Date = date)
+  
+  Quandl("FRED/TOTLL", start_date=SFDate, end_date=EFDate, collapse = "monthly") %>% 
   rename(OutstandingLoans = Value) %>% 
   mutate(Date = floor_date(Date, unit = "month"))
 
@@ -295,17 +333,18 @@ outstanding_loans <- Quandl("FRED/TOTLL", start_date=SFDate, end_date=EFDate, co
 #Trade weighted dollar index
 dollar_index <- tq_get("DX-Y.NYB",
                        get = "stock.prices",
-                       from = "1920-01-01")
+                       from = SDate) %>% 
+  tq_transmute(select = adjusted, mutate_fun = to.monthly, indexAt = "firstof") %>% 
+  rename(DollarValueIndex = adjusted) %>% 
+  rename(Date = date)
 
 #Trade weighted dollar index growth
 dollar_index_growth <- dollar_index %>%
-  tq_transmute(select = adjusted,         
+  tq_transmute(select = DollarValueIndex,         
                mutate_fun = periodReturn,   
                period = "monthly",      
                col_rename = "Index_growth")%>% 
-  rename(DollarIndex = Index_growth) %>% 
-  rename(Date = date)%>% 
-  mutate(Date = floor_date(Date, unit = "month"))
+  rename(DollarIndex = Index_growth)
 ```
 
 
@@ -313,7 +352,7 @@ dollar_index_growth <- dollar_index %>%
 #join the three data frames
 dataAll <- stockmarket_returns %>%
     left_join(house_price_index, by='Date') %>%
-    left_join(retail_trade, by='Date') %>% 
+    #left_join(retail_trade, by='Date') %>% 
     left_join(IR_Spread, by='Date') %>% 
     left_join(building_permits, by='Date') %>%
     left_join(consumer_sentiment, by='Date') %>% 
@@ -335,6 +374,7 @@ dataAll <- stockmarket_returns %>%
     left_join(consumer_debt_to_income, by='Date') %>% 
     left_join(comm_ind_loans_all_banks, by='Date') %>% 
     left_join(outstanding_loans, by='Date')
+tail(dataAll)
 ```
 
 ```{r}
@@ -349,7 +389,7 @@ dataAllInterpolated <- dataAll %>%
 ```{r}
 dataAllPctChange <- dataAllInterpolated %>% 
   mutate(HousePriceIndex_pct_change = (HousePriceIndex/lag(HousePriceIndex) - 1)) %>% 
-  mutate(RetailTrade_pct_change = (RetailTrade/lag(RetailTrade) - 1)) %>% 
+  #mutate(RetailTrade_pct_change = (RetailTrade/lag(RetailTrade) - 1)) %>% 
   mutate(BuildingPermits_pct_change = (BuildingPermits/lag(BuildingPermits) - 1)) %>% 
   mutate(ConsumerSentiment_pct_change = (ConsumerSentiment/lag(ConsumerSentiment) - 1)) %>% 
   mutate(AvgWeeklyHoursProd_pct_change = (AvgWeeklyHoursProd/lag(AvgWeeklyHoursProd) - 1)) %>% 
