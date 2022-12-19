@@ -61,7 +61,7 @@ stockmarket <- tq_get("^GSPC",
                       get = "stock.prices")
 
 ## Plotting SP500
-ggplot(data = stockmarket, aes(date, adjusted)) + 
+ggplot(data = stockmarket, aes(Date, adjusted)) + 
   geom_line() +
   scale_x_date(name = "Year", date_minor_breaks = "10 year") + 
   scale_y_continuous(name = "S&P 500 Adjusted", labels = scales::label_dollar()) +
@@ -142,7 +142,7 @@ SP500_Earnings %>%
   ggplot(aes(x = Date, y = Value.x)) +
   geom_line(color = 'black') + 
   geom_line(aes(y = (Value.y/Value.x)*80), color = 'dodgerblue1') + 
-  scale_y_continuous('Earnings', labels = scales::label_dollar(), sec.axis = sec_axis(~./80, name="Payout Ratio", labels = scales::percent)) +
+  scale_y_continuous('Earnings', labels = scales::label_dollar(), sec.axis = sec_axis(~./800, name="Payout Ratio", labels = scales::percent)) +
   scale_x_date(name = 'Dates') +
   theme(axis.title.y.left=element_text(color="black"),
         axis.text.y.left=element_text(color="black"), 
