@@ -76,18 +76,16 @@ house_price_index <- tq_get("USSTHPI",
   rename(Date = date)
 ```
 
-## All Employees, Retail Trade ##TODO WRONG INDICATOR
+## All Employees, Retail Trade
 ```{r}
 
 # FRED All Employees, Retail Trade
-retail_trade <- tq_get("",
-                            from = SDate,
-                            "economic.data") 
-  
-  Quandl("FRED/USTRADE", start_date=SDate,end_date=EDate, collapse = "monthly") %>% 
-  rename(RetailTrade = Value) %>% 
-  mutate(Date = floor_date(Date, unit = "month"))
-
+retail_trade <- tq_get("USASARTMISMEI", 
+                            from =SDate, 
+                            get = "economic.data")%>% 
+  tq_transmute(select = price, mutate_fun = to.monthly, indexAt = "firstof") %>% 
+  rename(RetailTrade = price) %>% 
+  rename(Date = date)
 ```
 
 ## Interest rates
@@ -352,7 +350,7 @@ dollar_index_growth <- dollar_index %>%
 #join the three data frames
 dataAll <- stockmarket_returns %>%
     left_join(house_price_index, by='Date') %>%
-    #left_join(retail_trade, by='Date') %>% 
+    left_join(retail_trade, by='Date') %>% 
     left_join(IR_Spread, by='Date') %>% 
     left_join(building_permits, by='Date') %>%
     left_join(consumer_sentiment, by='Date') %>% 
@@ -389,7 +387,7 @@ dataAllInterpolated <- dataAll %>%
 ```{r}
 dataAllPctChange <- dataAllInterpolated %>% 
   mutate(HousePriceIndex_pct_change = (HousePriceIndex/lag(HousePriceIndex) - 1)) %>% 
-  #mutate(RetailTrade_pct_change = (RetailTrade/lag(RetailTrade) - 1)) %>% 
+  mutate(RetailTrade_pct_change = (RetailTrade/lag(RetailTrade) - 1)) %>% 
   mutate(BuildingPermits_pct_change = (BuildingPermits/lag(BuildingPermits) - 1)) %>% 
   mutate(ConsumerSentiment_pct_change = (ConsumerSentiment/lag(ConsumerSentiment) - 1)) %>% 
   mutate(AvgWeeklyHoursProd_pct_change = (AvgWeeklyHoursProd/lag(AvgWeeklyHoursProd) - 1)) %>% 
