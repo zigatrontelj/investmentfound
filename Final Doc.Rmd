@@ -459,7 +459,7 @@ future_new_orders %>%
 ```{r}
 #library(stats)
 
-pca_data <- stockmarket_returns %>% 
+pca_data_leading <- stockmarket_returns %>% 
   left_join(retail_trade, by = "Date") %>% 
   left_join(IR_Spread, by = "Date") %>%
   left_join(building_permits, by = "Date") %>%
@@ -469,25 +469,25 @@ pca_data <- stockmarket_returns %>%
   select(-Date) %>% 
   na.omit()
 
-pca_result <- princomp(pca_data)
-pca_result$scores
-pca_result$sdev
+pca_result_leading <- princomp(pca_data_leading)
+pca_result_leading$scores
+pca_result_leading$sdev
 
-pca_summary <- summary(pca_result)
-pca_variances <- var(pca_result$scores)
-pca_cumulative_variances <- cumsum(pca_variances)
+pca_summary_leading  <- summary(pca_result_leading)
+pca_variances_leading  <- var(pca_result_leading$scores)
+pca_cumulative_variances_leading  <- cumsum(pca_variances_leading)
 
-pca_var <- pca_result$sdev^2 / sum(pca_result$sdev^2)
+pca_var_leading  <- pca_result_leading$sdev^2 / sum(pca_result_leading$sdev^2)
 barplot(pca_var, xlab="Principal Component", ylab="Proportion of Variance Explained")
 
-screeplot(pca_result, type="line", main="Scree Plot")
+screeplot(pca_result_leading, type="line", main="Scree Plot")
 
-plot(pca_result$scores[,1:2], col=1:nrow(pca_result$scores), xlab="PC1", ylab="PC2")
+plot(pca_result_leading$scores[,1:2], col=1:nrow(pca_result_leading$scores), xlab="PC1", ylab="PC2")
 
-pca_scores <- as.data.frame(pca_result$scores) %>% 
+pca_scores_leading <- as.data.frame(pca_result_leading$scores) %>% 
   select(Comp.1)
 
-values <- stockmarket_returns %>% 
+values_leading <- stockmarket_returns %>% 
   left_join(retail_trade, by = "Date") %>% 
   left_join(IR_Spread, by = "Date") %>%
   left_join(building_permits, by = "Date") %>%
@@ -496,11 +496,11 @@ values <- stockmarket_returns %>%
   left_join(future_new_orders, by = "Date") %>%
   na.omit()
 
-values$index <- pca_scores[,1]
+values_leading$index <- pca_scores_leading[,1]
 
-plot(values$Date, values$index)
+plot(values_leading$Date, values_leading$index)
 
-values %>% 
+values_leading %>% 
   ggplot(aes(Date, index)) + 
   geom_line() +
   scale_x_date(name = "Year", date_minor_breaks = "10 year") + 
@@ -517,3 +517,120 @@ values %>%
 
 ```
 
+
+# Indexation of coincident indicators
+```{r}
+#library(stats)
+
+pca_data_coincident <- ind_prod_ind %>% 
+  left_join(disp_pers_income, by = "Date") %>% 
+  left_join(man_trade_sales, by = "Date") %>% 
+  select(-Date) %>% 
+  na.omit()
+
+pca_result_coincident <- princomp(pca_data_coincident)
+pca_result_coincident$scores
+pca_result_coincident$sdev
+
+pca_summary_coincident <- summary(pca_result_coincident)
+pca_variances_coincident <- var(pca_result_coincident$scores)
+pca_cumulative_variances_coincident <- cumsum(pca_variances_coincident)
+
+pca_var_coincident <- pca_result_coincident$sdev^2 / sum(pca_result_coincident$sdev^2)
+barplot(pca_var_coincident, xlab="Principal Component", ylab="Proportion of Variance Explained")
+
+screeplot(pca_result_coincident, type="line", main="Scree Plot")
+
+plot(pca_result_coincident$scores[,1:2], col=1:nrow(pca_result_coincident$scores), xlab="PC1", ylab="PC2")
+
+pca_scores_coincident <- as.data.frame(pca_result_coincident$scores) %>% 
+  select(Comp.1)
+
+values_coincident <- ind_prod_ind %>% 
+  left_join(disp_pers_income, by = "Date") %>% 
+  left_join(man_trade_sales, by = "Date") %>% 
+  na.omit()
+
+values_coincident$index <- pca_scores_coincident[,1]
+
+plot(values_coincident$Date, values_coincident$index)
+
+values_coincident %>% 
+  ggplot(aes(Date, index)) + 
+  geom_line() +
+  scale_x_date(name = "Year", date_minor_breaks = "10 year") + 
+  scale_y_continuous(name = "Coincident index") +
+  ggtitle('Coincident index for business cycle') +
+  annotate("rect", xmin = as.Date("2020/02/01"), xmax = as.Date("2020/04/01"), ymin = -500000, ymax = 750000, alpha = .2, fill = 'purple') +
+  annotate("rect", xmin = as.Date("2007/12/01"), xmax = as.Date("2009/06/01"), ymin = -500000, ymax = 750000, alpha = .2, fill = 'purple') +
+  annotate("rect", xmin = as.Date("2001/03/01"), xmax = as.Date("2001/11/01"), ymin = -500000, ymax = 750000, alpha = .2, fill = 'purple') +
+  annotate("rect", xmin = as.Date("1990/07/01"), xmax = as.Date("1991/03/01"), ymin = -500000, ymax = 750000, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1981/07/01"), xmax = as.Date("1982/11/01"), ymin = -500000, ymax = 750000, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1980/01/01"), xmax = as.Date("1980/07/01"), ymin = -500000, ymax = 750000, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1973/11/01"), xmax = as.Date("1975/05/01"), ymin = -500000, ymax = 750000, alpha = .2, fill = 'purple')
+  
+```
+
+# Indexation of lagging indicators
+```{r}
+#library(stats)
+
+pca_data_lagging <- GDP_real %>% 
+  left_join(avg_dur_unem, by = "Date") %>% 
+  left_join(inv_to_sales, by = "Date") %>% 
+  left_join(core_CPI_YoY, by = "Date") %>% 
+  left_join(consumer_debt_to_income, by = "Date") %>% 
+  left_join(comm_ind_loans_all_banks, by = "Date") %>% 
+  left_join(prime_lend_rate, by = "Date") %>% 
+  left_join(outstanding_loans, by = "Date") %>% 
+  left_join(dollar_index, by = "Date") %>% 
+  select(-Date) %>% 
+  na.omit()
+
+pca_result_lagging <- princomp(pca_data_lagging)
+pca_result_lagging$scores
+pca_result_lagging$sdev
+
+pca_summary_lagging <- summary(pca_result_lagging)
+pca_variances_lagging <- var(pca_result_lagging$scores)
+pca_cumulative_variances_lagging <- cumsum(pca_variances_lagging)
+
+pca_var_lagging <- pca_result_lagging$sdev^2 / sum(pca_result_lagging$sdev^2)
+barplot(pca_var_lagging, xlab="Principal Component", ylab="Proportion of Variance Explained")
+
+screeplot(pca_result_lagging, type="line", main="Scree Plot")
+
+plot(pca_result_lagging$scores[,1:2], col=1:nrow(pca_result_lagging$scores), xlab="PC1", ylab="PC2")
+
+pca_scores_lagging <- as.data.frame(pca_result_lagging$scores) %>% 
+  select(Comp.1)
+
+values_lagging <- GDP_real %>% 
+  left_join(avg_dur_unem, by = "Date") %>% 
+  left_join(inv_to_sales, by = "Date") %>% 
+  left_join(core_CPI_YoY, by = "Date") %>% 
+  left_join(consumer_debt_to_income, by = "Date") %>% 
+  left_join(comm_ind_loans_all_banks, by = "Date") %>% 
+  left_join(prime_lend_rate, by = "Date") %>% 
+  left_join(outstanding_loans, by = "Date") %>% 
+  left_join(dollar_index, by = "Date") %>% 
+  na.omit()
+
+values_lagging$index <- pca_scores_lagging[,1]
+
+plot(values_lagging$Date, values_lagging$index)
+
+values_lagging %>% 
+  ggplot(aes(Date, index)) + 
+  geom_line() +
+  scale_x_date(name = "Year", date_minor_breaks = "10 year") + 
+  scale_y_continuous(name = "Lagging index") +
+  ggtitle('Lagging index for business cycle') +
+  annotate("rect", xmin = as.Date("2020/02/01"), xmax = as.Date("2020/04/01"), ymin = -7500, ymax = 10000, alpha = .2, fill = 'purple') +
+  annotate("rect", xmin = as.Date("2007/12/01"), xmax = as.Date("2009/06/01"), ymin = -7500, ymax = 10000, alpha = .2, fill = 'purple') +
+  annotate("rect", xmin = as.Date("2001/03/01"), xmax = as.Date("2001/11/01"), ymin = -7500, ymax = 10000, alpha = .2, fill = 'purple') +
+  annotate("rect", xmin = as.Date("1990/07/01"), xmax = as.Date("1991/03/01"), ymin = -7500, ymax = 10000, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1981/07/01"), xmax = as.Date("1982/11/01"), ymin = -7500, ymax = 10000, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1980/01/01"), xmax = as.Date("1980/07/01"), ymin = -7500, ymax = 10000, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1973/11/01"), xmax = as.Date("1975/05/01"), ymin = -7500, ymax = 10000, alpha = .2, fill = 'purple')
+```
