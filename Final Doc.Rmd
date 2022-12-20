@@ -466,11 +466,21 @@ pca_data <- stockmarket_returns %>%
   left_join(consumer_sentiment, by = "Date") %>%
   left_join(avg_weekly_hours_prod, by = "Date") %>%
   left_join(future_new_orders, by = "Date") %>% 
-  select(-Date)
+  select(-Date) %>% 
+  na.omit()
 
 pca_result <- princomp(pca_data)
 pca_result$scores
 pca_result$sdev
+
+pca_summary <- summary(pca_result)
+pca_variances <- var(pca_result$scores)
+pca_cumulative_variances <- cumsum(pca_variances)
+
+pca_var <- pca_result$sdev^2 / sum(pca_result$sdev^2)
+barplot(pca_var, xlab="Principal Component", ylab="Proportion of Variance Explained")
+
+screeplot(pca_result, type="line", main="Scree Plot")
 
 plot(pca_result$scores[,1:2], col=1:nrow(pca_result$scores), xlab="PC1", ylab="PC2")
 
@@ -501,7 +511,8 @@ values %>%
   annotate("rect", xmin = as.Date("2001/03/01"), xmax = as.Date("2001/11/01"), ymin = -1000, ymax = 1000, alpha = .2, fill = 'purple') +
   annotate("rect", xmin = as.Date("1990/07/01"), xmax = as.Date("1991/03/01"), ymin = -1000, ymax = 1000, alpha = .2, fill = 'purple')+
   annotate("rect", xmin = as.Date("1981/07/01"), xmax = as.Date("1982/11/01"), ymin = -1000, ymax = 1000, alpha = .2, fill = 'purple')+
-  annotate("rect", xmin = as.Date("1980/01/01"), xmax = as.Date("1980/07/01"), ymin = -1000, ymax = 1000, alpha = .2, fill = 'purple')
+  annotate("rect", xmin = as.Date("1980/01/01"), xmax = as.Date("1980/07/01"), ymin = -1000, ymax = 1000, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1973/11/01"), xmax = as.Date("1975/05/01"), ymin = -1000, ymax = 1000, alpha = .2, fill = 'purple')
   
 
 ```
