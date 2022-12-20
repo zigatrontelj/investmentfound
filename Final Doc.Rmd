@@ -1,0 +1,231 @@
+---
+title: "Final Document"
+output: html_document
+date: "2022-12-20"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Loading required libraries
+```{r}
+library(Quandl)
+library(forecast)
+library(tidyverse)
+library(ggplot2)
+library(PortfolioAnalytics)
+library(PerformanceAnalytics)
+library(quantmod)
+library(TTR)
+library(tidyquant)
+library(timetk)
+```
+
+# Important information
+```{r, eval=FALSE}
+
+Quandl.api_key("YE-L2_sxPkntzGfHo3vZ")
+EDate <- as.Date(Sys.Date())
+SDate <- as.Date(EDate-365*100)
+YoY <- as.Date(EDate-365)
+
+EFDate <- as.Date(Sys.Date())
+SFDate <- EFDate - 365*100
+```
+
+## Stock market
+```{r}
+# S&P500 Prices
+stockmarket <- tq_get("^GSPC",
+                      from = SDate,
+                      get = "stock.prices") %>%
+  tq_transmute(select = adjusted, mutate_fun = to.monthly, indexAt = "firstof")%>% 
+  rename(Date = date)
+
+## Plotting SP500
+ggplot(data = stockmarket, aes(Date, adjusted)) + 
+  geom_line() +
+  scale_x_date(name = "Year", date_minor_breaks = "10 year") + 
+  scale_y_continuous(name = "S&P 500 Adjusted", labels = scales::label_dollar()) +
+  ggtitle('Historical value of the S&P 500 index') +
+  annotate("rect", xmin = as.Date("2020/02/01"), xmax = as.Date("2020/04/01"), ymin = 0, ymax = 5000, alpha = .2, fill = 'purple') +
+  annotate("rect", xmin = as.Date("2007/12/01"), xmax = as.Date("2009/06/01"), ymin = 0, ymax = 5000, alpha = .2, fill = 'purple') +
+  annotate("rect", xmin = as.Date("2001/03/01"), xmax = as.Date("2001/11/01"), ymin = 0, ymax = 5000, alpha = .2, fill = 'purple') +
+  annotate("rect", xmin = as.Date("1990/07/01"), xmax = as.Date("1991/03/01"), ymin = 0, ymax = 5000, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1981/07/01"), xmax = as.Date("1982/11/01"), ymin = 0, ymax = 5000, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1980/01/01"), xmax = as.Date("1980/07/01"), ymin = 0, ymax = 5000, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1973/11/01"), xmax = as.Date("1975/05/01"), ymin = 0, ymax = 5000, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1969/12/01"), xmax = as.Date("1970/11/01"), ymin = 0, ymax = 5000, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1960/04/01"), xmax = as.Date("1961/02/01"), ymin = 0, ymax = 5000, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1957/08/01"), xmax = as.Date("1958/04/01"), ymin = 0, ymax = 5000, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1953/07/01"), xmax = as.Date("1954/05/01"), ymin = 0, ymax = 5000, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1948/11/01"), xmax = as.Date("1949/10/01"), ymin = 0, ymax = 5000, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1945/02/01"), xmax = as.Date("1945/10/01"), ymin = 0, ymax = 5000, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1937/05/01"), xmax = as.Date("1938/06/01"), ymin = 0, ymax = 5000, alpha = .2, fill = 'purple')
+
+
+# S&P500 Returns
+stockmarket_returns <- stockmarket %>%
+  tq_transmute(select = adjusted,         
+               mutate_fun = periodReturn,   
+               period = "monthly",      
+               col_rename = "SP500Returns")
+
+## Plotting SP500 Returns
+ggplot(data = stockmarket_returns, aes(Date, SP500Returns)) + 
+  geom_line() +
+  scale_x_date(name = "Year", date_minor_breaks = "10 year") + 
+  scale_y_continuous(name = "S&P 500 monthly returns", labels = scales::percent) +
+  ggtitle('Historical monthly returns of the S&P 500 index')  +
+  annotate("rect", xmin = as.Date("2020/02/01"), xmax = as.Date("2020/04/01"), ymin = -0.3, ymax = 0.4, alpha = .2, fill = 'purple') +
+  annotate("rect", xmin = as.Date("2007/12/01"), xmax = as.Date("2009/06/01"), ymin = -0.3, ymax = 0.4, alpha = .2, fill = 'purple') +
+  annotate("rect", xmin = as.Date("2001/03/01"), xmax = as.Date("2001/11/01"), ymin = -0.3, ymax = 0.4, alpha = .2, fill = 'purple') +
+  annotate("rect", xmin = as.Date("1990/07/01"), xmax = as.Date("1991/03/01"), ymin = -0.3, ymax = 0.4, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1981/07/01"), xmax = as.Date("1982/11/01"), ymin = -0.3, ymax = 0.4, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1980/01/01"), xmax = as.Date("1980/07/01"), ymin = -0.3, ymax = 0.4, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1973/11/01"), xmax = as.Date("1975/05/01"), ymin = -0.3, ymax = 0.4, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1969/12/01"), xmax = as.Date("1970/11/01"), ymin = -0.3, ymax = 0.4, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1960/04/01"), xmax = as.Date("1961/02/01"), ymin = -0.3, ymax = 0.4, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1957/08/01"), xmax = as.Date("1958/04/01"), ymin = -0.3, ymax = 0.4, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1953/07/01"), xmax = as.Date("1954/05/01"), ymin = -0.3, ymax = 0.4, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1948/11/01"), xmax = as.Date("1949/10/01"), ymin = -0.3, ymax = 0.4, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1945/02/01"), xmax = as.Date("1945/10/01"), ymin = -0.3, ymax = 0.4, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1937/05/01"), xmax = as.Date("1938/06/01"), ymin = -0.3, ymax = 0.4, alpha = .2, fill = 'purple')
+
+# S&P500 Dividends
+SP500_Div <- Quandl('MULTPL/SP500_DIV_MONTH', 
+              start_date=SDate, 
+              end_date=EDate) %>% 
+  mutate(Date = floor_date(Date, unit = "month"))
+
+# S&P500 Dividend Yield
+SP500_Div_Yield <- Quandl('MULTPL/SP500_DIV_YIELD_MONTH', 
+                   start_date=SDate, 
+                   end_date=EDate) %>% 
+  mutate(Date = floor_date(Date, unit = "month"))
+
+## Plotting Dividends and Dividend yields
+SP500_Div %>%
+  left_join(SP500_Div_Yield, by='Date')%>% 
+  ggplot(aes(x = Date, y = Value.x)) +
+  geom_line(color = 'black') + 
+  geom_line(aes(y = Value.y*5), color = 'dodgerblue1') + 
+  scale_y_continuous('Dividends',labels = scales::label_dollar(), sec.axis = sec_axis(~./500, name="Dividend Yield", labels = scales::percent)) +
+  scale_x_date(name = 'Dates') +
+  theme(axis.title.y.left=element_text(color="black"),
+        axis.text.y.left=element_text(color="black"), 
+        axis.title.y.right=element_text(color="dodgerblue1"),
+        axis.text.y.right=element_text(color="dodgerblue1")) +
+  ggtitle('Historical Dividends and Dividend Yield of the S&P 500 index')+
+  annotate("rect", xmin = as.Date("2020/02/01"), xmax = as.Date("2020/04/01"), ymin = 0, ymax = 70, alpha = .2, fill = 'purple') +
+  annotate("rect", xmin = as.Date("2007/12/01"), xmax = as.Date("2009/06/01"), ymin = 0, ymax = 70, alpha = .2, fill = 'purple') +
+  annotate("rect", xmin = as.Date("2001/03/01"), xmax = as.Date("2001/11/01"), ymin = 0, ymax = 70, alpha = .2, fill = 'purple') +
+  annotate("rect", xmin = as.Date("1990/07/01"), xmax = as.Date("1991/03/01"), ymin = 0, ymax = 70, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1981/07/01"), xmax = as.Date("1982/11/01"), ymin = 0, ymax = 70, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1980/01/01"), xmax = as.Date("1980/07/01"), ymin = 0, ymax = 70, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1973/11/01"), xmax = as.Date("1975/05/01"), ymin = 0, ymax = 70, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1969/12/01"), xmax = as.Date("1970/11/01"), ymin = 0, ymax = 70, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1960/04/01"), xmax = as.Date("1961/02/01"), ymin = 0, ymax = 70, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1957/08/01"), xmax = as.Date("1958/04/01"), ymin = 0, ymax = 70, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1953/07/01"), xmax = as.Date("1954/05/01"), ymin = 0, ymax = 70, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1948/11/01"), xmax = as.Date("1949/10/01"), ymin = 0, ymax = 70, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1945/02/01"), xmax = as.Date("1945/10/01"), ymin = 0, ymax = 70, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1937/05/01"), xmax = as.Date("1938/06/01"), ymin = 0, ymax = 70, alpha = .2, fill = 'purple')
+
+# S&P500 PE Ratios
+SP500_PE <- Quandl('MULTPL/SP500_PE_RATIO_MONTH', 
+             start_date=SDate, 
+             end_date=EDate) %>% 
+  mutate(Date = floor_date(Date, unit = "month"))
+
+# S&P500 Earnings
+SP500_Earnings <- Quandl('MULTPL/SP500_EARNINGS_MONTH', 
+                        start_date=SDate, 
+                        end_date=EDate) %>% 
+  mutate(Date = floor_date(Date, unit = "month"))
+
+## Plotting Earnings and PE ratios
+SP500_Earnings %>%
+  left_join(SP500_PE, by='Date')%>% 
+  ggplot(aes(x = Date, y = Value.x)) +
+  geom_line(color = 'black') + 
+  geom_line(aes(y = (Value.y)*1.5), color = 'dodgerblue1') + 
+  scale_y_continuous('Earnings', sec.axis = sec_axis(~./1.5, name="PE Ratio")) +
+  scale_x_date(name = 'Dates') +
+  theme(axis.title.y.left=element_text(color="black"),
+        axis.text.y.left=element_text(color="black"), 
+        axis.title.y.right=element_text(color="dodgerblue1"),
+        axis.text.y.right=element_text(color="dodgerblue1")) +
+  ggtitle('Historical Earnings and PE ratios of the S&P 500 index')+
+  annotate("rect", xmin = as.Date("2020/02/01"), xmax = as.Date("2020/04/01"), ymin = 0, ymax = 220, alpha = .2, fill = 'purple') +
+  annotate("rect", xmin = as.Date("2007/12/01"), xmax = as.Date("2009/06/01"), ymin = 0, ymax = 220, alpha = .2, fill = 'purple') +
+  annotate("rect", xmin = as.Date("2001/03/01"), xmax = as.Date("2001/11/01"), ymin = 0, ymax = 220, alpha = .2, fill = 'purple') +
+  annotate("rect", xmin = as.Date("1990/07/01"), xmax = as.Date("1991/03/01"), ymin = 0, ymax = 220, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1981/07/01"), xmax = as.Date("1982/11/01"), ymin = 0, ymax = 220, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1980/01/01"), xmax = as.Date("1980/07/01"), ymin = 0, ymax = 220, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1973/11/01"), xmax = as.Date("1975/05/01"), ymin = 0, ymax = 220, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1969/12/01"), xmax = as.Date("1970/11/01"), ymin = 0, ymax = 220, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1960/04/01"), xmax = as.Date("1961/02/01"), ymin = 0, ymax = 220, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1957/08/01"), xmax = as.Date("1958/04/01"), ymin = 0, ymax = 220, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1953/07/01"), xmax = as.Date("1954/05/01"), ymin = 0, ymax = 220, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1948/11/01"), xmax = as.Date("1949/10/01"), ymin = 0, ymax = 220, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1945/02/01"), xmax = as.Date("1945/10/01"), ymin = 0, ymax = 220, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1937/05/01"), xmax = as.Date("1938/06/01"), ymin = 0, ymax = 220, alpha = .2, fill = 'purple')
+
+
+## Plotting Earnings and Payout ratios of the S&P 500 Index
+SP500_Earnings %>%
+  left_join(SP500_Div, by='Date')%>% 
+  ggplot(aes(x = Date, y = Value.x)) +
+  geom_line(color = 'black') + 
+  geom_line(aes(y = (Value.y/Value.x)*80), color = 'dodgerblue1') + 
+  scale_y_continuous('Earnings', labels = scales::label_dollar(), sec.axis = sec_axis(~./800, name="Payout Ratio", labels = scales::percent)) +
+  scale_x_date(name = 'Dates') +
+  theme(axis.title.y.left=element_text(color="black"),
+        axis.text.y.left=element_text(color="black"), 
+        axis.title.y.right=element_text(color="dodgerblue1"),
+        axis.text.y.right=element_text(color="dodgerblue1")) +
+  ggtitle('Historical Earnings and Payout ratio of the S&P 500 index')+
+  annotate("rect", xmin = as.Date("2020/02/01"), xmax = as.Date("2020/04/01"), ymin = 0, ymax = 320, alpha = .2, fill = 'purple') +
+  annotate("rect", xmin = as.Date("2007/12/01"), xmax = as.Date("2009/06/01"), ymin = 0, ymax = 320, alpha = .2, fill = 'purple') +
+  annotate("rect", xmin = as.Date("2001/03/01"), xmax = as.Date("2001/11/01"), ymin = 0, ymax = 320, alpha = .2, fill = 'purple') +
+  annotate("rect", xmin = as.Date("1990/07/01"), xmax = as.Date("1991/03/01"), ymin = 0, ymax = 320, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1981/07/01"), xmax = as.Date("1982/11/01"), ymin = 0, ymax = 320, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1980/01/01"), xmax = as.Date("1980/07/01"), ymin = 0, ymax = 320, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1973/11/01"), xmax = as.Date("1975/05/01"), ymin = 0, ymax = 320, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1969/12/01"), xmax = as.Date("1970/11/01"), ymin = 0, ymax = 320, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1960/04/01"), xmax = as.Date("1961/02/01"), ymin = 0, ymax = 320, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1957/08/01"), xmax = as.Date("1958/04/01"), ymin = 0, ymax = 320, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1953/07/01"), xmax = as.Date("1954/05/01"), ymin = 0, ymax = 320, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1948/11/01"), xmax = as.Date("1949/10/01"), ymin = 0, ymax = 320, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1945/02/01"), xmax = as.Date("1945/10/01"), ymin = 0, ymax = 320, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1937/05/01"), xmax = as.Date("1938/06/01"), ymin = 0, ymax = 320, alpha = .2, fill = 'purple')
+
+```
+
+## All-Transactions House Price Index for the United States
+```{r}
+
+# FRED All-Transactions House Price Index for the United States 
+house_price_index <- tq_get("USSTHPI",
+                            from = SDate,
+                            "economic.data") %>% 
+  tq_transmute(select = price, mutate_fun = to.monthly, indexAt = "firstof") %>% 
+  rename(HousePriceIndex = price)%>% 
+  rename(Date = date)
+
+house_price_index %>% 
+  ggplot(aes(Date, HousePriceIndex)) + 
+  geom_line() +
+  scale_x_date(name = "Year", date_minor_breaks = "10 year") + 
+  scale_y_continuous(name = "House price index") +
+  ggtitle('Historical House price index (1980 = 100)')+
+  annotate("rect", xmin = as.Date("2020/02/01"), xmax = as.Date("2020/04/01"), ymin = 0, ymax = 650, alpha = .2, fill = 'purple') +
+  annotate("rect", xmin = as.Date("2007/12/01"), xmax = as.Date("2009/06/01"), ymin = 0, ymax = 650, alpha = .2, fill = 'purple') +
+  annotate("rect", xmin = as.Date("2001/03/01"), xmax = as.Date("2001/11/01"), ymin = 0, ymax = 650, alpha = .2, fill = 'purple') +
+  annotate("rect", xmin = as.Date("1990/07/01"), xmax = as.Date("1991/03/01"), ymin = 0, ymax = 650, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1981/07/01"), xmax = as.Date("1982/11/01"), ymin = 0, ymax = 650, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1980/01/01"), xmax = as.Date("1980/07/01"), ymin = 0, ymax = 650, alpha = .2, fill = 'purple')
+```
+
