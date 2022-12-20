@@ -220,12 +220,289 @@ house_price_index %>%
   geom_line() +
   scale_x_date(name = "Year", date_minor_breaks = "10 year") + 
   scale_y_continuous(name = "House price index") +
-  ggtitle('Historical House price index (1980 = 100)')+
+  ggtitle('FRED All-transactions House price index (Index Jan 1980 = 100)')+
   annotate("rect", xmin = as.Date("2020/02/01"), xmax = as.Date("2020/04/01"), ymin = 0, ymax = 650, alpha = .2, fill = 'purple') +
   annotate("rect", xmin = as.Date("2007/12/01"), xmax = as.Date("2009/06/01"), ymin = 0, ymax = 650, alpha = .2, fill = 'purple') +
   annotate("rect", xmin = as.Date("2001/03/01"), xmax = as.Date("2001/11/01"), ymin = 0, ymax = 650, alpha = .2, fill = 'purple') +
   annotate("rect", xmin = as.Date("1990/07/01"), xmax = as.Date("1991/03/01"), ymin = 0, ymax = 650, alpha = .2, fill = 'purple')+
   annotate("rect", xmin = as.Date("1981/07/01"), xmax = as.Date("1982/11/01"), ymin = 0, ymax = 650, alpha = .2, fill = 'purple')+
   annotate("rect", xmin = as.Date("1980/01/01"), xmax = as.Date("1980/07/01"), ymin = 0, ymax = 650, alpha = .2, fill = 'purple')
+```
+
+## FRED Total Retail Trade
+```{r}
+
+# FRED All Employees, Retail Trade
+retail_trade <- tq_get("USASARTMISMEI", 
+                            from =SDate, 
+                            get = "economic.data")%>% 
+  tq_transmute(select = price, mutate_fun = to.monthly, indexAt = "firstof") %>% 
+  rename(RetailTrade = price) %>% 
+  rename(Date = date)
+
+retail_trade %>% 
+  ggplot(aes(Date, RetailTrade)) + 
+  geom_line() +
+  scale_x_date(name = "Year", date_minor_breaks = "10 year") + 
+  scale_y_continuous(name = "Total retail trade") +
+  ggtitle('FRED Total retail trade index (Index Jan 2015 = 100)')+
+  annotate("rect", xmin = as.Date("2020/02/01"), xmax = as.Date("2020/04/01"), ymin = 0, ymax = 150, alpha = .2, fill = 'purple') +
+  annotate("rect", xmin = as.Date("2007/12/01"), xmax = as.Date("2009/06/01"), ymin = 0, ymax = 150, alpha = .2, fill = 'purple') +
+  annotate("rect", xmin = as.Date("2001/03/01"), xmax = as.Date("2001/11/01"), ymin = 0, ymax = 150, alpha = .2, fill = 'purple') +
+  annotate("rect", xmin = as.Date("1990/07/01"), xmax = as.Date("1991/03/01"), ymin = 0, ymax = 150, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1981/07/01"), xmax = as.Date("1982/11/01"), ymin = 0, ymax = 150, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1980/01/01"), xmax = as.Date("1980/07/01"), ymin = 0, ymax = 150, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1973/11/01"), xmax = as.Date("1975/05/01"), ymin = 0, ymax = 150, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1969/12/01"), xmax = as.Date("1970/11/01"), ymin = 0, ymax = 150, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1960/04/01"), xmax = as.Date("1961/02/01"), ymin = 0, ymax = 150, alpha = .2, fill = 'purple')
+```
+
+
+## Interest rates
+```{r}
+
+# T-Bills
+threemonths_IR <- tq_get("DTB3",
+                         from = SDate,
+                         "economic.data") %>% 
+  tq_transmute(select = price, mutate_fun = to.monthly, indexAt = "firstof") %>% 
+  rename(ThreemonthsIR = price) %>% 
+  rename(Date = date)
+
+# Five-y Bonds
+fiveyears_IR <-  tq_get("DGS5",
+                         from = SDate,
+                         "economic.data") %>% 
+  tq_transmute(select = price, mutate_fun = to.monthly, indexAt = "firstof") %>% 
+  rename(FiveyearsIR = price) %>% 
+  rename(Date = date)
+
+# Ten-y Bonds
+tenyears_IR <-  tq_get("DGS10",
+                         from = SDate,
+                         "economic.data") %>% 
+  tq_transmute(select = price, mutate_fun = to.monthly, indexAt = "firstof") %>% 
+  rename(TenyearsIR = price) %>% 
+  rename(Date = date)
+  
+# Thirty-y Bonds
+thirtyyears_IR <- tq_get("DGS30",
+                         from = SDate,
+                         "economic.data") %>% 
+  tq_transmute(select = price, mutate_fun = to.monthly, indexAt = "firstof") %>% 
+  rename(ThirtyyearsIR = price) %>% 
+  rename(Date = date)
+
+# Dataframe with rates
+rates <- threemonths_IR %>%
+  left_join(fiveyears_IR, by='Date')%>% 
+  left_join(tenyears_IR, by='Date')%>% 
+  left_join(thirtyyears_IR, by='Date') %>% 
+  na.omit()
+
+# Plotting interest rates
+rates %>% 
+  ggplot(aes(x = Date)) +
+  geom_line(aes(y = ThreemonthsIR/100, color = "3 months")) + 
+  geom_line(aes(y = FiveyearsIR/100, color = "5 years")) +
+  geom_line(aes(y = TenyearsIR/100, color = "10 years")) +
+  geom_line(aes(y = ThirtyyearsIR/100, color = "30 years")) +
+  scale_y_continuous('Interest rates', labels = scales::percent) +
+  scale_x_date(name = 'Dates') +
+  scale_color_manual(name = "Interest rate", values = c( "10 years" = "red", "3 months" = "black","30 years" = "green",  "5 years" = "dodgerblue" ), labels = c("10 years", "3 months", "30 years", "5 years")) +
+  ggtitle('Historical Interest rates for US bonds')+
+  annotate("rect", xmin = as.Date("2020/02/01"), xmax = as.Date("2020/04/01"), ymin = 0, ymax = 0.17, alpha = .2, fill = 'purple') +
+  annotate("rect", xmin = as.Date("2007/12/01"), xmax = as.Date("2009/06/01"), ymin = 0, ymax = 0.17, alpha = .2, fill = 'purple') +
+  annotate("rect", xmin = as.Date("2001/03/01"), xmax = as.Date("2001/11/01"), ymin = 0, ymax = 0.17, alpha = .2, fill = 'purple') +
+  annotate("rect", xmin = as.Date("1990/07/01"), xmax = as.Date("1991/03/01"), ymin = 0, ymax = 0.17, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1981/07/01"), xmax = as.Date("1982/11/01"), ymin = 0, ymax = 0.17, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1980/01/01"), xmax = as.Date("1980/07/01"), ymin = 0, ymax = 0.17, alpha = .2, fill = 'purple')
+
+# 30y - 3m spread
+
+IR_Spread <- thirtyyears_IR %>%
+    left_join(threemonths_IR, by='Date') %>% 
+  mutate(IRSpread = ThirtyyearsIR - ThreemonthsIR) %>% 
+  select(-ThirtyyearsIR, -ThreemonthsIR)
+
+# Plotting spreads
+
+IR_Spread %>% 
+  ggplot(aes(Date, IRSpread/100)) + 
+  geom_line() +
+  scale_x_date(name = "Year", date_minor_breaks = "10 year") + 
+  scale_y_continuous(name = "Interest spread", labels = scales::percent) +
+  ggtitle('Interest rate spread (3y - 3m)')+
+  annotate("rect", xmin = as.Date("2020/02/01"), xmax = as.Date("2020/04/01"), ymin = -0.025, ymax = 0.05, alpha = .2, fill = 'purple') +
+  annotate("rect", xmin = as.Date("2007/12/01"), xmax = as.Date("2009/06/01"), ymin = -0.025, ymax = 0.05, alpha = .2, fill = 'purple') +
+  annotate("rect", xmin = as.Date("2001/03/01"), xmax = as.Date("2001/11/01"), ymin = -0.025, ymax = 0.05, alpha = .2, fill = 'purple') +
+  annotate("rect", xmin = as.Date("1990/07/01"), xmax = as.Date("1991/03/01"), ymin = -0.025, ymax = 0.05, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1981/07/01"), xmax = as.Date("1982/11/01"), ymin = -0.025, ymax = 0.05, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1980/01/01"), xmax = as.Date("1980/07/01"), ymin = -0.025, ymax = 0.05, alpha = .2, fill = 'purple')
+```
+
+## Building permits
+```{r}
+
+# FRED Building Permits
+building_permits <-  tq_get("PERMIT",
+                         from = SDate,
+                         "economic.data") %>% 
+  tq_transmute(select = price, mutate_fun = to.monthly, indexAt = "firstof") %>% 
+  rename(BuildingPermits = price) %>% 
+  rename(Date = date)
+
+building_permits %>% 
+  ggplot(aes(Date, BuildingPermits)) + 
+  geom_line() +
+  scale_x_date(name = "Year", date_minor_breaks = "10 year") + 
+  scale_y_continuous(name = "N° of building permits") +
+  ggtitle('Historical development of building permits')+
+  annotate("rect", xmin = as.Date("2020/02/01"), xmax = as.Date("2020/04/01"), ymin = 500, ymax = 2500, alpha = .2, fill = 'purple') +
+  annotate("rect", xmin = as.Date("2007/12/01"), xmax = as.Date("2009/06/01"), ymin = 500, ymax = 2500, alpha = .2, fill = 'purple') +
+  annotate("rect", xmin = as.Date("2001/03/01"), xmax = as.Date("2001/11/01"), ymin = 500, ymax = 2500, alpha = .2, fill = 'purple') +
+  annotate("rect", xmin = as.Date("1990/07/01"), xmax = as.Date("1991/03/01"), ymin = 500, ymax = 2500, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1981/07/01"), xmax = as.Date("1982/11/01"), ymin = 500, ymax = 2500, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1980/01/01"), xmax = as.Date("1980/07/01"), ymin = 500, ymax = 2500, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1973/11/01"), xmax = as.Date("1975/05/01"), ymin = 500, ymax = 2500, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1969/12/01"), xmax = as.Date("1970/11/01"), ymin = 500, ymax = 2500, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1960/04/01"), xmax = as.Date("1961/02/01"), ymin = 500, ymax = 2500, alpha = .2, fill = 'purple')
+
+```
+
+## Consumer sentiment
+```{r}
+
+# Index of consumer sentiment
+consumer_sentiment <- Quandl("UMICH/SOC1",start_date=SDate, end_date=EDate, collapse = "monthly") %>% 
+  rename(ConsumerSentiment = Index) %>% 
+  mutate(Date = floor_date(Date, unit = "month"))
+
+consumer_sentiment %>% 
+  ggplot(aes(Date, ConsumerSentiment)) + 
+  geom_line() +
+  scale_x_date(name = "Year", date_minor_breaks = "10 year") + 
+  scale_y_continuous(name = "Index of consumer sentiment") +
+  ggtitle('Historical consumer sentiment')+
+  annotate("rect", xmin = as.Date("2020/02/01"), xmax = as.Date("2020/04/01"), ymin = 50, ymax = 115, alpha = .2, fill = 'purple') +
+  annotate("rect", xmin = as.Date("2007/12/01"), xmax = as.Date("2009/06/01"), ymin = 50, ymax = 115, alpha = .2, fill = 'purple') +
+  annotate("rect", xmin = as.Date("2001/03/01"), xmax = as.Date("2001/11/01"), ymin = 50, ymax = 115, alpha = .2, fill = 'purple') +
+  annotate("rect", xmin = as.Date("1990/07/01"), xmax = as.Date("1991/03/01"), ymin = 50, ymax = 115, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1981/07/01"), xmax = as.Date("1982/11/01"), ymin = 50, ymax = 115, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1980/01/01"), xmax = as.Date("1980/07/01"), ymin = 50, ymax = 115, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1973/11/01"), xmax = as.Date("1975/05/01"), ymin = 50, ymax = 115, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1969/12/01"), xmax = as.Date("1970/11/01"), ymin = 50, ymax = 115, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1960/04/01"), xmax = as.Date("1961/02/01"), ymin = 50, ymax = 115, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1957/08/01"), xmax = as.Date("1958/04/01"), ymin = 50, ymax = 115, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1953/07/01"), xmax = as.Date("1954/05/01"), ymin = 50, ymax = 115, alpha = .2, fill = 'purple')
+```
+
+## Average Weekly Hours of Production and Nonsupervisory Employees, Manufacturing
+```{r}
+
+# FRED average weekly hours of Production and Nonsupervisory Employees, Manufacturing
+avg_weekly_hours_prod <- tq_get("AWHMAN", 
+                            from =SDate, 
+                            get = "economic.data") %>% 
+  tq_transmute(select = price, mutate_fun = to.monthly, indexAt = "firstof") %>% 
+  rename(AvgWeeklyHoursProd = price) %>% 
+  rename(Date = date)
+
+avg_weekly_hours_prod %>% 
+  ggplot(aes(Date, AvgWeeklyHoursProd)) + 
+  geom_line() +
+  scale_x_date(name = "Year", date_minor_breaks = "10 year") + 
+  scale_y_continuous(name = "Weekly hours of manufacturing") +
+  ggtitle('Average Weekly Hours of Production and Nonsupervisory Employees, Manufacturing')+
+  annotate("rect", xmin = as.Date("2020/02/01"), xmax = as.Date("2020/04/01"), ymin = 37, ymax = 46, alpha = .2, fill = 'purple') +
+  annotate("rect", xmin = as.Date("2007/12/01"), xmax = as.Date("2009/06/01"), ymin = 37, ymax = 46, alpha = .2, fill = 'purple') +
+  annotate("rect", xmin = as.Date("2001/03/01"), xmax = as.Date("2001/11/01"), ymin = 37, ymax = 46, alpha = .2, fill = 'purple') +
+  annotate("rect", xmin = as.Date("1990/07/01"), xmax = as.Date("1991/03/01"), ymin = 37, ymax = 46, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1981/07/01"), xmax = as.Date("1982/11/01"), ymin = 37, ymax = 46, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1980/01/01"), xmax = as.Date("1980/07/01"), ymin = 37, ymax = 46, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1973/11/01"), xmax = as.Date("1975/05/01"), ymin = 37, ymax = 46, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1969/12/01"), xmax = as.Date("1970/11/01"), ymin = 37, ymax = 46, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1960/04/01"), xmax = as.Date("1961/02/01"), ymin = 37, ymax = 46, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1957/08/01"), xmax = as.Date("1958/04/01"), ymin = 37, ymax = 46, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1953/07/01"), xmax = as.Date("1954/05/01"), ymin = 37, ymax = 46, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1948/11/01"), xmax = as.Date("1949/10/01"), ymin = 37, ymax = 46, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1945/02/01"), xmax = as.Date("1945/10/01"), ymin = 37, ymax = 46, alpha = .2, fill = 'purple')
+
+```
+## Future New Orders; Diffusion Index for Federal Reserve District 3: Philadelphia
+```{r}
+
+# FRED Future New Orders; Diffusion Index for Federal Reserve District 3: Philadelphia
+future_new_orders <- tq_get("NOFDFSA066MSFRBPHI", 
+                            from =SDate, 
+                            get = "economic.data")%>% 
+  tq_transmute(select = price, mutate_fun = to.monthly, indexAt = "firstof") %>% 
+  rename(FutureNewOrders = price) %>% 
+  rename(Date = date)
+
+future_new_orders %>% 
+  ggplot(aes(Date, FutureNewOrders)) + 
+  geom_line() +
+  scale_x_date(name = "Year", date_minor_breaks = "10 year") + 
+  scale_y_continuous(name = "Future new orders") +
+  ggtitle('Future New Orders; Diffusion Index for Federal Reserve District 3: Philadelphia')+
+  annotate("rect", xmin = as.Date("2020/02/01"), xmax = as.Date("2020/04/01"), ymin = -50, ymax = 90, alpha = .2, fill = 'purple') +
+  annotate("rect", xmin = as.Date("2007/12/01"), xmax = as.Date("2009/06/01"), ymin = -50, ymax = 90, alpha = .2, fill = 'purple') +
+  annotate("rect", xmin = as.Date("2001/03/01"), xmax = as.Date("2001/11/01"), ymin = -50, ymax = 90, alpha = .2, fill = 'purple') +
+  annotate("rect", xmin = as.Date("1990/07/01"), xmax = as.Date("1991/03/01"), ymin = -50, ymax = 90, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1981/07/01"), xmax = as.Date("1982/11/01"), ymin = -50, ymax = 90, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1980/01/01"), xmax = as.Date("1980/07/01"), ymin = -50, ymax = 90, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1973/11/01"), xmax = as.Date("1975/05/01"), ymin = -50, ymax = 90, alpha = .2, fill = 'purple')
+```
+
+# Indexation of leading indicators
+```{r}
+#library(stats)
+
+pca_data <- stockmarket_returns %>% 
+  left_join(retail_trade, by = "Date") %>% 
+  left_join(IR_Spread, by = "Date") %>%
+  left_join(building_permits, by = "Date") %>%
+  left_join(consumer_sentiment, by = "Date") %>%
+  left_join(avg_weekly_hours_prod, by = "Date") %>%
+  left_join(future_new_orders, by = "Date") %>% 
+  select(-Date)
+
+pca_result <- princomp(pca_data)
+pca_result$scores
+pca_result$sdev
+
+plot(pca_result$scores[,1:2], col=1:nrow(pca_result$scores), xlab="PC1", ylab="PC2")
+
+pca_scores <- as.data.frame(pca_result$scores) %>% 
+  select(Comp.1)
+
+values <- stockmarket_returns %>% 
+  left_join(retail_trade, by = "Date") %>% 
+  left_join(IR_Spread, by = "Date") %>%
+  left_join(building_permits, by = "Date") %>%
+  left_join(consumer_sentiment, by = "Date") %>%
+  left_join(avg_weekly_hours_prod, by = "Date") %>%
+  left_join(future_new_orders, by = "Date") %>%
+  na.omit()
+
+values$index <- pca_scores[,1]
+
+plot(values$Date, values$index)
+
+values %>% 
+  ggplot(aes(Date, index)) + 
+  geom_line() +
+  scale_x_date(name = "Year", date_minor_breaks = "10 year") + 
+  scale_y_continuous(name = "Leading index") +
+  ggtitle('Leading index for business cycle') +
+  annotate("rect", xmin = as.Date("2020/02/01"), xmax = as.Date("2020/04/01"), ymin = -1000, ymax = 1000, alpha = .2, fill = 'purple') +
+  annotate("rect", xmin = as.Date("2007/12/01"), xmax = as.Date("2009/06/01"), ymin = -1000, ymax = 1000, alpha = .2, fill = 'purple') +
+  annotate("rect", xmin = as.Date("2001/03/01"), xmax = as.Date("2001/11/01"), ymin = -1000, ymax = 1000, alpha = .2, fill = 'purple') +
+  annotate("rect", xmin = as.Date("1990/07/01"), xmax = as.Date("1991/03/01"), ymin = -1000, ymax = 1000, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1981/07/01"), xmax = as.Date("1982/11/01"), ymin = -1000, ymax = 1000, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1980/01/01"), xmax = as.Date("1980/07/01"), ymin = -1000, ymax = 1000, alpha = .2, fill = 'purple')
+  
+
 ```
 
