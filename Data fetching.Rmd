@@ -406,6 +406,33 @@ dataAllPctChange <- dataAllInterpolated %>%
 ```
 
 ```{r}
+# Business cycle indicator
+cycledata <- read_csv("C:/Users/lavar/OneDrive/Desktop/Thesis/investmentfound/AnalysisBusinessCycle.csv", 
+    col_types = cols(Date = col_date(format = "%d/%m/%Y"), 
+        Indicator = col_number(), Type = col_character()))
+
+```
+
+# Database with cycle indicator (0 to 1)
+```{r}
+dataWithCycle <- dataAllPctChange %>% 
+  left_join(cycledata, by='Date')%>% 
+  na.omit()
+```
+
+```{r}
+cycledata2 <- read_csv("C:/Users/lavar/OneDrive/Desktop/Thesis/investmentfound/AnalysisBusinessCycle2.csv", 
+    col_types = cols(Date = col_date(format = "%d/%m/%Y"), 
+        Indicator = col_number(), Type = col_character()))
+
+dataWithCycle2 <- dataAllPctChange %>% 
+  left_join(cycledata2, by='Date')%>% 
+  na.omit() %>% 
+  filter(Type == "Expansion")
+```
+
+
+```{r}
 library(corrplot)
 library(corrr)
 ```
@@ -428,6 +455,8 @@ dataAllPctChange %>%
 ```{r}
   write_csv(dataAll, "mergedData.csv")
   write_csv(dataAllPctChange, "mergedDataPctChange.csv")
+  write_csv(dataWithCycle, "dataWithCycle.csv")
+  write_csv(dataWithCycle2, "dataWithCycle2.csv")
 ```
 
 ```{r}
