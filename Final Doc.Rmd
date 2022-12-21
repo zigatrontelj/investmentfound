@@ -469,7 +469,9 @@ pca_data_leading <- stockmarket_returns %>%
   select(-Date) %>% 
   na.omit()
 
-pca_result_leading <- princomp(pca_data_leading)
+pca_data_leading_standardized <- scale(pca_data_leading)
+
+pca_result_leading <- princomp(pca_data_leading_standardized)
 pca_result_leading$scores
 pca_result_leading$sdev
 
@@ -478,7 +480,7 @@ pca_variances_leading  <- var(pca_result_leading$scores)
 pca_cumulative_variances_leading  <- cumsum(pca_variances_leading)
 
 pca_var_leading  <- pca_result_leading$sdev^2 / sum(pca_result_leading$sdev^2)
-barplot(pca_var, xlab="Principal Component", ylab="Proportion of Variance Explained")
+barplot(pca_var_leading, xlab="Principal Component", ylab="Proportion of Variance Explained")
 
 screeplot(pca_result_leading, type="line", main="Scree Plot")
 
@@ -506,13 +508,13 @@ values_leading %>%
   scale_x_date(name = "Year", date_minor_breaks = "10 year") + 
   scale_y_continuous(name = "Leading index") +
   ggtitle('Leading index for business cycle') +
-  annotate("rect", xmin = as.Date("2020/02/01"), xmax = as.Date("2020/04/01"), ymin = -1000, ymax = 1000, alpha = .2, fill = 'purple') +
-  annotate("rect", xmin = as.Date("2007/12/01"), xmax = as.Date("2009/06/01"), ymin = -1000, ymax = 1000, alpha = .2, fill = 'purple') +
-  annotate("rect", xmin = as.Date("2001/03/01"), xmax = as.Date("2001/11/01"), ymin = -1000, ymax = 1000, alpha = .2, fill = 'purple') +
-  annotate("rect", xmin = as.Date("1990/07/01"), xmax = as.Date("1991/03/01"), ymin = -1000, ymax = 1000, alpha = .2, fill = 'purple')+
-  annotate("rect", xmin = as.Date("1981/07/01"), xmax = as.Date("1982/11/01"), ymin = -1000, ymax = 1000, alpha = .2, fill = 'purple')+
-  annotate("rect", xmin = as.Date("1980/01/01"), xmax = as.Date("1980/07/01"), ymin = -1000, ymax = 1000, alpha = .2, fill = 'purple')+
-  annotate("rect", xmin = as.Date("1973/11/01"), xmax = as.Date("1975/05/01"), ymin = -1000, ymax = 1000, alpha = .2, fill = 'purple')
+  annotate("rect", xmin = as.Date("2020/02/01"), xmax = as.Date("2020/04/01"), ymin = -2.5, ymax = 5, alpha = .2, fill = 'purple') +
+  annotate("rect", xmin = as.Date("2007/12/01"), xmax = as.Date("2009/06/01"), ymin = -2.5, ymax = 5, alpha = .2, fill = 'purple') +
+  annotate("rect", xmin = as.Date("2001/03/01"), xmax = as.Date("2001/11/01"), ymin = -2.5, ymax = 5, alpha = .2, fill = 'purple') +
+  annotate("rect", xmin = as.Date("1990/07/01"), xmax = as.Date("1991/03/01"), ymin = -2.5, ymax = 5, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1981/07/01"), xmax = as.Date("1982/11/01"), ymin = -2.5, ymax = 5, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1980/01/01"), xmax = as.Date("1980/07/01"), ymin = -2.5, ymax = 5, alpha = .2, fill = 'purple')
+#+annotate("rect", xmin = as.Date("1973/11/01"), xmax = as.Date("1975/05/01"), ymin = -2.5, ymax = 5, alpha = .2, fill = 'purple')
   
 
 ```
@@ -527,6 +529,7 @@ pca_data_coincident <- ind_prod_ind %>%
   left_join(man_trade_sales, by = "Date") %>% 
   select(-Date) %>% 
   na.omit()
+
 
 pca_result_coincident <- princomp(pca_data_coincident)
 pca_result_coincident$scores
