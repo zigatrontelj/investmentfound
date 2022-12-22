@@ -414,6 +414,10 @@ SP500_PE %>%
   annotate("rect", xmin = as.Date("1969/12/01"), xmax = as.Date("1970/11/01"), ymin = 20, ymax = 100, alpha = .2, fill = 'purple')+
   annotate("rect", xmin = as.Date("1960/04/01"), xmax = as.Date("1961/02/01"), ymin = 20, ymax = 100, alpha = .2, fill = 'purple')
 ```
+```{r}
+library(car)
+library(psych)
+```
 
 
 ```{r}
@@ -431,8 +435,12 @@ pca_result_leading <- princomp(pca_data_leading_standardized)
 pca_result_leading$scores
 pca_result_leading$sdev
 
+# Important checks
 correlations <- cor(pca_data_leading_standardized)
 print(correlations)
+# Calculate the Kaiser-Meyer-Olkin (KMO) measure for the dataset
+kmo <- KMO(pca_data_leading_standardized)
+print(kmo)
 
 pca_summary_leading  <- summary(pca_result_leading)
 pca_variances_leading  <- var(pca_result_leading$scores)
