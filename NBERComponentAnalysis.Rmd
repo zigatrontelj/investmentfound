@@ -21,151 +21,167 @@ SFDate <- EFDate - 365*80
 SFDate
 EFDate
 ```
+
 ```{r}
-realpersonalincomelesstransfers <- Quandl('FRED/W875RX1', start_date=SDate, end_date=EDate, collapse = "monthly") %>% 
-  tq_transmute(select = Value, mutate_fun = to.monthly, indexAt = "firstof") %>% tq_transmute(select = Value,         
-               mutate_fun = periodReturn,   
-               period = "monthly",      
+realpersonalincomelesstransfers <- tq_get("W875RX1",
+                                          from = SDate,
+                                          get = "economic.data")%>% 
+  tq_transmute(select = price,
+               mutate_fun = periodReturn,
+               period = "monthly",
                col_rename = "Value")
 
 realpersonalincomelesstransfers %>% 
-  ggplot(aes(Date, Value)) + 
+  ggplot(aes(date, Value)) + 
   geom_line() +
   scale_x_date(name = "Year", date_minor_breaks = "10 year") + 
-  scale_y_continuous(name = "N° of building permits") +
+  scale_y_continuous(name = "% change") +
   ggtitle('Real Personal Income Less Transfers')+
-  annotate("rect", xmin = as.Date("2020/02/01"), xmax = as.Date("2020/04/01"), ymin = -1, ymax = 1, alpha = .2, fill = 'purple') +
-  annotate("rect", xmin = as.Date("2007/12/01"), xmax = as.Date("2009/06/01"), ymin = -1, ymax = 1, alpha = .2, fill = 'purple') +
-  annotate("rect", xmin = as.Date("2001/03/01"), xmax = as.Date("2001/11/01"), ymin = -1, ymax = 1, alpha = .2, fill = 'purple') +
-  annotate("rect", xmin = as.Date("1990/07/01"), xmax = as.Date("1991/03/01"), ymin = -1, ymax = 1, alpha = .2, fill = 'purple')+
-  annotate("rect", xmin = as.Date("1981/07/01"), xmax = as.Date("1982/11/01"), ymin = -1, ymax = 1, alpha = .2, fill = 'purple')+
-  annotate("rect", xmin = as.Date("1980/01/01"), xmax = as.Date("1980/07/01"), ymin = -1, ymax = 1, alpha = .2, fill = 'purple')+
-  annotate("rect", xmin = as.Date("1973/11/01"), xmax = as.Date("1975/05/01"), ymin = -1, ymax = 1, alpha = .2, fill = 'purple')+
-  annotate("rect", xmin = as.Date("1969/12/01"), xmax = as.Date("1970/11/01"), ymin = -1, ymax = 1, alpha = .2, fill = 'purple')+
-  annotate("rect", xmin = as.Date("1960/04/01"), xmax = as.Date("1961/02/01"), ymin = -1, ymax = 1, alpha = .2, fill = 'purple')
+  annotate("rect", xmin = as.Date("2020/02/01"), xmax = as.Date("2020/04/01"), ymin = -0.05, ymax = 0.05, alpha = .2, fill = 'purple') +
+  annotate("rect", xmin = as.Date("2007/12/01"), xmax = as.Date("2009/06/01"), ymin = -0.05, ymax = 0.05, alpha = .2, fill = 'purple') +
+  annotate("rect", xmin = as.Date("2001/03/01"), xmax = as.Date("2001/11/01"), ymin = -0.05, ymax = 0.05, alpha = .2, fill = 'purple') +
+  annotate("rect", xmin = as.Date("1990/07/01"), xmax = as.Date("1991/03/01"), ymin = -0.05, ymax = 0.05, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1981/07/01"), xmax = as.Date("1982/11/01"), ymin = -0.05, ymax = 0.05, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1980/01/01"), xmax = as.Date("1980/07/01"), ymin = -0.05, ymax = 0.05, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1973/11/01"), xmax = as.Date("1975/05/01"), ymin = -0.05, ymax = 0.05, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1969/12/01"), xmax = as.Date("1970/11/01"), ymin = -0.05, ymax = 0.05, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1960/04/01"), xmax = as.Date("1961/02/01"), ymin = -0.05, ymax = 0.05, alpha = .2, fill = 'purple')
 ```
 ```{r}
-nonfarmpayrollemployment <- Quandl('FRED/PAYEMS', start_date=SDate, end_date=EDate, collapse = "monthly") %>% 
-  tq_transmute(select = Value, mutate_fun = to.monthly, indexAt = "firstof") %>% tq_transmute(select = Value,         
-               mutate_fun = periodReturn,   
-               period = "monthly",      
+nonfarmpayrollemployment <- tq_get("PAYEMS",
+                                          from = SDate,
+                                          get = "economic.data")%>% 
+  tq_transmute(select = price,
+               mutate_fun = periodReturn,
+               period = "monthly",
                col_rename = "Value")
 
 nonfarmpayrollemployment %>% 
-  ggplot(aes(Date, Value)) + 
+  ggplot(aes(date, Value)) + 
   geom_line() +
   scale_x_date(name = "Year", date_minor_breaks = "10 year") + 
   scale_y_continuous(name = "N° of building permits") +
   ggtitle('Non-Farm Payroll')+
-  annotate("rect", xmin = as.Date("2020/02/01"), xmax = as.Date("2020/04/01"), ymin = -1, ymax = 1, alpha = .2, fill = 'purple') +
-  annotate("rect", xmin = as.Date("2007/12/01"), xmax = as.Date("2009/06/01"), ymin = -1, ymax = 1, alpha = .2, fill = 'purple') +
-  annotate("rect", xmin = as.Date("2001/03/01"), xmax = as.Date("2001/11/01"), ymin = -1, ymax = 1, alpha = .2, fill = 'purple') +
-  annotate("rect", xmin = as.Date("1990/07/01"), xmax = as.Date("1991/03/01"), ymin = -1, ymax = 1, alpha = .2, fill = 'purple')+
-  annotate("rect", xmin = as.Date("1981/07/01"), xmax = as.Date("1982/11/01"), ymin = -1, ymax = 1, alpha = .2, fill = 'purple')+
-  annotate("rect", xmin = as.Date("1980/01/01"), xmax = as.Date("1980/07/01"), ymin = -1, ymax = 1, alpha = .2, fill = 'purple')+
-  annotate("rect", xmin = as.Date("1973/11/01"), xmax = as.Date("1975/05/01"), ymin = -1, ymax = 1, alpha = .2, fill = 'purple')+
-  annotate("rect", xmin = as.Date("1969/12/01"), xmax = as.Date("1970/11/01"), ymin = -1, ymax = 1, alpha = .2, fill = 'purple')+
-  annotate("rect", xmin = as.Date("1960/04/01"), xmax = as.Date("1961/02/01"), ymin = -1, ymax = 1, alpha = .2, fill = 'purple')
+  annotate("rect", xmin = as.Date("2020/02/01"), xmax = as.Date("2020/04/01"), ymin = -0.05, ymax = 0.05, alpha = .2, fill = 'purple') +
+  annotate("rect", xmin = as.Date("2007/12/01"), xmax = as.Date("2009/06/01"), ymin = -0.05, ymax = 0.05, alpha = .2, fill = 'purple') +
+  annotate("rect", xmin = as.Date("2001/03/01"), xmax = as.Date("2001/11/01"), ymin = -0.05, ymax = 0.05, alpha = .2, fill = 'purple') +
+  annotate("rect", xmin = as.Date("1990/07/01"), xmax = as.Date("1991/03/01"), ymin = -0.05, ymax = 0.05, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1981/07/01"), xmax = as.Date("1982/11/01"), ymin = -0.05, ymax = 0.05, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1980/01/01"), xmax = as.Date("1980/07/01"), ymin = -0.05, ymax = 0.05, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1973/11/01"), xmax = as.Date("1975/05/01"), ymin = -0.05, ymax = 0.05, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1969/12/01"), xmax = as.Date("1970/11/01"), ymin = -0.05, ymax = 0.05, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1960/04/01"), xmax = as.Date("1961/02/01"), ymin = -0.05, ymax = 0.05, alpha = .2, fill = 'purple')
 ```
 
 ```{r}
-realpersonalconsumptionexpenditures <- Quandl('FRED/DPCERA3M086SBEA', start_date=SDate, end_date=EDate, collapse = "monthly") %>% 
-  tq_transmute(select = Value, mutate_fun = to.monthly, indexAt = "firstof") %>% tq_transmute(select = Value,         
-               mutate_fun = periodReturn,   
-               period = "monthly",      
-               col_rename = "Value") 
+realpersonalconsumptionexpenditures <- tq_get("DPCERA3M086SBEA",
+                                          from = SDate,
+                                          get = "economic.data")%>% 
+  tq_transmute(select = price,
+               mutate_fun = periodReturn,
+               period = "monthly",
+               col_rename = "Value")
 
 realpersonalconsumptionexpenditures %>% 
-  ggplot(aes(Date, Value)) + 
+  ggplot(aes(date, Value)) + 
   geom_line() +
   scale_x_date(name = "Year", date_minor_breaks = "10 year") + 
   scale_y_continuous(name = "N° of building permits") +
   ggtitle('Real personal Consumption Expenditure')+
-  annotate("rect", xmin = as.Date("2020/02/01"), xmax = as.Date("2020/04/01"), ymin = -1, ymax = 1, alpha = .2, fill = 'purple') +
-  annotate("rect", xmin = as.Date("2007/12/01"), xmax = as.Date("2009/06/01"), ymin = -1, ymax = 1, alpha = .2, fill = 'purple') +
-  annotate("rect", xmin = as.Date("2001/03/01"), xmax = as.Date("2001/11/01"), ymin = -1, ymax = 1, alpha = .2, fill = 'purple') +
-  annotate("rect", xmin = as.Date("1990/07/01"), xmax = as.Date("1991/03/01"), ymin = -1, ymax = 1, alpha = .2, fill = 'purple')+
-  annotate("rect", xmin = as.Date("1981/07/01"), xmax = as.Date("1982/11/01"), ymin = -1, ymax = 1, alpha = .2, fill = 'purple')+
-  annotate("rect", xmin = as.Date("1980/01/01"), xmax = as.Date("1980/07/01"), ymin = -1, ymax = 1, alpha = .2, fill = 'purple')+
-  annotate("rect", xmin = as.Date("1973/11/01"), xmax = as.Date("1975/05/01"), ymin = -1, ymax = 1, alpha = .2, fill = 'purple')+
-  annotate("rect", xmin = as.Date("1969/12/01"), xmax = as.Date("1970/11/01"), ymin = -1, ymax = 1, alpha = .2, fill = 'purple')+
-  annotate("rect", xmin = as.Date("1960/04/01"), xmax = as.Date("1961/02/01"), ymin = -1, ymax = 1, alpha = .2, fill = 'purple')
+  annotate("rect", xmin = as.Date("2020/02/01"), xmax = as.Date("2020/04/01"), ymin = -0.05, ymax = 0.05, alpha = .2, fill = 'purple') +
+  annotate("rect", xmin = as.Date("2007/12/01"), xmax = as.Date("2009/06/01"), ymin = -0.05, ymax = 0.05, alpha = .2, fill = 'purple') +
+  annotate("rect", xmin = as.Date("2001/03/01"), xmax = as.Date("2001/11/01"), ymin = -0.05, ymax = 0.05, alpha = .2, fill = 'purple') +
+  annotate("rect", xmin = as.Date("1990/07/01"), xmax = as.Date("1991/03/01"), ymin = -0.05, ymax = 0.05, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1981/07/01"), xmax = as.Date("1982/11/01"), ymin = -0.05, ymax = 0.05, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1980/01/01"), xmax = as.Date("1980/07/01"), ymin = -0.05, ymax = 0.05, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1973/11/01"), xmax = as.Date("1975/05/01"), ymin = -0.05, ymax = 0.05, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1969/12/01"), xmax = as.Date("1970/11/01"), ymin = -0.05, ymax = 0.05, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1960/04/01"), xmax = as.Date("1961/02/01"), ymin = -0.05, ymax = 0.05, alpha = .2, fill = 'purple')
 ```
 ```{r}
-ProducerPriceIndex <- Quandl('FRED/PPIACO', start_date=SDate, end_date=EDate, collapse = "monthly") %>% 
-  tq_transmute(select = Value, mutate_fun = to.monthly, indexAt = "firstof") %>% tq_transmute(select = Value,         
-               mutate_fun = periodReturn,   
-               period = "monthly",      
-               col_rename = "Value") 
+ProducerPriceIndex <- tq_get("PPIACO",
+                                          from = SDate,
+                                          get = "economic.data")%>% 
+  tq_transmute(select = price,
+               mutate_fun = periodReturn,
+               period = "monthly",
+               col_rename = "Value")
 
 ProducerPriceIndex %>% 
-  ggplot(aes(Date, Value)) + 
+  ggplot(aes(date, Value)) + 
   geom_line() +
   scale_x_date(name = "Year", date_minor_breaks = "10 year") + 
   scale_y_continuous(name = "N° of building permits") +
   ggtitle('Producer Price Index')+
-  annotate("rect", xmin = as.Date("2020/02/01"), xmax = as.Date("2020/04/01"), ymin = -1, ymax = 1, alpha = .2, fill = 'purple') +
-  annotate("rect", xmin = as.Date("2007/12/01"), xmax = as.Date("2009/06/01"), ymin = -1, ymax = 1, alpha = .2, fill = 'purple') +
-  annotate("rect", xmin = as.Date("2001/03/01"), xmax = as.Date("2001/11/01"), ymin = -1, ymax = 1, alpha = .2, fill = 'purple') +
-  annotate("rect", xmin = as.Date("1990/07/01"), xmax = as.Date("1991/03/01"), ymin = -1, ymax = 1, alpha = .2, fill = 'purple')+
-  annotate("rect", xmin = as.Date("1981/07/01"), xmax = as.Date("1982/11/01"), ymin = -1, ymax = 1, alpha = .2, fill = 'purple')+
-  annotate("rect", xmin = as.Date("1980/01/01"), xmax = as.Date("1980/07/01"), ymin = -1, ymax = 1, alpha = .2, fill = 'purple')+
-  annotate("rect", xmin = as.Date("1973/11/01"), xmax = as.Date("1975/05/01"), ymin = -1, ymax = 1, alpha = .2, fill = 'purple')+
-  annotate("rect", xmin = as.Date("1969/12/01"), xmax = as.Date("1970/11/01"), ymin = -1, ymax = 1, alpha = .2, fill = 'purple')+
-  annotate("rect", xmin = as.Date("1960/04/01"), xmax = as.Date("1961/02/01"), ymin = -1, ymax = 1, alpha = .2, fill = 'purple')
+  annotate("rect", xmin = as.Date("2020/02/01"), xmax = as.Date("2020/04/01"), ymin = -0.05, ymax = 0.05, alpha = .2, fill = 'purple') +
+  annotate("rect", xmin = as.Date("2007/12/01"), xmax = as.Date("2009/06/01"), ymin = -0.05, ymax = 0.05, alpha = .2, fill = 'purple') +
+  annotate("rect", xmin = as.Date("2001/03/01"), xmax = as.Date("2001/11/01"), ymin = -0.05, ymax = 0.05, alpha = .2, fill = 'purple') +
+  annotate("rect", xmin = as.Date("1990/07/01"), xmax = as.Date("1991/03/01"), ymin = -0.05, ymax = 0.05, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1981/07/01"), xmax = as.Date("1982/11/01"), ymin = -0.05, ymax = 0.05, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1980/01/01"), xmax = as.Date("1980/07/01"), ymin = -0.05, ymax = 0.05, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1973/11/01"), xmax = as.Date("1975/05/01"), ymin = -0.05, ymax = 0.05, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1969/12/01"), xmax = as.Date("1970/11/01"), ymin = -0.05, ymax = 0.05, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1960/04/01"), xmax = as.Date("1961/02/01"), ymin = -0.05, ymax = 0.05, alpha = .2, fill = 'purple')
 ```
 ```{r}
-IPI  <- Quandl("FRED/INDPRO", start_date=SDate, end_date=EDate, collapse = "monthly") %>% 
-  tq_transmute(select = Value, mutate_fun = to.monthly, indexAt = "firstof") %>% tq_transmute(select = Value,         
-               mutate_fun = periodReturn,   
-               period = "monthly",      
-               col_rename = "Value") 
+IPI  <- tq_get("INDPRO",
+                                          from = SDate,
+                                          get = "economic.data")%>% 
+  tq_transmute(select = price,
+               mutate_fun = periodReturn,
+               period = "monthly",
+               col_rename = "Value")
 
 IPI %>% 
-  ggplot(aes(Date, Value)) + 
+  ggplot(aes(date, Value)) + 
   geom_line() +
   scale_x_date(name = "Year", date_minor_breaks = "10 year") + 
   scale_y_continuous(name = "N° of building permits") +
   ggtitle('Industrial Production Index')+
-  annotate("rect", xmin = as.Date("2020/02/01"), xmax = as.Date("2020/04/01"), ymin = -1, ymax = 1, alpha = .2, fill = 'purple') +
-  annotate("rect", xmin = as.Date("2007/12/01"), xmax = as.Date("2009/06/01"), ymin = -1, ymax = 1, alpha = .2, fill = 'purple') +
-  annotate("rect", xmin = as.Date("2001/03/01"), xmax = as.Date("2001/11/01"), ymin = -1, ymax = 1, alpha = .2, fill = 'purple') +
-  annotate("rect", xmin = as.Date("1990/07/01"), xmax = as.Date("1991/03/01"), ymin = -1, ymax = 1, alpha = .2, fill = 'purple')+
-  annotate("rect", xmin = as.Date("1981/07/01"), xmax = as.Date("1982/11/01"), ymin = -1, ymax = 1, alpha = .2, fill = 'purple')+
-  annotate("rect", xmin = as.Date("1980/01/01"), xmax = as.Date("1980/07/01"), ymin = -1, ymax = 1, alpha = .2, fill = 'purple')+
-  annotate("rect", xmin = as.Date("1973/11/01"), xmax = as.Date("1975/05/01"), ymin = -1, ymax = 1, alpha = .2, fill = 'purple')+
-  annotate("rect", xmin = as.Date("1969/12/01"), xmax = as.Date("1970/11/01"), ymin = -1, ymax = 1, alpha = .2, fill = 'purple')+
-  annotate("rect", xmin = as.Date("1960/04/01"), xmax = as.Date("1961/02/01"), ymin = -1, ymax = 1, alpha = .2, fill = 'purple')
+  annotate("rect", xmin = as.Date("2020/02/01"), xmax = as.Date("2020/04/01"), ymin = -0.05, ymax = 0.05, alpha = .2, fill = 'purple') +
+  annotate("rect", xmin = as.Date("2007/12/01"), xmax = as.Date("2009/06/01"), ymin = -0.05, ymax = 0.05, alpha = .2, fill = 'purple') +
+  annotate("rect", xmin = as.Date("2001/03/01"), xmax = as.Date("2001/11/01"), ymin = -0.05, ymax = 0.05, alpha = .2, fill = 'purple') +
+  annotate("rect", xmin = as.Date("1990/07/01"), xmax = as.Date("1991/03/01"), ymin = -0.05, ymax = 0.05, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1981/07/01"), xmax = as.Date("1982/11/01"), ymin = -0.05, ymax = 0.05, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1980/01/01"), xmax = as.Date("1980/07/01"), ymin = -0.05, ymax = 0.05, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1973/11/01"), xmax = as.Date("1975/05/01"), ymin = -0.05, ymax = 0.05, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1969/12/01"), xmax = as.Date("1970/11/01"), ymin = -0.05, ymax = 0.05, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1960/04/01"), xmax = as.Date("1961/02/01"), ymin = -0.05, ymax = 0.05, alpha = .2, fill = 'purple')
 ```
 ```{r}
-employmentrate <- Quandl('FRED/EMRATIO', start_date=SDate, end_date=EDate, collapse = "monthly") %>% 
-  tq_transmute(select = Value, mutate_fun = to.monthly, indexAt = "firstof") %>% tq_transmute(select = Value,         mutate_fun = periodReturn,   period = "monthly",      col_rename = "Value") 
+employmentrate <- tq_get("EMRATIO",
+                                          from = SDate,
+                                          get = "economic.data")%>% 
+  tq_transmute(select = price,
+               mutate_fun = periodReturn,
+               period = "monthly",
+               col_rename = "Value")
 
 employmentrate$Value <- employmentrate$Value/100
 employmentrate %>% 
-  ggplot(aes(Date, Value)) + 
+  ggplot(aes(date, Value)) + 
   geom_line() +
   scale_x_date(name = "Year", date_minor_breaks = "10 year") + 
   scale_y_continuous(name = "N° of building permits") +
   ggtitle('Employment Rate')+
-  annotate("rect", xmin = as.Date("2020/02/01"), xmax = as.Date("2020/04/01"), ymin = -1, ymax = 1, alpha = .2, fill = 'purple') +
-  annotate("rect", xmin = as.Date("2007/12/01"), xmax = as.Date("2009/06/01"), ymin = -1, ymax = 1, alpha = .2, fill = 'purple') +
-  annotate("rect", xmin = as.Date("2001/03/01"), xmax = as.Date("2001/11/01"), ymin = -1, ymax = 1, alpha = .2, fill = 'purple') +
-  annotate("rect", xmin = as.Date("1990/07/01"), xmax = as.Date("1991/03/01"), ymin = -1, ymax = 1, alpha = .2, fill = 'purple')+
-  annotate("rect", xmin = as.Date("1981/07/01"), xmax = as.Date("1982/11/01"), ymin = -1, ymax = 1, alpha = .2, fill = 'purple')+
-  annotate("rect", xmin = as.Date("1980/01/01"), xmax = as.Date("1980/07/01"), ymin = -1, ymax = 1, alpha = .2, fill = 'purple')+
-  annotate("rect", xmin = as.Date("1973/11/01"), xmax = as.Date("1975/05/01"), ymin = -1, ymax = 1, alpha = .2, fill = 'purple')+
-  annotate("rect", xmin = as.Date("1969/12/01"), xmax = as.Date("1970/11/01"), ymin = -1, ymax = 1, alpha = .2, fill = 'purple')+
-  annotate("rect", xmin = as.Date("1960/04/01"), xmax = as.Date("1961/02/01"), ymin = -1, ymax = 1, alpha = .2, fill = 'purple')
+  annotate("rect", xmin = as.Date("2020/02/01"), xmax = as.Date("2020/04/01"), ymin = -0.05, ymax = 0.05, alpha = .2, fill = 'purple') +
+  annotate("rect", xmin = as.Date("2007/12/01"), xmax = as.Date("2009/06/01"), ymin = -0.05, ymax = 0.05, alpha = .2, fill = 'purple') +
+  annotate("rect", xmin = as.Date("2001/03/01"), xmax = as.Date("2001/11/01"), ymin = -0.05, ymax = 0.05, alpha = .2, fill = 'purple') +
+  annotate("rect", xmin = as.Date("1990/07/01"), xmax = as.Date("1991/03/01"), ymin = -0.05, ymax = 0.05, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1981/07/01"), xmax = as.Date("1982/11/01"), ymin = -0.05, ymax = 0.05, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1980/01/01"), xmax = as.Date("1980/07/01"), ymin = -0.05, ymax = 0.05, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1973/11/01"), xmax = as.Date("1975/05/01"), ymin = -0.05, ymax = 0.05, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1969/12/01"), xmax = as.Date("1970/11/01"), ymin = -0.05, ymax = 0.05, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1960/04/01"), xmax = as.Date("1961/02/01"), ymin = -0.05, ymax = 0.05, alpha = .2, fill = 'purple')
 ```
 ```{r}
 pca_data_leading <- realpersonalincomelesstransfers %>% 
-  left_join(nonfarmpayrollemployment, by = "Date") %>% 
-  left_join(realpersonalconsumptionexpenditures, by = "Date") %>%
-  left_join(ProducerPriceIndex, by = "Date") %>%
-  left_join(IPI, by = "Date") %>%
-  left_join(employmentrate, by = "Date") %>%
-  select(-Date) %>% 
+  left_join(nonfarmpayrollemployment, by = "date") %>% 
+  left_join(realpersonalconsumptionexpenditures, by = "date") %>%
+  left_join(ProducerPriceIndex, by = "date") %>%
+  left_join(IPI, by = "date") %>%
+  left_join(employmentrate, by = "date") %>%
+  select(-date) %>% 
   na.omit()
 pca_data_leading_standardized <- scale(pca_data_leading)
 pca_result_leading <- princomp(pca_data_leading)
@@ -181,35 +197,39 @@ plot(pca_result_leading$scores[,1:2], col=1:nrow(pca_result_leading$scores), xla
 pca_scores_leading <- as.data.frame(pca_result_leading$scores) %>% 
   select(Comp.1)
 values_leading <- realpersonalincomelesstransfers %>% 
-  left_join(nonfarmpayrollemployment, by = "Date") %>% 
-  left_join(realpersonalconsumptionexpenditures, by = "Date") %>%
-  left_join(ProducerPriceIndex, by = "Date") %>%
-  left_join(IPI, by = "Date") %>%
-  left_join(employmentrate, by = "Date") %>%
+  left_join(nonfarmpayrollemployment, by = "date") %>% 
+  left_join(realpersonalconsumptionexpenditures, by = "date") %>%
+  left_join(ProducerPriceIndex, by = "date") %>%
+  left_join(IPI, by = "date") %>%
+  left_join(employmentrate, by = "date") %>%
   na.omit()
 values_leading$index <- pca_scores_leading[,1]
-plot(values_leading$Date, values_leading$index)
+plot(values_leading$date, values_leading$index)
 values_leading %>% 
-  ggplot(aes(Date, index)) + 
+  ggplot(aes(date, index)) + 
   geom_line() +
   scale_x_date(name = "Year", date_minor_breaks = "10 year") + 
   scale_y_continuous(name = "Leading index") +
   ggtitle('Leading index for business cycle') +
-  annotate("rect", xmin = as.Date("2020/02/01"), xmax = as.Date("2020/04/01"), ymin = -0.1, ymax = 0.1, alpha = .2, fill = 'purple') +
-  annotate("rect", xmin = as.Date("2007/12/01"), xmax = as.Date("2009/06/01"), ymin = -0.1, ymax = 0.1, alpha = .2, fill = 'purple') +
-  annotate("rect", xmin = as.Date("2001/03/01"), xmax = as.Date("2001/11/01"), ymin = -0.1, ymax = 0.1, alpha = .2, fill = 'purple') +
-  annotate("rect", xmin = as.Date("1990/07/01"), xmax = as.Date("1991/03/01"), ymin = -0.1, ymax = 0.1, alpha = .2, fill = 'purple')+
-  annotate("rect", xmin = as.Date("1981/07/01"), xmax = as.Date("1982/11/01"), ymin = -0.1, ymax = 0.1, alpha = .2, fill = 'purple')+
-  annotate("rect", xmin = as.Date("1980/01/01"), xmax = as.Date("1980/07/01"), ymin = -0.1, ymax = 0.1, alpha = .2, fill = 'purple')+
-  annotate("rect", xmin = as.Date("1973/11/01"), xmax = as.Date("1975/05/01"), ymin = -0.1, ymax = 0.1, alpha = .2, fill = 'purple')+
-  annotate("rect", xmin = as.Date("1969/12/01"), xmax = as.Date("1970/11/01"), ymin = -0.1, ymax = 0.1, alpha = .2, fill = 'purple')+
-  annotate("rect", xmin = as.Date("1960/04/01"), xmax = as.Date("1961/02/01"), ymin = -0.1, ymax = 0.1, alpha = .2, fill = 'purple')
+  annotate("rect", xmin = as.Date("2020/02/01"), xmax = as.Date("2020/04/01"), ymin = -0.05, ymax = 0.05, alpha = .2, fill = 'purple') +
+  annotate("rect", xmin = as.Date("2007/12/01"), xmax = as.Date("2009/06/01"), ymin = -0.05, ymax = 0.05, alpha = .2, fill = 'purple') +
+  annotate("rect", xmin = as.Date("2001/03/01"), xmax = as.Date("2001/11/01"), ymin = -0.05, ymax = 0.05, alpha = .2, fill = 'purple') +
+  annotate("rect", xmin = as.Date("1990/07/01"), xmax = as.Date("1991/03/01"), ymin = -0.05, ymax = 0.05, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1981/07/01"), xmax = as.Date("1982/11/01"), ymin = -0.05, ymax = 0.05, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1980/01/01"), xmax = as.Date("1980/07/01"), ymin = -0.05, ymax = 0.05, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1973/11/01"), xmax = as.Date("1975/05/01"), ymin = -0.05, ymax = 0.05, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1969/12/01"), xmax = as.Date("1970/11/01"), ymin = -0.05, ymax = 0.05, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1960/04/01"), xmax = as.Date("1961/02/01"), ymin = -0.05, ymax = 0.05, alpha = .2, fill = 'purple')
 #+annotate("rect", xmin = as.Date("1973/11/01"), xmax = as.Date("1975/05/01"), ymin = -3.5, ymax = 5, alpha = .2, fill = 'purple')
 
 
 #########################################################################################################################################################
+```
 
-#without log
+
+
+# Without log
+
 ```{r}
 library(Quandl)
 library(PerformanceAnalytics)
@@ -232,142 +252,158 @@ SFDate <- EFDate - 365*80
 SFDate
 EFDate
 ```
+
 ```{r}
-realpersonalincomelesstransfers <- Quandl('FRED/W875RX1', start_date=SDate, end_date=EDate, collapse = "monthly") %>% 
-  tq_transmute(select = Value, mutate_fun = to.monthly, indexAt = "firstof") 
+realpersonalincomelesstransfers <- tq_get("W875RX1",
+                                          from = SDate,
+                                          get = "economic.data") %>% 
+  tq_transmute(select = price, mutate_fun = to.monthly, indexAt = "firstof") 
 
 realpersonalincomelesstransfers %>% 
-  ggplot(aes(Date, Value)) + 
+  ggplot(aes(date, price)) + 
   geom_line() +
   scale_x_date(name = "Year", date_minor_breaks = "10 year") + 
   scale_y_continuous(name = "N° of building permits") +
   ggtitle('Real Personal Income Less Transfers')+
-  annotate("rect", xmin = as.Date("2020/02/01"), xmax = as.Date("2020/04/01"), ymin = -1, ymax = 1, alpha = .2, fill = 'purple') +
-  annotate("rect", xmin = as.Date("2007/12/01"), xmax = as.Date("2009/06/01"), ymin = -1, ymax = 1, alpha = .2, fill = 'purple') +
-  annotate("rect", xmin = as.Date("2001/03/01"), xmax = as.Date("2001/11/01"), ymin = -1, ymax = 1, alpha = .2, fill = 'purple') +
-  annotate("rect", xmin = as.Date("1990/07/01"), xmax = as.Date("1991/03/01"), ymin = -1, ymax = 1, alpha = .2, fill = 'purple')+
-  annotate("rect", xmin = as.Date("1981/07/01"), xmax = as.Date("1982/11/01"), ymin = -1, ymax = 1, alpha = .2, fill = 'purple')+
-  annotate("rect", xmin = as.Date("1980/01/01"), xmax = as.Date("1980/07/01"), ymin = -1, ymax = 1, alpha = .2, fill = 'purple')+
-  annotate("rect", xmin = as.Date("1973/11/01"), xmax = as.Date("1975/05/01"), ymin = -1, ymax = 1, alpha = .2, fill = 'purple')+
-  annotate("rect", xmin = as.Date("1969/12/01"), xmax = as.Date("1970/11/01"), ymin = -1, ymax = 1, alpha = .2, fill = 'purple')+
-  annotate("rect", xmin = as.Date("1960/04/01"), xmax = as.Date("1961/02/01"), ymin = -1, ymax = 1, alpha = .2, fill = 'purple')
+  annotate("rect", xmin = as.Date("2020/02/01"), xmax = as.Date("2020/04/01"), ymin = -0.05, ymax = 0.05, alpha = .2, fill = 'purple') +
+  annotate("rect", xmin = as.Date("2007/12/01"), xmax = as.Date("2009/06/01"), ymin = -0.05, ymax = 0.05, alpha = .2, fill = 'purple') +
+  annotate("rect", xmin = as.Date("2001/03/01"), xmax = as.Date("2001/11/01"), ymin = -0.05, ymax = 0.05, alpha = .2, fill = 'purple') +
+  annotate("rect", xmin = as.Date("1990/07/01"), xmax = as.Date("1991/03/01"), ymin = -0.05, ymax = 0.05, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1981/07/01"), xmax = as.Date("1982/11/01"), ymin = -0.05, ymax = 0.05, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1980/01/01"), xmax = as.Date("1980/07/01"), ymin = -0.05, ymax = 0.05, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1973/11/01"), xmax = as.Date("1975/05/01"), ymin = -0.05, ymax = 0.05, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1969/12/01"), xmax = as.Date("1970/11/01"), ymin = -0.05, ymax = 0.05, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1960/04/01"), xmax = as.Date("1961/02/01"), ymin = -0.05, ymax = 0.05, alpha = .2, fill = 'purple')
 ```
 ```{r}
-nonfarmpayrollemployment <- Quandl('FRED/PAYEMS', start_date=SDate, end_date=EDate, collapse = "monthly") %>% 
-  tq_transmute(select = Value, mutate_fun = to.monthly, indexAt = "firstof")
-
+nonfarmpayrollemployment <- tq_get("PAYEMS",
+                                          from = SDate,
+                                          get = "economic.data") %>% 
+  tq_transmute(select = price, mutate_fun = to.monthly, indexAt = "firstof") 
+  
 nonfarmpayrollemployment %>% 
-  ggplot(aes(Date, Value)) + 
+  ggplot(aes(date, price)) + 
   geom_line() +
   scale_x_date(name = "Year", date_minor_breaks = "10 year") + 
   scale_y_continuous(name = "N° of building permits") +
   ggtitle('Non-Farm Payroll')+
-  annotate("rect", xmin = as.Date("2020/02/01"), xmax = as.Date("2020/04/01"), ymin = -1, ymax = 1, alpha = .2, fill = 'purple') +
-  annotate("rect", xmin = as.Date("2007/12/01"), xmax = as.Date("2009/06/01"), ymin = -1, ymax = 1, alpha = .2, fill = 'purple') +
-  annotate("rect", xmin = as.Date("2001/03/01"), xmax = as.Date("2001/11/01"), ymin = -1, ymax = 1, alpha = .2, fill = 'purple') +
-  annotate("rect", xmin = as.Date("1990/07/01"), xmax = as.Date("1991/03/01"), ymin = -1, ymax = 1, alpha = .2, fill = 'purple')+
-  annotate("rect", xmin = as.Date("1981/07/01"), xmax = as.Date("1982/11/01"), ymin = -1, ymax = 1, alpha = .2, fill = 'purple')+
-  annotate("rect", xmin = as.Date("1980/01/01"), xmax = as.Date("1980/07/01"), ymin = -1, ymax = 1, alpha = .2, fill = 'purple')+
-  annotate("rect", xmin = as.Date("1973/11/01"), xmax = as.Date("1975/05/01"), ymin = -1, ymax = 1, alpha = .2, fill = 'purple')+
-  annotate("rect", xmin = as.Date("1969/12/01"), xmax = as.Date("1970/11/01"), ymin = -1, ymax = 1, alpha = .2, fill = 'purple')+
-  annotate("rect", xmin = as.Date("1960/04/01"), xmax = as.Date("1961/02/01"), ymin = -1, ymax = 1, alpha = .2, fill = 'purple')
+  annotate("rect", xmin = as.Date("2020/02/01"), xmax = as.Date("2020/04/01"), ymin = -0.05, ymax = 0.05, alpha = .2, fill = 'purple') +
+  annotate("rect", xmin = as.Date("2007/12/01"), xmax = as.Date("2009/06/01"), ymin = -0.05, ymax = 0.05, alpha = .2, fill = 'purple') +
+  annotate("rect", xmin = as.Date("2001/03/01"), xmax = as.Date("2001/11/01"), ymin = -0.05, ymax = 0.05, alpha = .2, fill = 'purple') +
+  annotate("rect", xmin = as.Date("1990/07/01"), xmax = as.Date("1991/03/01"), ymin = -0.05, ymax = 0.05, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1981/07/01"), xmax = as.Date("1982/11/01"), ymin = -0.05, ymax = 0.05, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1980/01/01"), xmax = as.Date("1980/07/01"), ymin = -0.05, ymax = 0.05, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1973/11/01"), xmax = as.Date("1975/05/01"), ymin = -0.05, ymax = 0.05, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1969/12/01"), xmax = as.Date("1970/11/01"), ymin = -0.05, ymax = 0.05, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1960/04/01"), xmax = as.Date("1961/02/01"), ymin = -0.05, ymax = 0.05, alpha = .2, fill = 'purple')
 ```
 
 ```{r}
-realpersonalconsumptionexpenditures <- Quandl('FRED/DPCERA3M086SBEA', start_date=SDate, end_date=EDate, collapse = "monthly") %>% 
-  tq_transmute(select = Value, mutate_fun = to.monthly, indexAt = "firstof")
+realpersonalconsumptionexpenditures <- tq_get("DPCERA3M086SBEA",
+                                          from = SDate,
+                                          get = "economic.data") %>% 
+  tq_transmute(select = price, mutate_fun = to.monthly, indexAt = "firstof") 
 
 realpersonalconsumptionexpenditures %>% 
-  ggplot(aes(Date, Value)) + 
+  ggplot(aes(date, price)) + 
   geom_line() +
   scale_x_date(name = "Year", date_minor_breaks = "10 year") + 
   scale_y_continuous(name = "N° of building permits") +
   ggtitle('Real personal Consumption Expenditure')+
-  annotate("rect", xmin = as.Date("2020/02/01"), xmax = as.Date("2020/04/01"), ymin = -1, ymax = 1, alpha = .2, fill = 'purple') +
-  annotate("rect", xmin = as.Date("2007/12/01"), xmax = as.Date("2009/06/01"), ymin = -1, ymax = 1, alpha = .2, fill = 'purple') +
-  annotate("rect", xmin = as.Date("2001/03/01"), xmax = as.Date("2001/11/01"), ymin = -1, ymax = 1, alpha = .2, fill = 'purple') +
-  annotate("rect", xmin = as.Date("1990/07/01"), xmax = as.Date("1991/03/01"), ymin = -1, ymax = 1, alpha = .2, fill = 'purple')+
-  annotate("rect", xmin = as.Date("1981/07/01"), xmax = as.Date("1982/11/01"), ymin = -1, ymax = 1, alpha = .2, fill = 'purple')+
-  annotate("rect", xmin = as.Date("1980/01/01"), xmax = as.Date("1980/07/01"), ymin = -1, ymax = 1, alpha = .2, fill = 'purple')+
-  annotate("rect", xmin = as.Date("1973/11/01"), xmax = as.Date("1975/05/01"), ymin = -1, ymax = 1, alpha = .2, fill = 'purple')+
-  annotate("rect", xmin = as.Date("1969/12/01"), xmax = as.Date("1970/11/01"), ymin = -1, ymax = 1, alpha = .2, fill = 'purple')+
-  annotate("rect", xmin = as.Date("1960/04/01"), xmax = as.Date("1961/02/01"), ymin = -1, ymax = 1, alpha = .2, fill = 'purple')
+  annotate("rect", xmin = as.Date("2020/02/01"), xmax = as.Date("2020/04/01"), ymin = -0.05, ymax = 0.05, alpha = .2, fill = 'purple') +
+  annotate("rect", xmin = as.Date("2007/12/01"), xmax = as.Date("2009/06/01"), ymin = -0.05, ymax = 0.05, alpha = .2, fill = 'purple') +
+  annotate("rect", xmin = as.Date("2001/03/01"), xmax = as.Date("2001/11/01"), ymin = -0.05, ymax = 0.05, alpha = .2, fill = 'purple') +
+  annotate("rect", xmin = as.Date("1990/07/01"), xmax = as.Date("1991/03/01"), ymin = -0.05, ymax = 0.05, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1981/07/01"), xmax = as.Date("1982/11/01"), ymin = -0.05, ymax = 0.05, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1980/01/01"), xmax = as.Date("1980/07/01"), ymin = -0.05, ymax = 0.05, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1973/11/01"), xmax = as.Date("1975/05/01"), ymin = -0.05, ymax = 0.05, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1969/12/01"), xmax = as.Date("1970/11/01"), ymin = -0.05, ymax = 0.05, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1960/04/01"), xmax = as.Date("1961/02/01"), ymin = -0.05, ymax = 0.05, alpha = .2, fill = 'purple')
 ```
-```{r}
-ProducerPriceIndex <- Quandl('FRED/PPIACO', start_date=SDate, end_date=EDate, collapse = "monthly") %>% 
-  tq_transmute(select = Value, mutate_fun = to.monthly, indexAt = "firstof")
 
+```{r}
+ProducerPriceIndex <- tq_get("PPIACO",
+                                          from = SDate,
+                                          get = "economic.data") %>% 
+  tq_transmute(select = price, mutate_fun = to.monthly, indexAt = "firstof") 
+  
 ProducerPriceIndex %>% 
-  ggplot(aes(Date, Value)) + 
+  ggplot(aes(date, price)) + 
   geom_line() +
   scale_x_date(name = "Year", date_minor_breaks = "10 year") + 
   scale_y_continuous(name = "N° of building permits") +
   ggtitle('Producer Price Index')+
-  annotate("rect", xmin = as.Date("2020/02/01"), xmax = as.Date("2020/04/01"), ymin = -1, ymax = 1, alpha = .2, fill = 'purple') +
-  annotate("rect", xmin = as.Date("2007/12/01"), xmax = as.Date("2009/06/01"), ymin = -1, ymax = 1, alpha = .2, fill = 'purple') +
-  annotate("rect", xmin = as.Date("2001/03/01"), xmax = as.Date("2001/11/01"), ymin = -1, ymax = 1, alpha = .2, fill = 'purple') +
-  annotate("rect", xmin = as.Date("1990/07/01"), xmax = as.Date("1991/03/01"), ymin = -1, ymax = 1, alpha = .2, fill = 'purple')+
-  annotate("rect", xmin = as.Date("1981/07/01"), xmax = as.Date("1982/11/01"), ymin = -1, ymax = 1, alpha = .2, fill = 'purple')+
-  annotate("rect", xmin = as.Date("1980/01/01"), xmax = as.Date("1980/07/01"), ymin = -1, ymax = 1, alpha = .2, fill = 'purple')+
-  annotate("rect", xmin = as.Date("1973/11/01"), xmax = as.Date("1975/05/01"), ymin = -1, ymax = 1, alpha = .2, fill = 'purple')+
-  annotate("rect", xmin = as.Date("1969/12/01"), xmax = as.Date("1970/11/01"), ymin = -1, ymax = 1, alpha = .2, fill = 'purple')+
-  annotate("rect", xmin = as.Date("1960/04/01"), xmax = as.Date("1961/02/01"), ymin = -1, ymax = 1, alpha = .2, fill = 'purple')
+  annotate("rect", xmin = as.Date("2020/02/01"), xmax = as.Date("2020/04/01"), ymin = -0.05, ymax = 0.05, alpha = .2, fill = 'purple') +
+  annotate("rect", xmin = as.Date("2007/12/01"), xmax = as.Date("2009/06/01"), ymin = -0.05, ymax = 0.05, alpha = .2, fill = 'purple') +
+  annotate("rect", xmin = as.Date("2001/03/01"), xmax = as.Date("2001/11/01"), ymin = -0.05, ymax = 0.05, alpha = .2, fill = 'purple') +
+  annotate("rect", xmin = as.Date("1990/07/01"), xmax = as.Date("1991/03/01"), ymin = -0.05, ymax = 0.05, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1981/07/01"), xmax = as.Date("1982/11/01"), ymin = -0.05, ymax = 0.05, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1980/01/01"), xmax = as.Date("1980/07/01"), ymin = -0.05, ymax = 0.05, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1973/11/01"), xmax = as.Date("1975/05/01"), ymin = -0.05, ymax = 0.05, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1969/12/01"), xmax = as.Date("1970/11/01"), ymin = -0.05, ymax = 0.05, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1960/04/01"), xmax = as.Date("1961/02/01"), ymin = -0.05, ymax = 0.05, alpha = .2, fill = 'purple')
 ```
+
 ```{r}
-IPI  <- Quandl("FRED/INDPRO", start_date=SDate, end_date=EDate, collapse = "monthly") %>% 
-  tq_transmute(select = Value, mutate_fun = to.monthly, indexAt = "firstof")
+IPI  <- tq_get("INDPRO",
+                                          from = SDate,
+                                          get = "economic.data") %>% 
+  tq_transmute(select = price, mutate_fun = to.monthly, indexAt = "firstof") 
+  
 
 IPI %>% 
-  ggplot(aes(Date, Value)) + 
+  ggplot(aes(date, price)) + 
   geom_line() +
   scale_x_date(name = "Year", date_minor_breaks = "10 year") + 
   scale_y_continuous(name = "N° of building permits") +
   ggtitle('Industrial Production Index')+
-  annotate("rect", xmin = as.Date("2020/02/01"), xmax = as.Date("2020/04/01"), ymin = -1, ymax = 1, alpha = .2, fill = 'purple') +
-  annotate("rect", xmin = as.Date("2007/12/01"), xmax = as.Date("2009/06/01"), ymin = -1, ymax = 1, alpha = .2, fill = 'purple') +
-  annotate("rect", xmin = as.Date("2001/03/01"), xmax = as.Date("2001/11/01"), ymin = -1, ymax = 1, alpha = .2, fill = 'purple') +
-  annotate("rect", xmin = as.Date("1990/07/01"), xmax = as.Date("1991/03/01"), ymin = -1, ymax = 1, alpha = .2, fill = 'purple')+
-  annotate("rect", xmin = as.Date("1981/07/01"), xmax = as.Date("1982/11/01"), ymin = -1, ymax = 1, alpha = .2, fill = 'purple')+
-  annotate("rect", xmin = as.Date("1980/01/01"), xmax = as.Date("1980/07/01"), ymin = -1, ymax = 1, alpha = .2, fill = 'purple')+
-  annotate("rect", xmin = as.Date("1973/11/01"), xmax = as.Date("1975/05/01"), ymin = -1, ymax = 1, alpha = .2, fill = 'purple')+
-  annotate("rect", xmin = as.Date("1969/12/01"), xmax = as.Date("1970/11/01"), ymin = -1, ymax = 1, alpha = .2, fill = 'purple')+
-  annotate("rect", xmin = as.Date("1960/04/01"), xmax = as.Date("1961/02/01"), ymin = -1, ymax = 1, alpha = .2, fill = 'purple')
+  annotate("rect", xmin = as.Date("2020/02/01"), xmax = as.Date("2020/04/01"), ymin = -0.05, ymax = 0.05, alpha = .2, fill = 'purple') +
+  annotate("rect", xmin = as.Date("2007/12/01"), xmax = as.Date("2009/06/01"), ymin = -0.05, ymax = 0.05, alpha = .2, fill = 'purple') +
+  annotate("rect", xmin = as.Date("2001/03/01"), xmax = as.Date("2001/11/01"), ymin = -0.05, ymax = 0.05, alpha = .2, fill = 'purple') +
+  annotate("rect", xmin = as.Date("1990/07/01"), xmax = as.Date("1991/03/01"), ymin = -0.05, ymax = 0.05, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1981/07/01"), xmax = as.Date("1982/11/01"), ymin = -0.05, ymax = 0.05, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1980/01/01"), xmax = as.Date("1980/07/01"), ymin = -0.05, ymax = 0.05, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1973/11/01"), xmax = as.Date("1975/05/01"), ymin = -0.05, ymax = 0.05, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1969/12/01"), xmax = as.Date("1970/11/01"), ymin = -0.05, ymax = 0.05, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1960/04/01"), xmax = as.Date("1961/02/01"), ymin = -0.05, ymax = 0.05, alpha = .2, fill = 'purple')
 ```
 ```{r}
-employmentrate <- Quandl('FRED/EMRATIO', start_date=SDate, end_date=EDate, collapse = "monthly") %>% 
-  tq_transmute(select = Value, mutate_fun = to.monthly, indexAt = "firstof")
-
+employmentrate <- tq_get("EMRATIO",
+                                          from = SDate,
+                                          get = "economic.data") %>% 
+  tq_transmute(select = price, mutate_fun = to.monthly, indexAt = "firstof") 
 
 employmentrate %>% 
-  ggplot(aes(Date, Value)) + 
+  ggplot(aes(date, price)) + 
   geom_line() +
   scale_x_date(name = "Year", date_minor_breaks = "10 year") + 
   scale_y_continuous(name = "N° of building permits") +
   ggtitle('Employment Rate')+
-  annotate("rect", xmin = as.Date("2020/02/01"), xmax = as.Date("2020/04/01"), ymin = -1, ymax = 1, alpha = .2, fill = 'purple') +
-  annotate("rect", xmin = as.Date("2007/12/01"), xmax = as.Date("2009/06/01"), ymin = -1, ymax = 1, alpha = .2, fill = 'purple') +
-  annotate("rect", xmin = as.Date("2001/03/01"), xmax = as.Date("2001/11/01"), ymin = -1, ymax = 1, alpha = .2, fill = 'purple') +
-  annotate("rect", xmin = as.Date("1990/07/01"), xmax = as.Date("1991/03/01"), ymin = -1, ymax = 1, alpha = .2, fill = 'purple')+
-  annotate("rect", xmin = as.Date("1981/07/01"), xmax = as.Date("1982/11/01"), ymin = -1, ymax = 1, alpha = .2, fill = 'purple')+
-  annotate("rect", xmin = as.Date("1980/01/01"), xmax = as.Date("1980/07/01"), ymin = -1, ymax = 1, alpha = .2, fill = 'purple')+
-  annotate("rect", xmin = as.Date("1973/11/01"), xmax = as.Date("1975/05/01"), ymin = -1, ymax = 1, alpha = .2, fill = 'purple')+
-  annotate("rect", xmin = as.Date("1969/12/01"), xmax = as.Date("1970/11/01"), ymin = -1, ymax = 1, alpha = .2, fill = 'purple')+
-  annotate("rect", xmin = as.Date("1960/04/01"), xmax = as.Date("1961/02/01"), ymin = -1, ymax = 1, alpha = .2, fill = 'purple')
+  annotate("rect", xmin = as.Date("2020/02/01"), xmax = as.Date("2020/04/01"), ymin = -0.05, ymax = 0.05, alpha = .2, fill = 'purple') +
+  annotate("rect", xmin = as.Date("2007/12/01"), xmax = as.Date("2009/06/01"), ymin = -0.05, ymax = 0.05, alpha = .2, fill = 'purple') +
+  annotate("rect", xmin = as.Date("2001/03/01"), xmax = as.Date("2001/11/01"), ymin = -0.05, ymax = 0.05, alpha = .2, fill = 'purple') +
+  annotate("rect", xmin = as.Date("1990/07/01"), xmax = as.Date("1991/03/01"), ymin = -0.05, ymax = 0.05, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1981/07/01"), xmax = as.Date("1982/11/01"), ymin = -0.05, ymax = 0.05, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1980/01/01"), xmax = as.Date("1980/07/01"), ymin = -0.05, ymax = 0.05, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1973/11/01"), xmax = as.Date("1975/05/01"), ymin = -0.05, ymax = 0.05, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1969/12/01"), xmax = as.Date("1970/11/01"), ymin = -0.05, ymax = 0.05, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1960/04/01"), xmax = as.Date("1961/02/01"), ymin = -0.05, ymax = 0.05, alpha = .2, fill = 'purple')
 ```
+
 
 ```{r}
 # S&P500 PE Ratios
-SP500_PE <- Quandl('MULTPL/SP500_PE_RATIO_MONTH', 
-             start_date=SDate, 
-             end_date=EDate, collapse = "monthly") %>% 
-  tq_transmute(select = Value, mutate_fun = to.monthly, indexAt = "firstof")
+SP500_PE <- tq_get("MULTPL/SP500_PE_RATIO_MONTH",
+                                          from = SDate,
+                                          get = "quandl")%>% 
+  tq_transmute(select = value, mutate_fun = to.monthly, indexAt = "firstof") 
 
 SP500_PE %>% 
-  ggplot(aes(Date, Value)) + 
+  ggplot(aes(date, value)) + 
   geom_line() +
   scale_x_date(name = "Year", date_minor_breaks = "10 year") + 
-  scale_y_continuous(name = "N° of building permits") +
-  ggtitle('Employment Rate')+
+  scale_y_continuous(name = "PE Ratio") +
+  ggtitle('S&P 500 PE ratio')+
   annotate("rect", xmin = as.Date("2020/02/01"), xmax = as.Date("2020/04/01"), ymin = 20, ymax = 100, alpha = .2, fill = 'purple') +
   annotate("rect", xmin = as.Date("2007/12/01"), xmax = as.Date("2009/06/01"), ymin = 20, ymax = 100, alpha = .2, fill = 'purple') +
   annotate("rect", xmin = as.Date("2001/03/01"), xmax = as.Date("2001/11/01"), ymin = 20, ymax = 100, alpha = .2, fill = 'purple') +
@@ -382,12 +418,12 @@ SP500_PE %>%
 
 ```{r}
 pca_data_leading <- realpersonalincomelesstransfers %>% 
-  left_join(nonfarmpayrollemployment, by = "Date") %>% 
-  left_join(realpersonalconsumptionexpenditures, by = "Date") %>%
-  left_join(ProducerPriceIndex, by = "Date") %>%
-  left_join(IPI, by = "Date") %>%
-  left_join(employmentrate, by = "Date") %>% 
-  select(-Date) %>% 
+  left_join(nonfarmpayrollemployment, by = "date") %>% 
+  left_join(realpersonalconsumptionexpenditures, by = "date") %>%
+  left_join(ProducerPriceIndex, by = "date") %>%
+  left_join(IPI, by = "date") %>%
+  left_join(employmentrate, by = "date") %>% 
+  select(-date) %>% 
   na.omit()
 pca_data_leading_standardized <- scale(pca_data_leading)
 pca_result_leading <- princomp(pca_data_leading_standardized)
@@ -403,16 +439,16 @@ plot(pca_result_leading$scores[,1:2], col=1:nrow(pca_result_leading$scores), xla
 pca_scores_leading <- as.data.frame(pca_result_leading$scores) %>% 
   select(Comp.1)
 values_leading <- realpersonalincomelesstransfers %>% 
-  left_join(nonfarmpayrollemployment, by = "Date") %>% 
-  left_join(realpersonalconsumptionexpenditures, by = "Date") %>%
-  left_join(ProducerPriceIndex, by = "Date") %>%
-  left_join(IPI, by = "Date") %>%
-  left_join(employmentrate, by = "Date") %>%
+  left_join(nonfarmpayrollemployment, by = "date") %>% 
+  left_join(realpersonalconsumptionexpenditures, by = "date") %>%
+  left_join(ProducerPriceIndex, by = "date") %>%
+  left_join(IPI, by = "date") %>%
+  left_join(employmentrate, by = "date") %>%
   na.omit()
 values_leading$index <- pca_scores_leading[,1]
-plot(values_leading$Date, values_leading$index)
+plot(values_leading$date, values_leading$index)
 values_leading %>% 
-  ggplot(aes(Date, index)) + 
+  ggplot(aes(date, index)) + 
   geom_line() +
   scale_x_date(name = "Year", date_minor_breaks = "10 year") + 
   scale_y_continuous(name = "Leading index") +
@@ -427,4 +463,4 @@ annotate("rect", xmin = as.Date("1973/11/01"), xmax = as.Date("1975/05/01"), ymi
   annotate("rect", xmin = as.Date("1969/12/01"), xmax = as.Date("1970/11/01"), ymin = -3.5, ymax = 5, alpha = .2, fill = 'purple')+
   annotate("rect", xmin = as.Date("1960/04/01"), xmax = as.Date("1961/02/01"), ymin = -3.5, ymax = 5, alpha = .2, fill = 'purple')
 
-#+annotate("rect", xmin = as.Date("1973/11/01"), xmax = as.Date("1975/05/01"), ymin = -3.5, ymax = 5, alpha = .2, fill = 'purple')
+```
