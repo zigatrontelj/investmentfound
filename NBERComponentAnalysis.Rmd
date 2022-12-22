@@ -471,7 +471,8 @@ values_leading$index <- pca_scores_leading[,1]
 plot(values_leading$date, values_leading$index)
 
 values_leading %>% 
-  ggplot(aes(date, index)) + 
+  colnames(Date = date)+
+  ggplot(aes(Date, index)) + 
   geom_line() +
   scale_x_date(name = "Year", date_minor_breaks = "10 year") + 
   scale_y_continuous(name = "Leading index") +

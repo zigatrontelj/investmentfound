@@ -530,10 +530,19 @@ pca_data_coincident <- ind_prod_ind %>%
   select(-Date) %>% 
   na.omit()
 
+pca_data_coincident_standardized <- scale(pca_data_coincident)
 
-pca_result_coincident <- princomp(pca_data_coincident)
+
+pca_result_coincident <- princomp(pca_data_coincident_standardized)
 pca_result_coincident$scores
 pca_result_coincident$sdev
+
+# Important checks
+correlations <- cor(pca_data_coincident_standardized)
+print(correlations)
+# Calculate the Kaiser-Meyer-Olkin (KMO) measure for the dataset
+kmo <- KMO(pca_data_coincident_standardized)
+print(kmo)
 
 pca_summary_coincident <- summary(pca_result_coincident)
 pca_variances_coincident <- var(pca_result_coincident$scores)
@@ -564,13 +573,13 @@ values_coincident %>%
   scale_x_date(name = "Year", date_minor_breaks = "10 year") + 
   scale_y_continuous(name = "Coincident index") +
   ggtitle('Coincident index for business cycle') +
-  annotate("rect", xmin = as.Date("2020/02/01"), xmax = as.Date("2020/04/01"), ymin = -500000, ymax = 750000, alpha = .2, fill = 'purple') +
-  annotate("rect", xmin = as.Date("2007/12/01"), xmax = as.Date("2009/06/01"), ymin = -500000, ymax = 750000, alpha = .2, fill = 'purple') +
-  annotate("rect", xmin = as.Date("2001/03/01"), xmax = as.Date("2001/11/01"), ymin = -500000, ymax = 750000, alpha = .2, fill = 'purple') +
-  annotate("rect", xmin = as.Date("1990/07/01"), xmax = as.Date("1991/03/01"), ymin = -500000, ymax = 750000, alpha = .2, fill = 'purple')+
-  annotate("rect", xmin = as.Date("1981/07/01"), xmax = as.Date("1982/11/01"), ymin = -500000, ymax = 750000, alpha = .2, fill = 'purple')+
-  annotate("rect", xmin = as.Date("1980/01/01"), xmax = as.Date("1980/07/01"), ymin = -500000, ymax = 750000, alpha = .2, fill = 'purple')+
-  annotate("rect", xmin = as.Date("1973/11/01"), xmax = as.Date("1975/05/01"), ymin = -500000, ymax = 750000, alpha = .2, fill = 'purple')
+  annotate("rect", xmin = as.Date("2020/02/01"), xmax = as.Date("2020/04/01"), ymin = -3, ymax = 3, alpha = .2, fill = 'purple') +
+  annotate("rect", xmin = as.Date("2007/12/01"), xmax = as.Date("2009/06/01"), ymin = -3, ymax = 3, alpha = .2, fill = 'purple') +
+  annotate("rect", xmin = as.Date("2001/03/01"), xmax = as.Date("2001/11/01"), ymin = -3, ymax = 3, alpha = .2, fill = 'purple') +
+  annotate("rect", xmin = as.Date("1990/07/01"), xmax = as.Date("1991/03/01"), ymin = -3, ymax = 3, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1981/07/01"), xmax = as.Date("1982/11/01"), ymin = -3, ymax = 3, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1980/01/01"), xmax = as.Date("1980/07/01"), ymin = -3, ymax = 3, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1973/11/01"), xmax = as.Date("1975/05/01"), ymin = -3, ymax = 3, alpha = .2, fill = 'purple')
   
 ```
 
@@ -581,7 +590,7 @@ values_coincident %>%
 pca_data_lagging <- GDP_real %>% 
   left_join(avg_dur_unem, by = "Date") %>% 
   left_join(inv_to_sales, by = "Date") %>% 
-  left_join(core_CPI_YoY, by = "Date") %>% 
+  left_join(core_CPI, by = "Date") %>% 
   left_join(consumer_debt_to_income, by = "Date") %>% 
   left_join(comm_ind_loans_all_banks, by = "Date") %>% 
   left_join(prime_lend_rate, by = "Date") %>% 
@@ -590,9 +599,18 @@ pca_data_lagging <- GDP_real %>%
   select(-Date) %>% 
   na.omit()
 
-pca_result_lagging <- princomp(pca_data_lagging)
+pca_data_lagging_standardized <- scale(pca_data_lagging)
+
+pca_result_lagging <- princomp(pca_data_lagging_standardized)
 pca_result_lagging$scores
 pca_result_lagging$sdev
+
+# Important checks
+correlations <- cor(pca_data_lagging_standardized)
+print(correlations)
+# Calculate the Kaiser-Meyer-Olkin (KMO) measure for the dataset
+kmo <- KMO(pca_data_lagging_standardized)
+print(kmo)
 
 pca_summary_lagging <- summary(pca_result_lagging)
 pca_variances_lagging <- var(pca_result_lagging$scores)
@@ -629,11 +647,13 @@ values_lagging %>%
   scale_x_date(name = "Year", date_minor_breaks = "10 year") + 
   scale_y_continuous(name = "Lagging index") +
   ggtitle('Lagging index for business cycle') +
-  annotate("rect", xmin = as.Date("2020/02/01"), xmax = as.Date("2020/04/01"), ymin = -7500, ymax = 10000, alpha = .2, fill = 'purple') +
-  annotate("rect", xmin = as.Date("2007/12/01"), xmax = as.Date("2009/06/01"), ymin = -7500, ymax = 10000, alpha = .2, fill = 'purple') +
-  annotate("rect", xmin = as.Date("2001/03/01"), xmax = as.Date("2001/11/01"), ymin = -7500, ymax = 10000, alpha = .2, fill = 'purple') +
-  annotate("rect", xmin = as.Date("1990/07/01"), xmax = as.Date("1991/03/01"), ymin = -7500, ymax = 10000, alpha = .2, fill = 'purple')+
-  annotate("rect", xmin = as.Date("1981/07/01"), xmax = as.Date("1982/11/01"), ymin = -7500, ymax = 10000, alpha = .2, fill = 'purple')+
-  annotate("rect", xmin = as.Date("1980/01/01"), xmax = as.Date("1980/07/01"), ymin = -7500, ymax = 10000, alpha = .2, fill = 'purple')+
-  annotate("rect", xmin = as.Date("1973/11/01"), xmax = as.Date("1975/05/01"), ymin = -7500, ymax = 10000, alpha = .2, fill = 'purple')
+  annotate("rect", xmin = as.Date("2020/02/01"), xmax = as.Date("2020/04/01"), ymin = -5, ymax = 4, alpha = .2, fill = 'purple') +
+  annotate("rect", xmin = as.Date("2007/12/01"), xmax = as.Date("2009/06/01"), ymin = -5, ymax = 4, alpha = .2, fill = 'purple') +
+  annotate("rect", xmin = as.Date("2001/03/01"), xmax = as.Date("2001/11/01"), ymin = -5, ymax = 4, alpha = .2, fill = 'purple') +
+  annotate("rect", xmin = as.Date("1990/07/01"), xmax = as.Date("1991/03/01"), ymin = -5, ymax = 4, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1981/07/01"), xmax = as.Date("1982/11/01"), ymin = -5, ymax = 4, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1980/01/01"), xmax = as.Date("1980/07/01"), ymin = -5, ymax = 4, alpha = .2, fill = 'purple')
+#+annotate("rect", xmin = as.Date("1973/11/01"), xmax = as.Date("1975/05/01"), ymin = -5, ymax = 4, alpha = .2, fill = 'purple')
 ```
+
+
