@@ -257,10 +257,10 @@ EFDate
 realpersonalincomelesstransfers <- tq_get("W875RX1",
                                           from = SDate,
                                           get = "economic.data") %>% 
-  tq_transmute(select = price, mutate_fun = to.monthly, indexAt = "firstof") 
+  tq_transmute(select = price, mutate_fun = to.monthly, indexAt = "firstof", col_rename = "RealPersInc")
 
 realpersonalincomelesstransfers %>% 
-  ggplot(aes(date, price)) + 
+  ggplot(aes(date, RealPersInc)) + 
   geom_line() +
   scale_x_date(name = "Year", date_minor_breaks = "10 year") + 
   scale_y_continuous(name = "N° of building permits") +
@@ -279,10 +279,10 @@ realpersonalincomelesstransfers %>%
 nonfarmpayrollemployment <- tq_get("PAYEMS",
                                           from = SDate,
                                           get = "economic.data") %>% 
-  tq_transmute(select = price, mutate_fun = to.monthly, indexAt = "firstof") 
+  tq_transmute(select = price, mutate_fun = to.monthly, indexAt = "firstof", col_rename = "NonFarmPayroll") 
   
 nonfarmpayrollemployment %>% 
-  ggplot(aes(date, price)) + 
+  ggplot(aes(date, NonFarmPayroll)) + 
   geom_line() +
   scale_x_date(name = "Year", date_minor_breaks = "10 year") + 
   scale_y_continuous(name = "N° of building permits") +
@@ -302,10 +302,10 @@ nonfarmpayrollemployment %>%
 realpersonalconsumptionexpenditures <- tq_get("DPCERA3M086SBEA",
                                           from = SDate,
                                           get = "economic.data") %>% 
-  tq_transmute(select = price, mutate_fun = to.monthly, indexAt = "firstof") 
+  tq_transmute(select = price, mutate_fun = to.monthly, indexAt = "firstof", col_rename = "RealPCE") 
 
 realpersonalconsumptionexpenditures %>% 
-  ggplot(aes(date, price)) + 
+  ggplot(aes(date, RealPCE)) + 
   geom_line() +
   scale_x_date(name = "Year", date_minor_breaks = "10 year") + 
   scale_y_continuous(name = "N° of building permits") +
@@ -325,10 +325,10 @@ realpersonalconsumptionexpenditures %>%
 ProducerPriceIndex <- tq_get("PPIACO",
                                           from = SDate,
                                           get = "economic.data") %>% 
-  tq_transmute(select = price, mutate_fun = to.monthly, indexAt = "firstof") 
+  tq_transmute(select = price, mutate_fun = to.monthly, indexAt = "firstof", col_rename = "PPI") 
   
 ProducerPriceIndex %>% 
-  ggplot(aes(date, price)) + 
+  ggplot(aes(date, PPI)) + 
   geom_line() +
   scale_x_date(name = "Year", date_minor_breaks = "10 year") + 
   scale_y_continuous(name = "N° of building permits") +
@@ -348,11 +348,11 @@ ProducerPriceIndex %>%
 IPI  <- tq_get("INDPRO",
                                           from = SDate,
                                           get = "economic.data") %>% 
-  tq_transmute(select = price, mutate_fun = to.monthly, indexAt = "firstof") 
+  tq_transmute(select = price, mutate_fun = to.monthly, indexAt = "firstof", col_rename = "IPI") 
   
 
 IPI %>% 
-  ggplot(aes(date, price)) + 
+  ggplot(aes(date, IPI)) + 
   geom_line() +
   scale_x_date(name = "Year", date_minor_breaks = "10 year") + 
   scale_y_continuous(name = "N° of building permits") +
@@ -371,10 +371,10 @@ IPI %>%
 employmentrate <- tq_get("EMRATIO",
                                           from = SDate,
                                           get = "economic.data") %>% 
-  tq_transmute(select = price, mutate_fun = to.monthly, indexAt = "firstof") 
+  tq_transmute(select = price, mutate_fun = to.monthly, indexAt = "firstof", col_rename = "EmployRate") 
 
 employmentrate %>% 
-  ggplot(aes(date, price)) + 
+  ggplot(aes(date, EmployRate)) + 
   geom_line() +
   scale_x_date(name = "Year", date_minor_breaks = "10 year") + 
   scale_y_continuous(name = "N° of building permits") +
@@ -396,10 +396,10 @@ employmentrate %>%
 SP500_PE <- tq_get("MULTPL/SP500_PE_RATIO_MONTH",
                                           from = SDate,
                                           get = "quandl")%>% 
-  tq_transmute(select = value, mutate_fun = to.monthly, indexAt = "firstof") 
+  tq_transmute(select = value, mutate_fun = to.monthly, indexAt = "firstof", col_rename = "SP500PE") 
 
 SP500_PE %>% 
-  ggplot(aes(date, value)) + 
+  ggplot(aes(date, SP500PE)) + 
   geom_line() +
   scale_x_date(name = "Year", date_minor_breaks = "10 year") + 
   scale_y_continuous(name = "PE Ratio") +
@@ -425,19 +425,28 @@ pca_data_leading <- realpersonalincomelesstransfers %>%
   left_join(employmentrate, by = "date") %>% 
   select(-date) %>% 
   na.omit()
+
 pca_data_leading_standardized <- scale(pca_data_leading)
 pca_result_leading <- princomp(pca_data_leading_standardized)
 pca_result_leading$scores
 pca_result_leading$sdev
+
+correlations <- cor(pca_data_leading_standardized)
+print(correlations)
+
 pca_summary_leading  <- summary(pca_result_leading)
 pca_variances_leading  <- var(pca_result_leading$scores)
 pca_cumulative_variances_leading  <- cumsum(pca_variances_leading)
+
 pca_var_leading  <- pca_result_leading$sdev^2 / sum(pca_result_leading$sdev^2)
 barplot(pca_var_leading, xlab="Principal Component", ylab="Proportion of Variance Explained")
 screeplot(pca_result_leading, type="line", main="Scree Plot")
+
 plot(pca_result_leading$scores[,1:2], col=1:nrow(pca_result_leading$scores), xlab="PC1", ylab="PC2")
+
 pca_scores_leading <- as.data.frame(pca_result_leading$scores) %>% 
   select(Comp.1)
+
 values_leading <- realpersonalincomelesstransfers %>% 
   left_join(nonfarmpayrollemployment, by = "date") %>% 
   left_join(realpersonalconsumptionexpenditures, by = "date") %>%
@@ -445,8 +454,10 @@ values_leading <- realpersonalincomelesstransfers %>%
   left_join(IPI, by = "date") %>%
   left_join(employmentrate, by = "date") %>%
   na.omit()
+
 values_leading$index <- pca_scores_leading[,1]
 plot(values_leading$date, values_leading$index)
+
 values_leading %>% 
   ggplot(aes(date, index)) + 
   geom_line() +
