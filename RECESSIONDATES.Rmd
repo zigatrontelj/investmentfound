@@ -85,6 +85,11 @@ Recessionsum <- sum(Recession$Value.y)
 expansionsum <- sum(expansion$adjy)
 FrequencyOfRecession <- Recessionsum/(Recessionsum+expansionsum)
 
+cdplot(ddd$Value.x, ddd$Value.y,
+  plot = TRUE, tol.ylab = 0.05,
+  bw = "nrd0")
+(spineplot(ddd$Value.y ~ ddd$Value.x , breaks = 3))
+
 RecessionDensity <- (density(Recession$dif)) 
 
 #RecessionDensity1 <- (density(Recession$dif)) 
