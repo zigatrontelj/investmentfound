@@ -39,7 +39,7 @@ YoY <- as.Date(EDate-365)
 ```
 
 ```{r}
-#GDP from tq get for gdp is missing some data
+#GDP from tq get is missing some data
 #GDP <- tq_get("GDP", get = "economic.data", start_date=SDate, end_date=EDate, collapse = "quarterly") %>% 
  # tq_transmute(select = price, mutate_fun = to.monthly, indexAt = "firstof") %>% tq_transmute(select = price,         
   #             mutate_fun = periodReturn,   
