@@ -470,9 +470,11 @@ values_leading <- realpersonalincomelesstransfers %>%
 values_leading$index <- pca_scores_leading[,1]
 plot(values_leading$date, values_leading$index)
 
-values_leading %>% 
-  colnames(Date = date)+
-  ggplot(aes(Date, index)) + 
+#values_leading_scale <- scale(values_leading)
+
+values_leading %>%
+  #colnames(Date = date) %>% 
+  ggplot(aes(date, index)) + 
   geom_line() +
   scale_x_date(name = "Year", date_minor_breaks = "10 year") + 
   scale_y_continuous(name = "Leading index") +
@@ -486,6 +488,8 @@ values_leading %>%
   annotate("rect", xmin = as.Date("1973/11/01"), xmax = as.Date("1975/05/01"), ymin = -3.5, ymax = 5, alpha = .2, fill = 'purple')+
   annotate("rect", xmin = as.Date("1969/12/01"), xmax = as.Date("1970/11/01"), ymin = -3.5, ymax = 5, alpha = .2, fill = 'purple')+
   annotate("rect", xmin = as.Date("1960/04/01"), xmax = as.Date("1961/02/01"), ymin = -3.5, ymax = 5, alpha = .2, fill = 'purple')
+
+
 
 values_leading %>% 
   ggplot(aes(date, index)) + 
@@ -522,7 +526,7 @@ data <- realpersonalincomelesstransfers %>%
   left_join(ProducerPriceIndex, by = "date") %>%
   left_join(IPI, by = "date") %>%
   left_join(employmentrate, by = "date") %>%
-  #select(-date) %>% 
+  select(-date) %>% 
   na.omit()
 
 data_standard <- scale(data)
