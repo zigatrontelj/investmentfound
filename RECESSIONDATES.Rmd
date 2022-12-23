@@ -1,0 +1,98 @@
+---
+title: "Investment Fund"
+output: html_document
+date: "2022-10-05"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+#libraries
+library(xts)
+library(PerformanceAnalytics)
+library(quantmod)
+library(pastecs)
+library(psych)
+library(Quandl)
+library("fredr")
+library(Quandl)
+library(PerformanceAnalytics)
+library(ggplot2)
+library(forecast)
+library(tidyverse)
+library("timetk")
+library("tidyquant")
+```
+
+```{r}
+Quandl.api_key("4nDDuxoarbX1eR9z7KY-") # I don't think we all can use the same api_key, therefore make an account with quandl, it's for free.
+```
+
+```{r}
+EDate <- Sys.Date()
+SDate <- EDate-365*80
+
+YoY <- as.Date(EDate-365)
+
+```
+
+```{r}
+#GDP from tq get for gdp is missing some data
+#GDP <- tq_get("GDP", get = "economic.data", start_date=SDate, end_date=EDate, collapse = "quarterly") %>% 
+ # tq_transmute(select = price, mutate_fun = to.monthly, indexAt = "firstof") %>% tq_transmute(select = price,         
+  #             mutate_fun = periodReturn,   
+   #            period = "quarterly",      
+    #           col_rename = "price") %>% rename(GDPGROWTH = price) %>% 
+  #rename(Date = date)
+########################################################
+#GDP
+GDP <- Quandl('FRED/GDP', start_date=SDate, end_date=EDate, collapse = "quarterly") %>% 
+  tq_transmute(select = Value, mutate_fun = to.monthly, indexAt = "firstof") %>% tq_transmute(select = Value,         
+               mutate_fun = periodReturn,   
+               period = "quarterly",      
+               col_rename = "Value") 
+########################################################
+
+potentialGDP <-Quandl('FRED/NGDPPOT', start_date=SDate, end_date=EDate, collapse = "quarterly") %>% 
+  tq_transmute(select = Value, mutate_fun = to.monthly, indexAt = "firstof") %>% tq_transmute(select = Value,         
+               mutate_fun = periodReturn,   
+               period = "quarterly",      
+               col_rename = "Value") 
+
+
+
+dates <-Quandl('FRED/JHDUSRGDPBR', start_date=SDate, end_date=EDate, collapse = "quarterly") %>% 
+  tq_transmute(select = Value, mutate_fun = to.monthly, indexAt = "firstof")
+
+
+ddd <- GDP %>% 
+  left_join(dates, by = "Date") %>%
+  left_join(potentialGDP, by = "Date") %>%
+  na.omit()
+
+ddd$dif <- (ddd$Value.x - ddd$Value)/ddd$Value
+
+difdensity <- density(ddd$dif)
+plot(difdensity)
+
+Recession <- subset(ddd, Value.y == 1 , select=c(Date, Value.x, Value.y, dif))
+expansion <- subset(ddd, Value.y == 0 , select=c(Date, Value.x, Value.y, dif))
+expansion$adjy <- expansion$Value.y + 1
+
+Recessionsum <- sum(Recession$Value.y)
+expansionsum <- sum(expansion$adjy)
+FrequencyOfRecession <- Recessionsum/(Recessionsum+expansionsum)
+
+RecessionDensity <- (density(Recession$dif)) 
+
+#RecessionDensity1 <- (density(Recession$dif)) 
+#RecessionDensity1$x <-  RecessionDensity$x * FrequencyOfRecession
+
+ExpanssionDensity <- density(expansion$dif)
+GDPdensity <- density(GDP$Value)
+
+plot(RecessionDensity)
+plot(ExpanssionDensity)
+plot(GDPdensity)
