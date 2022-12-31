@@ -475,6 +475,17 @@ pca_result_leading <- princomp(pca_data_leading_standardized)
 pca_result_leading$scores
 pca_result_leading$sdev
 
+
+# Important checks
+cor(pca_data_leading)
+
+# Checking shape of data
+bartlett.test(pca_data_leading)
+
+# Calculate the Kaiser-Meyer-Olkin (KMO) measure for the dataset
+KMO(pca_data_leading)
+
+
 pca_summary_leading  <- summary(pca_result_leading)
 pca_variances_leading  <- var(pca_result_leading$scores)
 pca_cumulative_variances_leading  <- cumsum(pca_variances_leading)
@@ -538,11 +549,14 @@ pca_result_coincident$scores
 pca_result_coincident$sdev
 
 # Important checks
-correlations <- cor(pca_data_coincident_standardized)
+correlations <- cor(pca_data_coincident)
 print(correlations)
+
+# Checking shape of data
+bartlett.test(pca_data_coincident)
+
 # Calculate the Kaiser-Meyer-Olkin (KMO) measure for the dataset
-kmo <- KMO(pca_data_coincident_standardized)
-print(kmo)
+KMO(pca_data_coincident)
 
 pca_summary_coincident <- summary(pca_result_coincident)
 pca_variances_coincident <- var(pca_result_coincident$scores)
@@ -588,8 +602,8 @@ values_coincident %>%
 #library(stats)
 
 pca_data_lagging <- GDP_real %>% 
-  left_join(avg_dur_unem, by = "Date") %>% 
-  left_join(inv_to_sales, by = "Date") %>% 
+  #left_join(avg_dur_unem, by = "Date") %>% 
+  #left_join(inv_to_sales, by = "Date") %>% 
   left_join(core_CPI, by = "Date") %>% 
   left_join(consumer_debt_to_income, by = "Date") %>% 
   left_join(comm_ind_loans_all_banks, by = "Date") %>% 
@@ -606,10 +620,14 @@ pca_result_lagging$scores
 pca_result_lagging$sdev
 
 # Important checks
-correlations <- cor(pca_data_lagging_standardized)
+correlations <- cor(pca_data_lagging)
 print(correlations)
+
+# Checking shape of data
+bartlett.test(pca_data_lagging)
+
 # Calculate the Kaiser-Meyer-Olkin (KMO) measure for the dataset
-kmo <- KMO(pca_data_lagging_standardized)
+kmo <- KMO(pca_data_lagging)
 print(kmo)
 
 pca_summary_lagging <- summary(pca_result_lagging)

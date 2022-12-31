@@ -419,12 +419,17 @@ library(car)
 library(psych)
 ```
 ```{r}
-install.packages("ggforce")
+#install.packages("ggforce")
+#install.packages("EFAtools")
+library(EFAtools)
 library(ggforce)
 ```
 
 
 ```{r}
+
+library(psych)
+
 pca_data_leading <- realpersonalincomelesstransfers %>% 
   left_join(nonfarmpayrollemployment, by = "date") %>% 
   left_join(realpersonalconsumptionexpenditures, by = "date") %>%
@@ -440,11 +445,13 @@ pca_result_leading$scores
 pca_result_leading$sdev
 
 # Important checks
-correlations <- cor(pca_data_leading_standardized)
-print(correlations)
+cor(pca_data_leading)
+
+# Checking shape of data
+bartlett.test(pca_data_leading)
+
 # Calculate the Kaiser-Meyer-Olkin (KMO) measure for the dataset
-kmo <- KMO(pca_data_leading_standardized)
-print(kmo)
+KMO(pca_data_leading)
 
 pca_summary_leading  <- summary(pca_result_leading)
 pca_variances_leading  <- var(pca_result_leading$scores)
