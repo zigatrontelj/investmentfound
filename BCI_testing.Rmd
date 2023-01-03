@@ -1,0 +1,606 @@
+---
+title: "BCI"
+output:
+  pdf_document: default
+  html_document: default
+date: "2023-01-01"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library("tidyverse")
+library("ggplot2")
+library("forecast")
+library("Quandl")
+library("quantmod")
+library("magrittr")
+library("tidyquant")
+```
+
+```{r}
+SDate <- "1975-01-01"
+EDate <- Sys.Date()
+
+Quandl.api_key("4nDDuxoarbX1eR9z7KY-")
+```
+
+
+```{r}
+Recession <- Quandl('FRED/JHDUSRGDPBR', start_date=SDate, end_date=EDate, collapse = "monthly") %>% 
+  tq_transmute(select = Value, mutate_fun = to.monthly, indexAt = "firstof")
+```
+
+#Firstpart is just for extracting variables or economic indicators that makes up the BCI according to NBER
+```{r}
+realpersonalincomelesstransfers <- Quandl('FRED/W875RX1', start_date=SDate, end_date=EDate, collapse = "monthly") %>% 
+  tq_transmute(select = Value, mutate_fun = to.monthly, indexAt = "firstof") %>%
+  tq_transmute(select = Value,         
+               mutate_fun = periodReturn,   
+               period = "monthly",      
+               col_rename = "realpersonalincomelesstransfers_returns")
+
+realpersonalincomelesstransfers %>% 
+  ggplot(aes(Date, realpersonalincomelesstransfers_returns)) + 
+  geom_line() +
+  scale_x_date(name = "Year", date_minor_breaks = "10 year") + 
+  scale_y_continuous(name = "N° of building permits") +
+  ggtitle('Real Personal Income Less Transfers')
+
+#Fourier
+realpersonalincomelesstransfers$fourier <- fft(realpersonalincomelesstransfers$realpersonalincomelesstransfers_returns)
+
+# Extract the real and imaginary components of the transform
+realpersonalincomelesstransfers$real <- Re(realpersonalincomelesstransfers$fourier)
+realpersonalincomelesstransfers$imag <- Im(realpersonalincomelesstransfers$fourier)
+
+realpersonalincomelesstransfers %>% 
+  ggplot(aes(Date, real)) + 
+  geom_line() +
+  scale_x_date(name = "Year", date_minor_breaks = "10 year")+
+  ggtitle('Real Personal Income Less Transfers')
+
+realpersonalincomelesstransfers %>% 
+  ggplot(aes(Date, imag)) + 
+  geom_line() +
+  scale_x_date(name = "Year", date_minor_breaks = "10 year") +
+  ggtitle('Real Personal Income Less Transfers')
+```
+
+
+```{r}
+nonfarmpayrollemployment <- Quandl('FRED/PAYEMS', start_date=SDate, end_date=EDate, collapse = "monthly") %>% 
+  tq_transmute(select = Value, mutate_fun = to.monthly, indexAt = "firstof")  %>%
+  tq_transmute(select = Value,         
+               mutate_fun = periodReturn,   
+               period = "monthly",      
+               col_rename = "nonfarmpayrollemployment")
+
+nonfarmpayrollemployment %>% 
+  ggplot(aes(Date, nonfarmpayrollemployment)) + 
+  geom_line() +
+  scale_x_date(name = "Year", date_minor_breaks = "10 year") + 
+  scale_y_continuous(name = "N° of building permits") +
+  ggtitle('Non-Farm Payroll')
+
+#Fourier
+nonfarmpayrollemployment$fourier <- fft(nonfarmpayrollemployment$nonfarmpayrollemployment)
+
+# Extract the real and imaginary components of the transform
+nonfarmpayrollemployment$real <- Re(nonfarmpayrollemployment$fourier)
+nonfarmpayrollemployment$imag <- Im(nonfarmpayrollemployment$fourier)
+
+nonfarmpayrollemployment %>% 
+  ggplot(aes(Date, real)) + 
+  geom_line() +
+  scale_x_date(name = "Year", date_minor_breaks = "10 year")+
+  ggtitle('Real Personal Income Less Transfers')
+
+nonfarmpayrollemployment %>% 
+  ggplot(aes(Date, imag)) + 
+  geom_line() +
+  scale_x_date(name = "Year", date_minor_breaks = "10 year") +
+  ggtitle('Real Personal Income Less Transfers')
+```
+
+```{r}
+realpersonalconsumptionexpenditures <- Quandl('FRED/DPCERA3M086SBEA', start_date=SDate, end_date=EDate, collapse = "monthly") %>% 
+  tq_transmute(select = Value, mutate_fun = to.monthly, indexAt = "firstof")  %>%
+  tq_transmute(select = Value,         
+               mutate_fun = periodReturn,   
+               period = "monthly",      
+               col_rename = "realpersonalconsumptionexpenditures")
+
+realpersonalconsumptionexpenditures %>% 
+  ggplot(aes(Date, realpersonalconsumptionexpenditures)) + 
+  geom_line() +
+  scale_x_date(name = "Year", date_minor_breaks = "10 year") + 
+  scale_y_continuous(name = "N° of building permits") +
+  ggtitle('Real personal Consumption Expenditure')
+
+#Fourier
+realpersonalconsumptionexpenditures$fourier <- fft(realpersonalconsumptionexpenditures$realpersonalconsumptionexpenditures)
+
+# Extract the real and imaginary components of the transform
+realpersonalconsumptionexpenditures$real <- Re(realpersonalconsumptionexpenditures$fourier)
+realpersonalconsumptionexpenditures$imag <- Im(realpersonalconsumptionexpenditures$fourier)
+
+realpersonalconsumptionexpenditures %>% 
+  ggplot(aes(Date, real)) + 
+  geom_line() +
+  scale_x_date(name = "Year", date_minor_breaks = "10 year")+
+  ggtitle('Real Personal Income Less Transfers')
+
+realpersonalconsumptionexpenditures %>% 
+  ggplot(aes(Date, imag)) + 
+  geom_line() +
+  scale_x_date(name = "Year", date_minor_breaks = "10 year") +
+  ggtitle('Real Personal Income Less Transfers')
+```
+```{r}
+ProducerPriceIndex <- Quandl('FRED/PPIACO', start_date=SDate, end_date=EDate, collapse = "monthly") %>% 
+  tq_transmute(select = Value, mutate_fun = to.monthly, indexAt = "firstof") %>%
+  tq_transmute(select = Value,         
+               mutate_fun = periodReturn,   
+               period = "monthly",      
+               col_rename = "ProducerPriceIndex")
+
+ProducerPriceIndex %>% 
+  ggplot(aes(Date, ProducerPriceIndex)) + 
+  geom_line() +
+  scale_x_date(name = "Year", date_minor_breaks = "10 year") + 
+  scale_y_continuous(name = "N° of building permits") +
+  ggtitle('Producer Price Index')
+
+#Fourier
+ProducerPriceIndex$fourier <- fft(ProducerPriceIndex$ProducerPriceIndex)
+
+# Extract the real and imaginary components of the transform
+ProducerPriceIndex$real <- Re(ProducerPriceIndex$fourier)
+ProducerPriceIndex$imag <- Im(ProducerPriceIndex$fourier)
+
+ProducerPriceIndex %>% 
+  ggplot(aes(Date, real)) + 
+  geom_line() +
+  scale_x_date(name = "Year", date_minor_breaks = "10 year")+
+  ggtitle('Real Personal Income Less Transfers')
+
+ProducerPriceIndex %>% 
+  ggplot(aes(Date, imag)) + 
+  geom_line() +
+  scale_x_date(name = "Year", date_minor_breaks = "10 year") +
+  ggtitle('Real Personal Income Less Transfers')
+```
+
+```{r}
+IPI  <- Quandl("FRED/INDPRO", start_date=SDate, end_date=EDate, collapse = "monthly") %>% 
+  tq_transmute(select = Value, mutate_fun = to.monthly, indexAt = "firstof") %>%
+  tq_transmute(select = Value,         
+               mutate_fun = periodReturn,   
+               period = "monthly",      
+               col_rename = "IPI")
+
+IPI %>% 
+  ggplot(aes(Date, IPI)) + 
+  geom_line() +
+  scale_x_date(name = "Year", date_minor_breaks = "10 year") + 
+  scale_y_continuous(name = "N° of building permits") +
+  ggtitle('Industrial Production Index')
+
+#Fourier
+IPI$fourier <- fft(IPI$IPI)
+
+# Extract the real and imaginary components of the transform
+IPI$real <- Re(IPI$fourier)
+IPI$imag <- Im(IPI$fourier)
+
+IPI %>% 
+  ggplot(aes(Date, real)) + 
+  geom_line() +
+  scale_x_date(name = "Year", date_minor_breaks = "10 year")+
+  ggtitle('Real Personal Income Less Transfers')
+
+IPI %>% 
+  ggplot(aes(Date, imag)) + 
+  geom_line() +
+  scale_x_date(name = "Year", date_minor_breaks = "10 year") +
+  ggtitle('Real Personal Income Less Transfers')
+```
+```{r}
+unemployment <- Quandl('FRED/UNRATE', start_date=SDate, end_date=EDate, collapse = "monthly") %>% 
+  tq_transmute(select = Value, mutate_fun = to.monthly, indexAt = "firstof")  %>%
+  tq_transmute(select = Value,         
+               mutate_fun = periodReturn,   
+               period = "monthly",      
+               col_rename = "unemployment")
+
+
+unemployment %>% 
+  ggplot(aes(Date, unemployment)) + 
+  geom_line() +
+  scale_x_date(name = "Year", date_minor_breaks = "10 year") + 
+  scale_y_continuous(name = "N° of building permits") +
+  ggtitle('Employment Rate')+
+  annotate("rect", xmin = as.Date("2020/02/01"), xmax = as.Date("2020/04/01"), ymin = 0.75, ymax = 1, alpha = .2, fill = 'purple') +
+  annotate("rect", xmin = as.Date("2007/12/01"), xmax = as.Date("2009/06/01"), ymin = 0.75, ymax = 1, alpha = .2, fill = 'purple') +
+  annotate("rect", xmin = as.Date("2001/03/01"), xmax = as.Date("2001/11/01"), ymin = 0.75, ymax = 1, alpha = .2, fill = 'purple') +
+  annotate("rect", xmin = as.Date("1990/07/01"), xmax = as.Date("1991/03/01"), ymin = 0.75, ymax = 1, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1981/07/01"), xmax = as.Date("1982/11/01"), ymin = 0.75, ymax = 1, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1980/01/01"), xmax = as.Date("1980/07/01"), ymin = 0.75, ymax = 1, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1973/11/01"), xmax = as.Date("1975/05/01"), ymin = 0.75, ymax = 1, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1969/12/01"), xmax = as.Date("1970/11/01"), ymin = 0.75, ymax = 1, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1960/04/01"), xmax = as.Date("1961/02/01"), ymin = 0.75, ymax = 1, alpha = .2, fill = 'purple')
+
+#Fourier
+unemployment$fourier <- fft(unemployment$unemployment)
+
+# Extract the real and imaginary components of the transform
+unemployment$real <- Re(unemployment$fourier)
+unemployment$imag <- Im(unemployment$fourier)
+
+unemployment %>% 
+  ggplot(aes(Date, real)) + 
+  geom_line() +
+  scale_x_date(name = "Year", date_minor_breaks = "10 year")+
+  ggtitle('Real Personal Income Less Transfers')
+
+unemployment %>% 
+  ggplot(aes(Date, imag)) + 
+  geom_line() +
+  scale_x_date(name = "Year", date_minor_breaks = "10 year") +
+  ggtitle('Real Personal Income Less Transfers')
+```
+
+```{r}
+data <- realpersonalincomelesstransfers %>% left_join(nonfarmpayrollemployment, by = 'Date') %>% left_join(realpersonalconsumptionexpenditures, by = 'Date') %>% left_join(ProducerPriceIndex, by = 'Date') %>% left_join(IPI, by = 'Date') %>% left_join(unemployment, by = 'Date') %>% na.omit()
+```
+
+
+```{r}
+data <- realpersonalincomelesstransfers %>% left_join(nonfarmpayrollemployment, by = 'Date') %>% left_join(realpersonalconsumptionexpenditures, by = 'Date') %>% left_join(ProducerPriceIndex, by = 'Date') %>% left_join(IPI, by = 'Date') %>% left_join(unemployment, by = 'Date') %>% na.omit()
+
+data$Date <- as.Date(data$Date, format = "%Y-%m-%d")
+
+#data <- ts(data, start = c(1975, 1), end = c(2021,1),frequency = 12)
+```
+
+
+#This part is for decommposing the timeseries to remove seasonality.
+```{r}
+# Load the stats package
+library("stats")
+library(zoo)
+```
+
+
+#This part is for creating the BCI by using principal component analysis.
+```{r}
+data1 <- data %>% select(-Date)
+#pca_data_leading_standardized <- scale(data1)
+# Install the tidyverse and principal packages
+#install.packages("tidyverse")
+#
+#install.packages("principal")
+
+# Load the tidyverse and principal packages
+library(tidyverse)
+#library(principal)
+# Apply PCA to the economic indicators data
+#pca_results <- prcomp(data1)
+# Extract the first principal component
+#business_cycle <- pca_results$scores[,1]
+# Load the ggplot2 package
+library(ggplot2)
+#data$business_cycle <- pca_results$scores[,1]
+# Create a line plot of the business cycle
+#ggplot(data, aes(x = Date, y = business_cycle)) +
+ # geom_line()
+```
+
+```{r}
+library("psych")
+news <- cbind(data1$real.x,data1$real.y,data1$real.x.x,data1$real.y.y,data1$real.x.x.x,data1$real.y.y.y)
+KMO(news)
+pca_data_leading_standardized <- scale(news)
+pca_result_leading <- princomp(pca_data_leading_standardized)
+pca_result_leading$scores
+pca_result_leading$sdev
+pca_summary_leading  <- summary(pca_result_leading)
+pca_variances_leading  <- var(pca_result_leading$scores)
+pca_cumulative_variances_leading  <- cumsum(pca_variances_leading)
+pca_var_leading  <- pca_result_leading$sdev^2 / sum(pca_result_leading$sdev^2)
+barplot(pca_var_leading, xlab="Principal Component", ylab="Proportion of Variance Explained")
+screeplot(pca_result_leading, type="line", main="Scree Plot")
+plot(pca_result_leading$scores[,1:2], col=1:nrow(pca_result_leading$scores), xlab="PC1", ylab="PC2")
+pca_scores_leading <- as.data.frame(pca_result_leading$scores) %>% 
+  select(Comp.1)
+values_leading <- realpersonalincomelesstransfers %>% 
+  left_join(nonfarmpayrollemployment, by = "Date") %>% 
+  left_join(realpersonalconsumptionexpenditures, by = "Date") %>%
+  left_join(ProducerPriceIndex, by = "Date") %>%
+  left_join(IPI, by = "Date") %>%
+  na.omit()
+values_leading$index <- pca_scores_leading[,1]
+plot(values_leading$Date, values_leading$index)
+values_leading %>% 
+  ggplot(aes(Date, index)) + 
+  geom_line() +
+  scale_x_date(name = "Year", date_minor_breaks = "10 year") + 
+  scale_y_continuous(name = "Leading index") +
+  ggtitle('Leading index for business cycle') +
+  annotate("rect", xmin = as.Date("2020/02/01"), xmax = as.Date("2020/04/01"), ymin = -3.5, ymax = 5, alpha = .2, fill = 'purple') +
+  annotate("rect", xmin = as.Date("2007/12/01"), xmax = as.Date("2009/06/01"), ymin = -3.5, ymax = 5, alpha = .2, fill = 'purple') +
+  annotate("rect", xmin = as.Date("2001/03/01"), xmax = as.Date("2001/11/01"), ymin = -3.5, ymax = 5, alpha = .2, fill = 'purple') +
+  annotate("rect", xmin = as.Date("1990/07/01"), xmax = as.Date("1991/03/01"), ymin = -3.5, ymax = 5, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1981/07/01"), xmax = as.Date("1982/11/01"), ymin = -3.5, ymax = 5, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1980/01/01"), xmax = as.Date("1980/07/01"), ymin = -3.5, ymax = 5, alpha = .2, fill = 'purple')
+#+annotate("rect", xmin = as.Date("1973/11/01"), xmax = as.Date("1975/05/01"), ymin = -3.5, ymax = 5, alpha = .2, fill = 'purple')
+```
+#In the chart above, the BCI was created through the principal component method.
+
+#In the chunks belowe, I will try to create the BCI by using fourier analysis
+```{r}
+library("stats")
+# Compute the discrete Fourier transform of the time series
+values_leading$fourier <- fft(values_leading$index)
+
+# Extract the real and imaginary components of the transform
+values_leading$real <- Re(values_leading$fourier)
+values_leading$imag <- Im(values_leading$fourier)
+
+values_leading$sum <- values_leading$real + 0.2*values_leading$imag
+plot(values_leading$real)
+
+# Compute the inverse Fourier transform
+#n <- length(values_leading)
+#values_leading$inverse_transform <- rep(0, n)
+#for (k in 1:n) {
+#  values_leading$inverse_transform[k] <- sum(real * cos(2 * pi * (k-1) * (0:(n-1))/n) + imag * sin(2 * pi * (k-1) * (0:(n-1))/n))
+#}
+
+# Extract the dates from the data
+#dates <- values_leading$Date
+
+# Plot the time series with the dates on the y-axis
+plot(values_leading$sum, type = "l", col = "blue", xaxt = "n")
+#axis(1, at = 1:n, labels = dates, las = 2)
+
+
+# Plot the real and imaginary components of the Fourier transform
+plot(values_leading$real, type = "l", col = "blue")
+plot(values_leading$imag, type = "l", col = "red")
+
+#Recession (Dummy Variable)
+
+values_leading <- values_leading %>% left_join(Recession, by = 'Date') %>% na.omit()
+
+ggplot(values_leading, aes(x=Date, y=real)) +
+  geom_line() + geom_point(aes(color = values_leading$Value.y.y.y))+
+  annotate("rect", xmin = as.Date("2020/02/01"), xmax = as.Date("2020/04/01"), ymin = -3.5, ymax = 5, alpha = .2, fill = 'purple') +
+  annotate("rect", xmin = as.Date("2007/12/01"), xmax = as.Date("2009/06/01"), ymin = -3.5, ymax = 5, alpha = .2, fill = 'purple') +
+  annotate("rect", xmin = as.Date("2001/03/01"), xmax = as.Date("2001/11/01"), ymin = -3.5, ymax = 5, alpha = .2, fill = 'purple') +
+  annotate("rect", xmin = as.Date("1990/07/01"), xmax = as.Date("1991/03/01"), ymin = -3.5, ymax = 5, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1981/07/01"), xmax = as.Date("1982/11/01"), ymin = -3.5, ymax = 5, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1980/01/01"), xmax = as.Date("1980/07/01"), ymin = -3.5, ymax = 5, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1973/11/01"), xmax = as.Date("1975/05/01"), ymin = -3.5, ymax = 5, alpha = .2, fill = 'purple')
+  
+  
+ 
+```
+
+
+
+```{r}
+DFF <- tq_get("DFF",get = "economic.data" ,from=SDate, collapse = "monthly") %>%  tq_transmute(select = price, mutate_fun = to.monthly, indexAt = "firstof")%>%  rename(FFR = price) %>% 
+  rename(Date = date)
+DFF$increase <- DFF$FFR - lag(DFF$FFR)
+
+# Five-y Bonds
+fiveyears_IR <-  tq_get("DGS5",
+                         from = SDate,
+                         "economic.data") %>% 
+  tq_transmute(select = price, mutate_fun = to.monthly, indexAt = "firstof") %>% 
+  rename(FiveyearsIR = price) %>% 
+  rename(Date = date)
+
+# T-Bills
+threemonths_IR <- tq_get("DTB3",
+                         from = SDate,
+                         "economic.data") %>% 
+  tq_transmute(select = price, mutate_fun = to.monthly, indexAt = "firstof") %>% 
+  rename(ThreemonthsIR = price) %>% 
+  rename(Date = date)
+
+# 30y - 3m spread
+IR_Spread <- fiveyears_IR %>%
+    left_join(threemonths_IR, by='Date') %>% 
+  mutate(IRSpread = FiveyearsIR - ThreemonthsIR) #%>% 
+  #select[-ThirtyyearsIR, -ThreemonthsIR]
+
+
+```
+
+
+
+```{r}
+
+new <-   IR_Spread %>%  left_join(DFF, by='Date') %>% select(-c(FiveyearsIR,ThreemonthsIR,FFR)) %>% na.omit()
+data$Date <- as.Date(data$Date, format = "%Y-%m-%d")
+
+#left_join(consumer_sentiment, by='Date') %>%left_join(future_new_orders, by='Date') %>%
+
+```
+
+
+```{r}
+# Load the stats package
+library(stats)
+
+new$IRSpread<- ts(new$IRSpread,start = c(1975, 2), end = c(2022,12), frequency = 12)
+# Decompose the data using the STL method
+decomp_results <- stl(new$IRSpread, s.window = "periodic")
+
+# Extract the residuals (de-seasonalized data)
+residuals1 <- decomp_results$time.series[,3]
+new$IRSpread <-residuals1
+
+new$increase <- ts(new$increase,start = c(1975, 2), end = c(2022,12), frequency = 12)
+# Decompose the data using the STL method
+decomp_results <- stl(new$increase, s.window = "periodic")
+
+# Extract the residuals (de-seasonalized data)
+residuals2 <- decomp_results$time.series[,3]
+new$increase <- residuals2
+```
+
+```{r}
+new1 <- new %>% select(-Date)
+KMO(new1)
+pca_data_leading_standardized <- scale(new1)
+pca_result_leading <- princomp(pca_data_leading_standardized)
+pca_result_leading$scores
+pca_result_leading$sdev
+pca_summary_leading  <- summary(pca_result_leading)
+pca_variances_leading  <- var(pca_result_leading$scores)
+pca_cumulative_variances_leading  <- cumsum(pca_variances_leading)
+pca_var_leading  <- pca_result_leading$sdev^2 / sum(pca_result_leading$sdev^2)
+barplot(pca_var_leading, xlab="Principal Component", ylab="Proportion of Variance Explained")
+screeplot(pca_result_leading, type="line", main="Scree Plot")
+plot(pca_result_leading$scores[,1:2], col=1:nrow(pca_result_leading$scores), xlab="PC1", ylab="PC2")
+pca_scores_leading <- as.data.frame(pca_result_leading$scores) %>% 
+  select(Comp.1)
+values_leading <- IR_Spread %>%  left_join(DFF, by='Date') %>% select(-c(FiveyearsIR,ThreemonthsIR,FFR)) %>% na.omit()
+values_leading$index <- pca_scores_leading[,1]
+plot(values_leading$Date, values_leading$index)
+values_leading %>% 
+  ggplot(aes(Date, index)) + 
+  geom_line() +
+  scale_x_date(name = "Year", date_minor_breaks = "10 year") + 
+  scale_y_continuous(name = "Leading index") +
+  ggtitle('Leading index for business cycle') +
+  annotate("rect", xmin = as.Date("2020/02/01"), xmax = as.Date("2020/04/01"), ymin = -3.5, ymax = 5, alpha = .2, fill = 'purple') +
+  annotate("rect", xmin = as.Date("2007/12/01"), xmax = as.Date("2009/06/01"), ymin = -3.5, ymax = 5, alpha = .2, fill = 'purple') +
+  annotate("rect", xmin = as.Date("2001/03/01"), xmax = as.Date("2001/11/01"), ymin = -3.5, ymax = 5, alpha = .2, fill = 'purple') +
+  annotate("rect", xmin = as.Date("1990/07/01"), xmax = as.Date("1991/03/01"), ymin = -3.5, ymax = 5, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1981/07/01"), xmax = as.Date("1982/11/01"), ymin = -3.5, ymax = 5, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1980/01/01"), xmax = as.Date("1980/07/01"), ymin = -3.5, ymax = 5, alpha = .2, fill = 'purple')
+#+annotate("rect", xmin = as.Date("1973/11/01"), xmax = as.Date("1975/05/01"), ymin = -3.5, ymax = 5, alpha = .2, fill = 'purple')
+```
+
+
+```{r}
+library(stats)
+# Compute the discrete Fourier transform of the time series
+values_leading$fourier <- fft(values_leading$index)
+
+# Extract the real and imaginary components of the transform
+values_leading$real <- Re(values_leading$fourier)
+values_leading$imag <- Im(values_leading$fourier)
+
+plot(values_leading$real)
+
+# Compute the inverse Fourier transform
+#n <- length(values_leading)
+#values_leading$inverse_transform <- rep(0, n)
+#for (k in 1:n) {
+#  values_leading$inverse_transform[k] <- sum(real * cos(2 * pi * (k-1) * (0:(n-1))/n) + imag * sin(2 * pi * (k-1) * (0:(n-1))/n))
+#}
+
+# Extract the dates from the data
+#dates <- values_leading$Date
+
+# Plot the time series with the dates on the y-axis
+#plot(inverse_transform, type = "l", col = "blue", xaxt = "n")
+#axis(1, at = 1:n, labels = dates, las = 2)
+
+
+# Plot the real and imaginary components of the Fourier transform
+plot(values_leading$real, type = "l", col = "blue")
+plot(values_leading$imag, type = "l", col = "red")
+
+#Recession (Dummy Variable)
+Recession <- Quandl('FRED/JHDUSRGDPBR', start_date=SDate, end_date=EDate, collapse = "monthly") %>% 
+  tq_transmute(select = Value, mutate_fun = to.monthly, indexAt = "firstof")
+values_leading <- values_leading %>% left_join(Recession, by = 'Date') %>% na.omit()
+
+ggplot(values_leading, aes(x=Date, y=real)) +
+  geom_line() + geom_point(aes(color = values_leading$Value))+
+  annotate("rect", xmin = as.Date("2020/02/01"), xmax = as.Date("2020/04/01"), ymin = -3.5, ymax = 5, alpha = .2, fill = 'purple') +
+  annotate("rect", xmin = as.Date("2007/12/01"), xmax = as.Date("2009/06/01"), ymin = -3.5, ymax = 5, alpha = .2, fill = 'purple') +
+  annotate("rect", xmin = as.Date("2001/03/01"), xmax = as.Date("2001/11/01"), ymin = -3.5, ymax = 5, alpha = .2, fill = 'purple') +
+  annotate("rect", xmin = as.Date("1990/07/01"), xmax = as.Date("1991/03/01"), ymin = -3.5, ymax = 5, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1981/07/01"), xmax = as.Date("1982/11/01"), ymin = -3.5, ymax = 5, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1980/01/01"), xmax = as.Date("1980/07/01"), ymin = -3.5, ymax = 5, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1973/11/01"), xmax = as.Date("1975/05/01"), ymin = -3.5, ymax = 5, alpha = .2, fill = 'purple')
+  
+```
+
+
+#Extracting envronments by clustering the timeseries.
+```{r}
+#Install the stats and dplyr packages
+#install.packages("stats")
+#install.packages("dplyr")
+
+# Load the stats and dplyr packages
+library(stats)
+library(dplyr)
+
+
+# Calculate the distance between each pair of time series
+distance_matrix <- dist(new)
+
+# Run the k-means clustering algorithm
+clusters <- kmeans(distance_matrix, centers = 4, iter.max = 10)
+
+# Assign each time series to a cluster
+new <- new %>%
+  mutate(cluster = clusters$cluster)
+
+ggplot(new, aes(x=Date, y=index)) +
+  geom_line()+
+  geom_point(aes(color = clusters$cluster))  +
+  annotate("rect", xmin = as.Date("2020/02/01"), xmax = as.Date("2020/04/01"), ymin = -3.5, ymax = 5, alpha = .2, fill = 'purple') +
+  annotate("rect", xmin = as.Date("2007/12/01"), xmax = as.Date("2009/06/01"), ymin = -3.5, ymax = 5, alpha = .2, fill = 'purple') +
+  annotate("rect", xmin = as.Date("2001/03/01"), xmax = as.Date("2001/11/01"), ymin = -3.5, ymax = 5, alpha = .2, fill = 'purple') +
+  annotate("rect", xmin = as.Date("1990/07/01"), xmax = as.Date("1991/03/01"), ymin = -3.5, ymax = 5, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1981/07/01"), xmax = as.Date("1982/11/01"), ymin = -3.5, ymax = 5, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1980/01/01"), xmax = as.Date("1980/07/01"), ymin = -3.5, ymax = 5, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1973/11/01"), xmax = as.Date("1975/05/01"), ymin = -3.5, ymax = 5, alpha = .2, fill = 'purple')
+
+ggplot(new, aes(x=Date, y=IRSpread)) +
+  geom_line()+
+  geom_point(aes(color = clusters$cluster))  +
+  annotate("rect", xmin = as.Date("2020/02/01"), xmax = as.Date("2020/04/01"), ymin = -3.5, ymax = 5, alpha = .2, fill = 'purple') +
+  annotate("rect", xmin = as.Date("2007/12/01"), xmax = as.Date("2009/06/01"), ymin = -3.5, ymax = 5, alpha = .2, fill = 'purple') +
+  annotate("rect", xmin = as.Date("2001/03/01"), xmax = as.Date("2001/11/01"), ymin = -3.5, ymax = 5, alpha = .2, fill = 'purple') +
+  annotate("rect", xmin = as.Date("1990/07/01"), xmax = as.Date("1991/03/01"), ymin = -3.5, ymax = 5, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1981/07/01"), xmax = as.Date("1982/11/01"), ymin = -3.5, ymax = 5, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1980/01/01"), xmax = as.Date("1980/07/01"), ymin = -3.5, ymax = 5, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1973/11/01"), xmax = as.Date("1975/05/01"), ymin = -3.5, ymax = 5, alpha = .2, fill = 'purple')
+
+ggplot(new, aes(x=Date, y=SP500_returns)) +
+  geom_line()+
+  geom_point(aes(color = clusters$cluster))  +
+  annotate("rect", xmin = as.Date("2020/02/01"), xmax = as.Date("2020/04/01"), ymin = -0.5, ymax = 0.5, alpha = .2, fill = 'purple') +
+  annotate("rect", xmin = as.Date("2007/12/01"), xmax = as.Date("2009/06/01"), ymin = -0.5, ymax = 0.5, alpha = .2, fill = 'purple') +
+  annotate("rect", xmin = as.Date("2001/03/01"), xmax = as.Date("2001/11/01"), ymin = -0.5, ymax = 0.5, alpha = .2, fill = 'purple') +
+  annotate("rect", xmin = as.Date("1990/07/01"), xmax = as.Date("1991/03/01"), ymin = -0.5, ymax = 0.5, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1981/07/01"), xmax = as.Date("1982/11/01"), ymin = -0.5, ymax = 0.5, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1980/01/01"), xmax = as.Date("1980/07/01"), ymin = -0.5, ymax = 0.5, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1973/11/01"), xmax = as.Date("1975/05/01"), ymin = -0.5, ymax = 0.5, alpha = .2, fill = 'purple')
+
+ggplot(new, aes(x=Date, y=increase)) +
+  geom_line()+
+  geom_point(aes(color = clusters$cluster))  +
+  annotate("rect", xmin = as.Date("2020/02/01"), xmax = as.Date("2020/04/01"), ymin = -3.5, ymax = 5, alpha = .2, fill = 'purple') +
+  annotate("rect", xmin = as.Date("2007/12/01"), xmax = as.Date("2009/06/01"), ymin = -3.5, ymax = 5, alpha = .2, fill = 'purple') +
+  annotate("rect", xmin = as.Date("2001/03/01"), xmax = as.Date("2001/11/01"), ymin = -3.5, ymax = 5, alpha = .2, fill = 'purple') +
+  annotate("rect", xmin = as.Date("1990/07/01"), xmax = as.Date("1991/03/01"), ymin = -3.5, ymax = 5, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1981/07/01"), xmax = as.Date("1982/11/01"), ymin = -3.5, ymax = 5, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1980/01/01"), xmax = as.Date("1980/07/01"), ymin = -3.5, ymax = 5, alpha = .2, fill = 'purple')+
+  annotate("rect", xmin = as.Date("1973/11/01"), xmax = as.Date("1975/05/01"), ymin = -3.5, ymax = 5, alpha = .2, fill = 'purple')
+```
+
