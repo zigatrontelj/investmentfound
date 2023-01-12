@@ -23,6 +23,17 @@ library(tidyquant)
 library(timetk)
 ```
 
+```{r}
+Quandl.api_key("YE-L2_sxPkntzGfHo3vZ")
+EDate <- as.Date(Sys.Date())
+SDate <- as.Date(EDate-365*100)
+YoY <- as.Date(EDate-365)
+
+EFDate <- as.Date(Sys.Date())
+SFDate <- EFDate - 365*100
+```
+
+
 #Important tickers are the following:
 S&P Communication Services Select Sector (XLC) -> DONE
 S&P Consumer Discretionary Select Sector (XLY)
@@ -511,6 +522,7 @@ utilities_returns %>%
   annotate(geom = 'text', x = -0.30, y= 40, label = "Extremely\nnegative\nreturns") +
   annotate(geom = 'text', x = 0.430, y = 40, label = "Extremely\npositive\nreturns")
 ```
+
 # Data frame with all
 ```{r}
 
@@ -528,10 +540,91 @@ allsectors <- SP500 %>%
   left_join(utilities, by = "Date") %>% 
   na.omit()
 
+allsectors_returns <- SP500_returns %>% 
+  left_join(communication_returns, by = "Date") %>% 
+  left_join(cons_discr_returns, by = "Date") %>% 
+  left_join(cons_stapl_returns, by = "Date") %>% 
+  left_join(energy_returns, by = "Date") %>% 
+  left_join(finance_returns, by = "Date") %>% 
+  left_join(healthcare_returns, by = "Date") %>% 
+  left_join(industrial_returns, by = "Date") %>% 
+  left_join(materials_returns, by = "Date") %>% 
+  left_join(real_estate_returns, by = "Date") %>% 
+  left_join(technology_returns, by = "Date") %>% 
+  left_join(utilities_returns, by = "Date") %>% 
+  na.omit()
+
 ```
 
+# Plotting historical index values and returns
+```{r}
+allsectors %>% 
+  ggplot(aes(x = Date)) +
+  geom_line(aes(y = SP500, color = "SP500")) + 
+  geom_line(aes(y = XLE*10, color = "XLE")) +
+  geom_line(aes(y = XLY*10, color = "XLY")) +
+  geom_line(aes(y = XLP*10, color = "XLP")) +
+  geom_line(aes(y = XLU*10, color = "XLU")) +
+  geom_line(aes(y = XLF*10, color = "XLF")) +
+  geom_line(aes(y = XLV*10, color = "XLV")) +
+  geom_line(aes(y = XLI*10, color = "XLI")) +
+  geom_line(aes(y = XLK*10, color = "XLK")) +
+  geom_line(aes(y = XLRE*10, color = "XLRE")) +
+  geom_line(aes(y = XLB*10, color = "XLB")) +
+  geom_line(aes(y = XLC*10, color = "XLC")) +
+  scale_y_continuous('Sectors') +
+  scale_x_date(name = 'Dates') +
+  #scale_color_manual(name = "Interest rate", values = c( "10 years" = "red", "3 months" = "black","30 years" = "green",  "5 years" = "dodgerblue" ), labels = c("10 years", "3 months", "30 years", "5 years")) +
+  ggtitle('Historical index values')+
+  annotate("rect", xmin = as.Date("2020/02/01"), xmax = as.Date("2020/04/01"), ymin = 0, ymax = 5000, alpha = .2, fill = 'purple') #+
+  #annotate("rect", xmin = as.Date("2007/12/01"), xmax = as.Date("2009/06/01"), ymin = 0, ymax = 5000, alpha = .2, fill = 'purple') +
+  #annotate("rect", xmin = as.Date("2001/03/01"), xmax = as.Date("2001/11/01"), ymin = 0, ymax = 5000, alpha = .2, fill = 'purple') +
+  #annotate("rect", xmin = as.Date("1990/07/01"), xmax = as.Date("1991/03/01"), ymin = 0, ymax = 5000, alpha = .2, fill = 'purple')+
+  #annotate("rect", xmin = as.Date("1981/07/01"), xmax = as.Date("1982/11/01"), ymin = 0, ymax = 5000, alpha = .2, fill = 'purple')+
+  #annotate("rect", xmin = as.Date("1980/01/01"), xmax = as.Date("1980/07/01"), ymin = 0, ymax = 5000, alpha = .2, fill = 'purple')
 
+allsectors_returns %>% 
+  ggplot(aes(x = Date)) +
+  geom_line(aes(y = SP500_returns, color = "SP500")) + 
+  geom_line(aes(y = XLE_returns, color = "XLE")) +
+  geom_line(aes(y = XLY_returns, color = "XLY")) +
+  geom_line(aes(y = XLP_returns, color = "XLP")) +
+  geom_line(aes(y = XLU_returns, color = "XLU")) +
+  geom_line(aes(y = XLF_returns, color = "XLF")) +
+  geom_line(aes(y = XLV_returns, color = "XLV")) +
+  geom_line(aes(y = XLI_returns, color = "XLI")) +
+  geom_line(aes(y = XLK_returns, color = "XLK")) +
+  geom_line(aes(y = XLRE_returns, color = "XLRE")) +
+  geom_line(aes(y = XLB_returns, color = "XLB")) +
+  geom_line(aes(y = XLC_returns, color = "XLC")) +
+  scale_y_continuous('Sectors') +
+  scale_x_date(name = 'Dates') +
+  #scale_color_manual(name = "Interest rate", values = c( "10 years" = "red", "3 months" = "black","30 years" = "green",  "5 years" = "dodgerblue" ), labels = c("10 years", "3 months", "30 years", "5 years")) +
+  ggtitle('Historical index values')+
+  annotate("rect", xmin = as.Date("2020/02/01"), xmax = as.Date("2020/04/01"), ymin = -0.4, ymax = 0.4, alpha = .2, fill = 'purple') #+
+  #annotate("rect", xmin = as.Date("2007/12/01"), xmax = as.Date("2009/06/01"), ymin = 0, ymax = 5000, alpha = .2, fill = 'purple') +
+  #annotate("rect", xmin = as.Date("2001/03/01"), xmax = as.Date("2001/11/01"), ymin = 0, ymax = 5000, alpha = .2, fill = 'purple') +
+  #annotate("rect", xmin = as.Date("1990/07/01"), xmax = as.Date("1991/03/01"), ymin = 0, ymax = 5000, alpha = .2, fill = 'purple')+
+  #annotate("rect", xmin = as.Date("1981/07/01"), xmax = as.Date("1982/11/01"), ymin = 0, ymax = 5000, alpha = .2, fill = 'purple')+
+  #annotate("rect", xmin = as.Date("1980/01/01"), xmax = as.Date("1980/07/01"), ymin = 0, ymax = 5000, alpha = .2, fill = 'purple')
 
+```
+
+# Important correlations for each sector
+
+Communication:
+  - 
+  
+Energy:
+  - Crude oil prices (WTI)
+
+```{r}
+
+energy_prices <- tq_get("DCOILWTICO",
+                        from = EDate,
+                        get = "economic.data") #DOESN'T WORK
+
+```
 
 
 
