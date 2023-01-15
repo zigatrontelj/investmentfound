@@ -56,6 +56,38 @@ stockmarket <- tq_get("^GSPC",
   tq_transmute(select = adjusted, mutate_fun = to.monthly, indexAt = "firstof")%>% 
   rename(Date = date)
 
+# S&P500 Mean prices
+stockmarket_mean <- tq_get("^GSPC",
+                      from = SDate,
+                      get = "stock.prices") %>%
+  mutate(month = as.Date(cut(as.Date(date), breaks = "month"))) %>%
+  group_by(month) %>%
+  summarise(mean_price = mean(adjusted)) %>% 
+  #tq_transmute(select = adjusted, mutate_fun = to.monthly(mean), indexAt = "firstof")%>% 
+  rename(Date = month) %>%
+  rename(adjusted = mean_price)
+
+# S&P500 min prices
+stockmarket_low <- tq_get("^GSPC",
+                      from = SDate,
+                      get = "stock.prices") %>%
+  mutate(month = as.Date(cut(as.Date(date), breaks = "month"))) %>%
+  group_by(month) %>%
+  summarise(mean_low = mean(low)) %>% 
+  #tq_transmute(select = adjusted, mutate_fun = to.monthly(mean), indexAt = "firstof")%>% 
+  rename(Date = month)
+
+# S&P500 high prices
+stockmarket_high <- tq_get("^GSPC",
+                      from = SDate,
+                      get = "stock.prices") %>%
+  mutate(month = as.Date(cut(as.Date(date), breaks = "month"))) %>%
+  group_by(month) %>%
+  summarise(mean_high = mean(high)) %>% 
+  #tq_transmute(select = adjusted, mutate_fun = to.monthly(mean), indexAt = "firstof")%>% 
+  rename(Date = month)
+
+
 # S&P500 Returns
 stockmarket_returns <- stockmarket %>%
   tq_transmute(select = adjusted,         
@@ -344,6 +376,9 @@ dollar_index_growth <- dollar_index %>%
 ```{r}
 #join the three data frames
 dataAll <- stockmarket_returns %>%
+    left_join(stockmarket_mean, by='Date') %>%
+    left_join(stockmarket_low, by='Date') %>%
+    left_join(stockmarket_high, by='Date') %>%
     left_join(house_price_index, by='Date') %>%
     left_join(retail_trade, by='Date') %>% 
     left_join(IR_Spread, by='Date') %>% 
