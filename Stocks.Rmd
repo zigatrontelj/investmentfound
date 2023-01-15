@@ -1,0 +1,416 @@
+---
+title: "Stocks"
+output: html_document
+date: "2023-01-15"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyquant)
+library(PerformanceAnalytics)
+library(timeSeries)
+#install.packages("tibbletime")
+library(tibbletime)
+```
+
+# Communication
+```{r}
+# Get communication sector data
+
+communication_stocks <- tq_get(c("GOOGL","T", "META", "GOOG", "LUMN", "VZ", "WBD", "CMCSA", "DIS", "NFLX", "PARA", "TMUS", "DISH", "ATVI", "MTCH", "FOXA", "IPG", "NWSA", "LYV", "EA", "TTWO", "OMC", "NWS", "FOX", "CHTR"),
+                      from = "2021-01-01",
+                      get = "stock.prices") %>% 
+                      rename(Date = date)
+
+communication_stocks_returns <- communication_stocks %>%
+  group_by(symbol) %>%                            
+  tq_transmute(select = adjusted,
+               mutate_fun = periodReturn,
+               period = 'daily',
+               col_rename = 'returns',
+               type = "log")
+
+communication_stocks_returns %>%
+  ggplot(aes(x = Date, y = returns)) +
+  geom_line() +
+  geom_hline(yintercept = 0) +
+  facet_wrap(~symbol, scales = "free_y") +
+  scale_y_continuous(labels = scales::percent) +
+  ggtitle("Daily returns for communication stock") +
+  labs(x = "Date", y = "Returns") +
+  scale_color_brewer(palette = "Set2",
+                     name = "",
+                     guide = "none") +
+  theme_classic()
+
+communication_stocks_returns %>%
+  group_by(symbol) %>%
+  summarise(mean = mean(returns),
+            sd = sd(returns)) 
+```
+
+```{r}
+# Get consumer discretionary sector data
+
+cons_discr_stocks <- tq_get(c("TSLA", "F", "AMZN", "CCL", "GM", "NCLH", "SBUX", "VFC", "TGT", "NKE", "LVS", "TJX", "RCL", "ETSY", "LOW", "EBAY","KMX", "HD", "EXPE", "MGM", "NWL", "DHI", "LKQ", "ROST", "BBWI"),
+                      from = "2021-01-01",
+                      get = "stock.prices") %>% 
+                      rename(Date = date)
+
+cons_discr_stocks_returns <- cons_discr_stocks %>%
+  group_by(symbol) %>%                            
+  tq_transmute(select = adjusted,
+               mutate_fun = periodReturn,
+               period = 'daily',
+               col_rename = 'returns',
+               type = "log")
+
+cons_discr_stocks_returns %>%
+  ggplot(aes(x = Date, y = returns)) +
+  geom_line() +
+  geom_hline(yintercept = 0) +
+  facet_wrap(~symbol, scales = "free_y") +
+  scale_y_continuous(labels = scales::percent) +
+  ggtitle("Daily returns for consumer discretionary stock") +
+  labs(x = "Date", y = "Returns") +
+  scale_color_brewer(palette = "Set2",
+                     name = "",
+                     guide = FALSE) +
+  theme_classic()
+```
+
+```{r}
+cons_staples_stocks <- tq_get(c("KO", "MO", "KHC", "KDP", "PG", "PEP", "MDLZ", "WMT", "WBA","CL","GIS","KR", "CAG", "PM", "STZ", "ADM"),
+                      from = "2021-01-01",
+                      get = "stock.prices") %>% 
+                      rename(Date = date)
+
+cons_staples_returns <- cons_staples_stocks %>%
+  group_by(symbol) %>%                            
+  tq_transmute(select = adjusted,
+               mutate_fun = periodReturn,
+               period = 'daily',
+               col_rename = 'returns',
+               type = "log")
+
+cons_staples_returns %>%
+  ggplot(aes(x = Date, y = returns)) +
+  geom_line() +
+  geom_hline(yintercept = 0) +
+  facet_wrap(~symbol, scales = "free_y") +
+  scale_y_continuous(labels = scales::percent) +
+  ggtitle("Daily returns for consumer staples stock") +
+  labs(x = "Date", y = "Returns") +
+  scale_color_brewer(palette = "Set2",
+                     name = "",
+                     guide = FALSE) +
+  theme_classic()
+```
+
+```{r}
+energy_stocks <- tq_get(c("XOM", "KMI", "SLB", "OXY", "MRO", "CTRA", "HAL", "CVX", "EQT", "DVN", "WMB", "BKR", "COP", "APA", "MPC"),
+                      from = "2021-01-01",
+                      get = "stock.prices") %>% 
+                      rename(Date = date)
+
+energy_stocks_returns <- energy_stocks %>%
+  group_by(symbol) %>%                            
+  tq_transmute(select = adjusted,
+               mutate_fun = periodReturn,
+               period = 'daily',
+               col_rename = 'returns',
+               type = "log")
+
+energy_stocks_returns %>%
+  ggplot(aes(x = Date, y = returns)) +
+  geom_line() +
+  geom_hline(yintercept = 0) +
+  facet_wrap(~symbol, scales = "free_y") +
+  scale_y_continuous(labels = scales::percent) +
+  ggtitle("Daily returns for energy stock") +
+  labs(x = "Date", y = "Returns") +
+  scale_color_brewer(palette = "Set2",
+                     name = "",
+                     guide = FALSE) +
+  theme_classic()
+```
+
+```{r}
+
+financial_stocks <- tq_get(c("BAC", "WFC", "C", "JPM", "HBAN", "BK", "KEY", "RF","SCHW", "MS", "TFC", "USB", "IVZ", "FITB", "SYF", "PNC", "STT", "CFG", "BEN", "GS", "COF", "FRC", "NDAQ"),
+                      from = "2021-01-01",
+                      get = "stock.prices") %>% 
+                      rename(Date = date)
+
+financial_stocks_returns <- financial_stocks %>%
+  group_by(symbol) %>%                            
+  tq_transmute(select = adjusted,
+               mutate_fun = periodReturn,
+               period = 'daily',
+               col_rename = 'returns',
+               type = "log")
+
+financial_stocks_returns %>%
+  ggplot(aes(x = Date, y = returns)) +
+  geom_line() +
+  geom_hline(yintercept = 0) +
+  facet_wrap(~symbol, scales = "free_y") +
+  scale_y_continuous(labels = scales::percent) +
+  ggtitle("Daily returns for financial stock") +
+  labs(x = "Date", y = "Returns") +
+  scale_color_brewer(palette = "Set2",
+                     name = "",
+                     guide = FALSE) +
+  theme_classic()
+
+
+```
+
+
+```{r}
+
+industrial_stocks <- tq_get(c("AAL","DAL", "UAL", "GE", "CSX", "BA", "LUV", "RTX", "CAT", "CARR", "WM", "NOC", "ALK", "JCI", "RSG", "FAST", "EMR", "LMT", "UPS", "HON", "SWK", "LHX", "PCAR", "UNP", "MMM", "ETN", "PNR", "HWM", "GD", "MAS", "FDX", "OTIS", "IR", "GNRC", "CPRT", "TXT", "FTV"),
+                      from = "2021-01-01",
+                      get = "stock.prices") %>% 
+                      rename(Date = date)
+
+industrial_stocks_returns <- industrial_stocks %>%
+  group_by(symbol) %>%                            
+  tq_transmute(select = adjusted,
+               mutate_fun = periodReturn,
+               period = 'daily',
+               col_rename = 'returns',
+               type = "log")
+
+industrial_stocks_returns %>%
+  ggplot(aes(x = Date, y = returns)) +
+  geom_line() +
+  geom_hline(yintercept = 0) +
+  facet_wrap(~symbol, scales = "free_y") +
+  scale_y_continuous(labels = scales::percent) +
+  ggtitle("Daily returns for industrial stock") +
+  labs(x = "Date", y = "Returns") +
+  scale_color_brewer(palette = "Set2",
+                     name = "",
+                     guide = FALSE) +
+  theme_classic()
+
+```
+
+```{r}
+healthcare_stocks <- tq_get(c("PFE", "VTRS", "CVS", "BMY", "BAX", "JNJ", "BSX", "MDT", "ABBV", "MRK", "UNH", "ABT", "GILD", "MRNA", "CNC", "CAH", "OGN", "ZTS", "DXCM", "TECH", "TMO", "EW", "CTLT", "XRAT", "DHR", "ISRG", "AMGN", "LLY", "ZBH", "CI", "VRTX"),
+                      from = "2021-01-01",
+                      get = "stock.prices") %>% 
+                      rename(Date = date)
+
+healthcare_stocks_returns <- healthcare_stocks %>%
+  group_by(symbol) %>%                            
+  tq_transmute(select = adjusted,
+               mutate_fun = periodReturn,
+               period = 'daily',
+               col_rename = 'returns',
+               type = "log")
+
+healthcare_stocks_returns %>%
+  ggplot(aes(x = Date, y = returns)) +
+  geom_line() +
+  geom_hline(yintercept = 0) +
+  facet_wrap(~symbol, scales = "free_y") +
+  scale_y_continuous(labels = scales::percent) +
+  ggtitle("Daily returns for healthcare stock") +
+  labs(x = "Date", y = "Returns") +
+  scale_color_brewer(palette = "Set2",
+                     name = "",
+                     guide = FALSE) +
+  theme_classic()
+
+
+```
+
+
+```{r}
+
+technology_stocks <- tq_get(c("AAPL", "AMD", "NVDA", "INT", "MSFT", "CSCO", "MU", "HPE", "PYPL","CRM", "QCOM", "HPQ", "FIS", "FTNT", "AMAT", "CTSH", "ORCL", "V", "MA", "WDC", "MCHP", "ENPH", "FISV", "TXN", "GLW", "ON", "ADBE", "IBM", "JNPR", "ACN", "GEN", "APH", "NXPI", "ANET", "AVGO", "FSLR", "ADI"),
+                      from = "2021-01-01",
+                      get = "stock.prices") %>% 
+                      rename(Date = date)
+
+technology_stocks_returns <- technology_stocks %>%
+  group_by(symbol) %>%                            
+  tq_transmute(select = adjusted,
+               mutate_fun = periodReturn,
+               period = 'daily',
+               col_rename = 'returns',
+               type = "log")
+
+technology_stocks_returns %>%
+  ggplot(aes(x = Date, y = returns)) +
+  geom_line() +
+  geom_hline(yintercept = 0) +
+  facet_wrap(~symbol, scales = "free_y") +
+  scale_y_continuous(labels = scales::percent) +
+  ggtitle("Daily returns for technology stock") +
+  labs(x = "Date", y = "Returns") +
+  scale_color_brewer(palette = "Set2",
+                     name = "",
+                     guide = FALSE) +
+  theme_classic()
+
+```
+
+```{r}
+materials_stocks <- tq_get(c("FCX", "NEM", "AMCR", "MOS", "DOW", "IP", "DD", "CF", "CTVA", "LIN", "BALL", "NUE", "LYB", "STLD", "ALB", "IFF"),
+                      from = "2021-01-01",
+                      get = "stock.prices") %>% 
+                      rename(Date = date)
+
+materials_stocks_returns <- materials_stocks %>%
+  group_by(symbol) %>%                            
+  tq_transmute(select = adjusted,
+               mutate_fun = periodReturn,
+               period = 'daily',
+               col_rename = 'returns',
+               type = "log")
+
+materials_stocks_returns %>%
+  ggplot(aes(x = Date, y = returns)) +
+  geom_line() +
+  geom_hline(yintercept = 0) +
+  facet_wrap(~symbol, scales = "free_y") +
+  scale_y_continuous(labels = scales::percent) +
+  ggtitle("Daily returns for materials stock") +
+  labs(x = "Date", y = "Returns") +
+  scale_color_brewer(palette = "Set2",
+                     name = "",
+                     guide = FALSE) +
+  theme_classic()
+```
+
+```{r}
+
+real_estate_stocks <- tq_get(c("VICI", "HST", "KIM", "WY", "INVH", "VNO", "PEAK", "PLD", "VTR", "O", "EQR", "AMT", "SPG", "CCI", "CBRE", "WELL", "UDR", "IRM", "DLR", "BXP"),
+                      from = "2021-01-01",
+                      get = "stock.prices") %>% 
+                      rename(Date = date)
+
+real_estate_stocks_returns <- real_estate_stocks %>%
+  group_by(symbol) %>%                            
+  tq_transmute(select = adjusted,
+               mutate_fun = periodReturn,
+               period = 'daily',
+               col_rename = 'returns',
+               type = "log")
+
+real_estate_stocks_returns %>%
+  ggplot(aes(x = Date, y = returns)) +
+  geom_line() +
+  geom_hline(yintercept = 0) +
+  facet_wrap(~symbol, scales = "free_y") +
+  scale_y_continuous(labels = scales::percent) +
+  ggtitle("Daily returns for real estate stock") +
+  labs(x = "Date", y = "Returns") +
+  scale_color_brewer(palette = "Set2",
+                     name = "",
+                     guide = FALSE) +
+  theme_classic()
+```
+
+```{r}
+utilities_stocks <- tq_get(c("PCG", "EXC", "AES", "NEE","CNP", "FE", "PPL", "NRG", "AEP","SO", "D", "NI", "DUK", "AEE", "XEL", "PEG", "ES", "ETR", "EIX", "CEG", "CMS", "ED", "SRE", "WEC", "EVRG"),
+                      from = "2021-01-01",
+                      get = "stock.prices") %>% 
+                      rename(Date = date)
+
+utilities_stocks_returns <- utilities_stocks %>%
+  group_by(symbol) %>%                            
+  tq_transmute(select = adjusted,
+               mutate_fun = periodReturn,
+               period = 'daily',
+               col_rename = 'returns',
+               type = "log")
+
+utilities_stocks_returns %>%
+  ggplot(aes(x = Date, y = returns)) +
+  geom_line() +
+  geom_hline(yintercept = 0) +
+  facet_wrap(~symbol, scales = "free_y") +
+  scale_y_continuous(labels = scales::percent) +
+  ggtitle("Daily returns for utilities stock") +
+  labs(x = "Date", y = "Returns") +
+  scale_color_brewer(palette = "Set2",
+                     name = "",
+                     guide = FALSE) +
+  theme_classic()
+```
+
+```{r}
+library(dplyr)
+library(PerformanceAnalytics)
+
+# Assume that you have multiple data frames called df1, df2, df3, etc.
+
+# Create a list of the data frames
+df_list <- list(communication_stocks, cons_discr_stocks, cons_staples_stocks, energy_stocks, financial_stocks, healthcare_stocks, industrial_stocks, materials_stocks, real_estate_stocks, technology_stocks, utilities_stocks)
+
+# Combine the data frames by rows
+stocks_df <- reduce(df_list, bind_rows)
+
+df_list_returns <- list(communication_stocks_returns, cons_discr_stocks_returns, cons_staples_returns, energy_stocks_returns, financial_stocks_returns, healthcare_stocks_returns, industrial_stocks_returns, materials_stocks_returns, real_estate_stocks_returns, technology_stocks_returns, utilities_stocks_returns)
+
+returns_df <- reduce(df_list_returns, bind_rows)
+
+summary_returns <- returns_df %>%
+  group_by(symbol) %>%
+  summarise(mean = mean(returns),
+            sd = sd(returns)) 
+
+summary_returns$annualmean <- (1+summary_returns$mean)^(251)-1
+
+summary_returns$annualsd <- summary_returns$sd * sqrt(252)
+
+summary_returns$sharpe <- (summary_returns$annualmean - 0.05)/summary_returns$annualsd
+
+summary(summary_returns)
+
+library(ggplot2)
+
+ggplot(data = summary_returns, aes(x = reorder(symbol, -sharpe), y = sharpe)) +
+  geom_bar(stat = "identity") +
+  xlab("Company Name") +
+  ylab("Sharpe Ratio") +
+  ggtitle("Companies with the highest Sharpe Ratio") +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+
+companies_sorted <- summary_returns %>%
+  arrange(desc(sharpe))
+  
+```
+```{r}
+library(psych)
+
+
+# Calculate correlation matrix
+cor_matrix <- cor(pca_data)
+
+# Calculate eigenvectors and eigenvalues
+eigen_results <- eigen(cor_matrix)
+eigenvectors <- eigen_results$vectors
+
+# Create eigenportfolio
+eigenportfolio <- eigenvectors[,1]
+
+returns_df_ts <- returns_df %>% 
+  spread(key = symbol, value = returns)
+
+pca_data <- returns_df_ts %>% 
+  select(-Date) %>% 
+  na.omit()
+
+pca_sectors <- princomp(pca_data)
+
+```
+
+
