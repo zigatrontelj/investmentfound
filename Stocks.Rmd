@@ -21,7 +21,7 @@ library(tibbletime)
 # Get communication sector data
 
 communication_stocks <- tq_get(c("GOOGL","T", "META", "GOOG", "LUMN", "VZ", "WBD", "CMCSA", "DIS", "NFLX", "PARA", "TMUS", "DISH", "ATVI", "MTCH", "FOXA", "IPG", "NWSA", "LYV", "EA", "TTWO", "OMC", "NWS", "FOX", "CHTR"),
-                      from = "2021-01-01",
+                      from = "2020-01-01",
                       get = "stock.prices") %>% 
                       rename(Date = date)
 
@@ -56,7 +56,7 @@ communication_stocks_returns %>%
 # Get consumer discretionary sector data
 
 cons_discr_stocks <- tq_get(c("TSLA", "F", "AMZN", "CCL", "GM", "NCLH", "SBUX", "VFC", "TGT", "NKE", "LVS", "TJX", "RCL", "ETSY", "LOW", "EBAY","KMX", "HD", "EXPE", "MGM", "NWL", "DHI", "LKQ", "ROST", "BBWI"),
-                      from = "2021-01-01",
+                      from = "2020-01-01",
                       get = "stock.prices") %>% 
                       rename(Date = date)
 
@@ -84,7 +84,7 @@ cons_discr_stocks_returns %>%
 
 ```{r}
 cons_staples_stocks <- tq_get(c("KO", "MO", "KHC", "KDP", "PG", "PEP", "MDLZ", "WMT", "WBA","CL","GIS","KR", "CAG", "PM", "STZ", "ADM"),
-                      from = "2021-01-01",
+                      from = "2020-01-01",
                       get = "stock.prices") %>% 
                       rename(Date = date)
 
@@ -112,7 +112,7 @@ cons_staples_returns %>%
 
 ```{r}
 energy_stocks <- tq_get(c("XOM", "KMI", "SLB", "OXY", "MRO", "CTRA", "HAL", "CVX", "EQT", "DVN", "WMB", "BKR", "COP", "APA", "MPC"),
-                      from = "2021-01-01",
+                      from = "2020-01-01",
                       get = "stock.prices") %>% 
                       rename(Date = date)
 
@@ -141,7 +141,7 @@ energy_stocks_returns %>%
 ```{r}
 
 financial_stocks <- tq_get(c("BAC", "WFC", "C", "JPM", "HBAN", "BK", "KEY", "RF","SCHW", "MS", "TFC", "USB", "IVZ", "FITB", "SYF", "PNC", "STT", "CFG", "BEN", "GS", "COF", "FRC", "NDAQ"),
-                      from = "2021-01-01",
+                      from = "2020-01-01",
                       get = "stock.prices") %>% 
                       rename(Date = date)
 
@@ -173,7 +173,7 @@ financial_stocks_returns %>%
 ```{r}
 
 industrial_stocks <- tq_get(c("AAL","DAL", "UAL", "GE", "CSX", "BA", "LUV", "RTX", "CAT", "CARR", "WM", "NOC", "ALK", "JCI", "RSG", "FAST", "EMR", "LMT", "UPS", "HON", "SWK", "LHX", "PCAR", "UNP", "MMM", "ETN", "PNR", "HWM", "GD", "MAS", "FDX", "OTIS", "IR", "GNRC", "CPRT", "TXT", "FTV"),
-                      from = "2021-01-01",
+                      from = "2020-01-01",
                       get = "stock.prices") %>% 
                       rename(Date = date)
 
@@ -202,7 +202,7 @@ industrial_stocks_returns %>%
 
 ```{r}
 healthcare_stocks <- tq_get(c("PFE", "VTRS", "CVS", "BMY", "BAX", "JNJ", "BSX", "MDT", "ABBV", "MRK", "UNH", "ABT", "GILD", "MRNA", "CNC", "CAH", "OGN", "ZTS", "DXCM", "TECH", "TMO", "EW", "CTLT", "XRAT", "DHR", "ISRG", "AMGN", "LLY", "ZBH", "CI", "VRTX"),
-                      from = "2021-01-01",
+                      from = "2020-01-01",
                       get = "stock.prices") %>% 
                       rename(Date = date)
 
@@ -234,7 +234,7 @@ healthcare_stocks_returns %>%
 ```{r}
 
 technology_stocks <- tq_get(c("AAPL", "AMD", "NVDA", "INT", "MSFT", "CSCO", "MU", "HPE", "PYPL","CRM", "QCOM", "HPQ", "FIS", "FTNT", "AMAT", "CTSH", "ORCL", "V", "MA", "WDC", "MCHP", "ENPH", "FISV", "TXN", "GLW", "ON", "ADBE", "IBM", "JNPR", "ACN", "GEN", "APH", "NXPI", "ANET", "AVGO", "FSLR", "ADI"),
-                      from = "2021-01-01",
+                      from = "2020-01-01",
                       get = "stock.prices") %>% 
                       rename(Date = date)
 
@@ -263,7 +263,7 @@ technology_stocks_returns %>%
 
 ```{r}
 materials_stocks <- tq_get(c("FCX", "NEM", "AMCR", "MOS", "DOW", "IP", "DD", "CF", "CTVA", "LIN", "BALL", "NUE", "LYB", "STLD", "ALB", "IFF"),
-                      from = "2021-01-01",
+                      from = "2020-01-01",
                       get = "stock.prices") %>% 
                       rename(Date = date)
 
@@ -292,7 +292,7 @@ materials_stocks_returns %>%
 ```{r}
 
 real_estate_stocks <- tq_get(c("VICI", "HST", "KIM", "WY", "INVH", "VNO", "PEAK", "PLD", "VTR", "O", "EQR", "AMT", "SPG", "CCI", "CBRE", "WELL", "UDR", "IRM", "DLR", "BXP"),
-                      from = "2021-01-01",
+                      from = "2020-01-01",
                       get = "stock.prices") %>% 
                       rename(Date = date)
 
@@ -320,7 +320,7 @@ real_estate_stocks_returns %>%
 
 ```{r}
 utilities_stocks <- tq_get(c("PCG", "EXC", "AES", "NEE","CNP", "FE", "PPL", "NRG", "AEP","SO", "D", "NI", "DUK", "AEE", "XEL", "PEG", "ES", "ETR", "EIX", "CEG", "CMS", "ED", "SRE", "WEC", "EVRG"),
-                      from = "2021-01-01",
+                      from = "2020-01-01",
                       get = "stock.prices") %>% 
                       rename(Date = date)
 
@@ -388,9 +388,76 @@ companies_sorted <- summary_returns %>%
   arrange(desc(sharpe))
   
 ```
+
+```{r}
+library(xts)
+
+# Getting data ready
+returns_df_ts <- returns_df %>% 
+  spread(key = symbol, value = returns) %>% 
+  select(-Date) %>% 
+  na.omit()
+
+# PCA on stocks
+eigenportfolios <- prcomp(returns_df_ts, scale= TRUE)
+
+#Creation of eigenvectors
+eigenvectors <- eigenportfolios$rotation
+
+# Calculation and assigning weights
+weights <- as.data.frame(eigenvectors[,1] / sum(eigenvectors[,1]))
+weights <- add_rownames(weights, var = "rowname")
+
+colnames(weights)[1] <- "symbol"
+colnames(weights)[2] <- "weight"
+
+# Merged data and creation of portfolio return
+merged_data <- merge(returns_df, weights, by = "symbol")
+merged_data$portfolio <- merged_data$weight * merged_data$returns
+
+# Creation of eigenportfolio
+eigenportfolio1 <- merged_data %>% 
+  pivot_wider(names_from = symbol, values_from = portfolio) %>% 
+  select(-weight, -returns) %>% 
+  group_by(Date) %>%
+  summarize_all(sum, na.rm = TRUE)
+
+eigenportfolio1$return <- rowSums(eigenportfolio1[,-1], na.rm = TRUE)
+
+# Plotting historical portfolio returns
+eigenportfolio1 %>% 
+  ggplot(aes(x = Date, y = return)) +
+           geom_line()
+
+# Plotting cumulative portfolio returns
+eigenportfolio1$cumulative <- cumprod(eigenportfolio1$return+1)-1
+
+eigenportfolio1 %>% 
+  ggplot(aes(x = Date, y = cumulative)) +
+           geom_line()
+
+
+
+
+```
+
+
+
+
 ```{r}
 library(psych)
 
+
+returns_df_ts <- returns_df %>% 
+  spread(key = symbol, value = returns)
+
+pca_data <- returns_df_ts %>% 
+  select(-Date) %>% 
+  na.omit()
+
+pca_sectors <- prcomp(pca_data)
+pca_sectors$scores
+pca_sectors$sdev
 
 # Calculate correlation matrix
 cor_matrix <- cor(pca_data)
@@ -402,14 +469,26 @@ eigenvectors <- eigen_results$vectors
 # Create eigenportfolio
 eigenportfolio <- eigenvectors[,1]
 
-returns_df_ts <- returns_df %>% 
-  spread(key = symbol, value = returns)
 
-pca_data <- returns_df_ts %>% 
-  select(-Date) %>% 
-  na.omit()
+# Checking shape of data
+bartlett.test(returns_df_ts)
 
-pca_sectors <- princomp(pca_data)
+# Calculate the Kaiser-Meyer-Olkin (KMO) measure for the dataset
+KMO(returns_df_ts)
+
+pca_summary  <- summary(pca_sectors)
+pca_variances  <- var(pca_summary$scores)
+pca_cumulative_variances  <- cumsum(pca_variances)
+
+pca_var  <- pca_sectors$sdev^2 / sum(pca_sectors$sdev^2)
+barplot(pca_var, xlab="Principal Component", ylab="Proportion of Variance Explained")
+screeplot(pca_sectors, type="line", main="Scree Plot")
+
+plot(pca_sectors$scores[,1:2], col=1:nrow(pca_sectors$scores), xlab="PC1", ylab="PC2")
+
+pca_scores <- as.data.frame(pca_sectors$scores) %>% 
+  select(Comp.1)
+
 
 ```
 
