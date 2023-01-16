@@ -441,6 +441,53 @@ eigenportfolio1 %>%
 
 ```
 
+## LOOP TO BE REVIEWED TO SAVE THE DATA
+```{r}
+results <- data.frame()
+n <- ncol(eigenvectors)
+for (i in 1:n) {
+  # Calculation and assigning weights
+  weights <- as.data.frame(eigenvectors[,i] / sum(eigenvectors[,i]))
+  weights <- add_rownames(weights, var = "rowname")
+
+  colnames(weights)[1] <- "symbol"
+  colnames(weights)[2] <- "weight"
+
+  # Merged data and creation of portfolio return
+  merged_data <- merge(returns_df, weights, by = "symbol")
+  merged_data$portfolio <- merged_data$weight * merged_data$returns
+
+  # Creation of eigenportfolio
+  eigenportfolio <- merged_data %>% 
+    pivot_wider(names_from = symbol, values_from = portfolio) %>% 
+    select(-weight, -returns) %>% 
+    group_by(Date) %>%
+    summarize_all(sum, na.rm = TRUE)
+
+  eigenportfolio$return <- rowSums(eigenportfolio[,-1], na.rm = TRUE)
+  
+  cat(paste("Processing column:", colnames(eigenvectors)[i]), "\n")
+  
+  # Add the iteration number column to the eigenportfolio dataframe
+  eigenportfolio$iteration <- i
+
+  # Append the results of the current iteration to the results dataframe
+  results <- rbind(eigenportfolio$return)
+
+  # Plotting historical portfolio returns
+  eigenportfolio %>% 
+    ggplot(aes(x = Date, y = return)) +
+    geom_line()
+
+  # Plotting cumulative portfolio returns
+  eigenportfolio$cumulative <- cumprod(eigenportfolio$return+1)-1
+
+  eigenportfolio %>% 
+    ggplot(aes(x = Date, y = cumulative)) +
+    geom_line()
+}
+
+```
 
 
 
