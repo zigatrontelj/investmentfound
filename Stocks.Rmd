@@ -11,9 +11,10 @@ knitr::opts_chunk$set(echo = TRUE)
 ```{r}
 library(tidyquant)
 library(PerformanceAnalytics)
-library(timeSeries)
-#install.packages("tibbletime")
-library(tibbletime)
+library(tidyr)
+library(dplyr)
+library(psych)
+library(ggplot2)
 ```
 
 # Communication
@@ -51,7 +52,7 @@ communication_stocks_returns %>%
   summarise(mean = mean(returns),
             sd = sd(returns)) 
 ```
-
+# Consumer discretionary
 ```{r}
 # Get consumer discretionary sector data
 
@@ -82,6 +83,7 @@ cons_discr_stocks_returns %>%
   theme_classic()
 ```
 
+# Consumer staples
 ```{r}
 cons_staples_stocks <- tq_get(c("KO", "MO", "KHC", "KDP", "PG", "PEP", "MDLZ", "WMT", "WBA","CL","GIS","KR", "CAG", "PM", "STZ", "ADM"),
                       from = "2020-01-01",
@@ -110,6 +112,7 @@ cons_staples_returns %>%
   theme_classic()
 ```
 
+# Energy
 ```{r}
 energy_stocks <- tq_get(c("XOM", "KMI", "SLB", "OXY", "MRO", "CTRA", "HAL", "CVX", "EQT", "DVN", "WMB", "BKR", "COP", "APA", "MPC"),
                       from = "2020-01-01",
@@ -138,6 +141,7 @@ energy_stocks_returns %>%
   theme_classic()
 ```
 
+# Financial
 ```{r}
 
 financial_stocks <- tq_get(c("BAC", "WFC", "C", "JPM", "HBAN", "BK", "KEY", "RF","SCHW", "MS", "TFC", "USB", "IVZ", "FITB", "SYF", "PNC", "STT", "CFG", "BEN", "GS", "COF", "FRC", "NDAQ"),
@@ -169,7 +173,7 @@ financial_stocks_returns %>%
 
 ```
 
-
+# Industrial
 ```{r}
 
 industrial_stocks <- tq_get(c("AAL","DAL", "UAL", "GE", "CSX", "BA", "LUV", "RTX", "CAT", "CARR", "WM", "NOC", "ALK", "JCI", "RSG", "FAST", "EMR", "LMT", "UPS", "HON", "SWK", "LHX", "PCAR", "UNP", "MMM", "ETN", "PNR", "HWM", "GD", "MAS", "FDX", "OTIS", "IR", "GNRC", "CPRT", "TXT", "FTV"),
@@ -200,6 +204,7 @@ industrial_stocks_returns %>%
 
 ```
 
+# Healthcare
 ```{r}
 healthcare_stocks <- tq_get(c("PFE", "VTRS", "CVS", "BMY", "BAX", "JNJ", "BSX", "MDT", "ABBV", "MRK", "UNH", "ABT", "GILD", "MRNA", "CNC", "CAH", "OGN", "ZTS", "DXCM", "TECH", "TMO", "EW", "CTLT", "XRAT", "DHR", "ISRG", "AMGN", "LLY", "ZBH", "CI", "VRTX"),
                       from = "2020-01-01",
@@ -230,7 +235,7 @@ healthcare_stocks_returns %>%
 
 ```
 
-
+# Technology
 ```{r}
 
 technology_stocks <- tq_get(c("AAPL", "AMD", "NVDA", "INT", "MSFT", "CSCO", "MU", "HPE", "PYPL","CRM", "QCOM", "HPQ", "FIS", "FTNT", "AMAT", "CTSH", "ORCL", "V", "MA", "WDC", "MCHP", "ENPH", "FISV", "TXN", "GLW", "ON", "ADBE", "IBM", "JNPR", "ACN", "GEN", "APH", "NXPI", "ANET", "AVGO", "FSLR", "ADI"),
@@ -261,6 +266,7 @@ technology_stocks_returns %>%
 
 ```
 
+# Materials
 ```{r}
 materials_stocks <- tq_get(c("FCX", "NEM", "AMCR", "MOS", "DOW", "IP", "DD", "CF", "CTVA", "LIN", "BALL", "NUE", "LYB", "STLD", "ALB", "IFF"),
                       from = "2020-01-01",
@@ -289,6 +295,7 @@ materials_stocks_returns %>%
   theme_classic()
 ```
 
+# Real Estate
 ```{r}
 
 real_estate_stocks <- tq_get(c("VICI", "HST", "KIM", "WY", "INVH", "VNO", "PEAK", "PLD", "VTR", "O", "EQR", "AMT", "SPG", "CCI", "CBRE", "WELL", "UDR", "IRM", "DLR", "BXP"),
@@ -318,6 +325,7 @@ real_estate_stocks_returns %>%
   theme_classic()
 ```
 
+# Utilities
 ```{r}
 utilities_stocks <- tq_get(c("PCG", "EXC", "AES", "NEE","CNP", "FE", "PPL", "NRG", "AEP","SO", "D", "NI", "DUK", "AEE", "XEL", "PEG", "ES", "ETR", "EIX", "CEG", "CMS", "ED", "SRE", "WEC", "EVRG"),
                       from = "2020-01-01",
@@ -346,11 +354,8 @@ utilities_stocks_returns %>%
   theme_classic()
 ```
 
+# Combination of dataframes and summary statistics
 ```{r}
-library(dplyr)
-library(PerformanceAnalytics)
-
-# Assume that you have multiple data frames called df1, df2, df3, etc.
 
 # Create a list of the data frames
 df_list <- list(communication_stocks, cons_discr_stocks, cons_staples_stocks, energy_stocks, financial_stocks, healthcare_stocks, industrial_stocks, materials_stocks, real_estate_stocks, technology_stocks, utilities_stocks)
@@ -362,6 +367,7 @@ df_list_returns <- list(communication_stocks_returns, cons_discr_stocks_returns,
 
 returns_df <- reduce(df_list_returns, bind_rows)
 
+# Creation of dataframe
 summary_returns <- returns_df %>%
   group_by(symbol) %>%
   summarise(mean = mean(returns),
@@ -375,8 +381,7 @@ summary_returns$sharpe <- (summary_returns$annualmean - 0.05)/summary_returns$an
 
 summary(summary_returns)
 
-library(ggplot2)
-
+# Plotting sharpe ratios for each sector
 ggplot(data = summary_returns, aes(x = reorder(symbol, -sharpe), y = sharpe)) +
   geom_bar(stat = "identity") +
   xlab("Company Name") +
@@ -389,14 +394,14 @@ companies_sorted <- summary_returns %>%
   
 ```
 
+# Creation of eigenportfolios
 ```{r}
-library(xts)
 
 # Getting data ready
-returns_df_ts <- returns_df %>% 
+returns_df_ts <- scale(returns_df %>% 
   spread(key = symbol, value = returns) %>% 
   select(-Date) %>% 
-  na.omit()
+  na.omit())
 
 # PCA on stocks
 eigenportfolios <- prcomp(returns_df_ts, scale= TRUE)
@@ -441,10 +446,16 @@ eigenportfolio1 %>%
 
 ```
 
-## LOOP TO BE REVIEWED TO SAVE THE DATA
+## CODE WHERE YOU CAN TEST AND SEE HOW IT WORKS, SUBSTITUTE 10 TO n IN THE INITIAL for LOOP
 ```{r}
+
+# List with saved plots
+plots_list <- list()
+
+# Data frame where to save results
 results <- data.frame()
 n <- ncol(eigenvectors)
+
 for (i in 1:n) {
   # Calculation and assigning weights
   weights <- as.data.frame(eigenvectors[,i] / sum(eigenvectors[,i]))
@@ -472,25 +483,39 @@ for (i in 1:n) {
   eigenportfolio$iteration <- i
 
   # Append the results of the current iteration to the results dataframe
-  results <- rbind(eigenportfolio$return)
+  results <- rbind(results, eigenportfolio)
 
   # Plotting historical portfolio returns
   eigenportfolio %>% 
     ggplot(aes(x = Date, y = return)) +
     geom_line()
-
+  
   # Plotting cumulative portfolio returns
   eigenportfolio$cumulative <- cumprod(eigenportfolio$return+1)-1
 
-  eigenportfolio %>% 
+  cum_plot <- eigenportfolio %>% 
     ggplot(aes(x = Date, y = cumulative)) +
     geom_line()
+  
+   # Append the historical plot to the list
+    plots_list[[paste0("iteration_", i, "_historical")]] <- cum_plot
 }
+
+# Dataframe with all the created portfolios
+all_portfolios <- results %>% 
+  select(Date, return, iteration) %>% 
+  spread(iteration, return)
+
+# Statistical summary of each portfolio
+summary(all_portfolios)
+
+# Print all of the created plots
+print(plots_list)
 
 ```
 
 
-
+# IDK IF WORKS
 ```{r}
 library(psych)
 
