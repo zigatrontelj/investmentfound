@@ -14,6 +14,7 @@ library(PerformanceAnalytics)
 library(tidyr)
 library(dplyr)
 library(psych)
+library(purrr)
 library(ggplot2)
 ```
 
@@ -398,10 +399,10 @@ companies_sorted <- summary_returns %>%
 ```{r}
 
 # Getting data ready
-returns_df_ts <- scale(returns_df %>% 
+returns_df_ts <- returns_df %>% 
   spread(key = symbol, value = returns) %>% 
   select(-Date) %>% 
-  na.omit())
+  na.omit()
 
 # PCA on stocks
 eigenportfolios <- prcomp(returns_df_ts, scale= TRUE)
@@ -456,7 +457,7 @@ plots_list <- list()
 results <- data.frame()
 n <- ncol(eigenvectors)
 
-for (i in 1:n) {
+for (i in 1:10) {
   # Calculation and assigning weights
   weights <- as.data.frame(eigenvectors[,i] / sum(eigenvectors[,i]))
   weights <- add_rownames(weights, var = "rowname")
@@ -504,7 +505,11 @@ for (i in 1:n) {
 # Dataframe with all the created portfolios
 all_portfolios <- results %>% 
   select(Date, return, iteration) %>% 
-  spread(iteration, return)
+  group_by(iteration) %>%
+  mutate(row = row_number()) %>% 
+  pivot_wider(names_from = iteration, values_from = return) %>% 
+  select(-row)
+
 
 # Statistical summary of each portfolio
 summary(all_portfolios)
@@ -515,53 +520,57 @@ print(plots_list)
 ```
 
 
-# IDK IF WORKS
+
+# S-SCORE SAMPLE CODE, TO BE ADAPTED
 ```{r}
-library(psych)
 
+# Load necessary libraries
+library(lmtest)
 
-returns_df_ts <- returns_df %>% 
-  spread(key = symbol, value = returns)
-
-pca_data <- returns_df_ts %>% 
-  select(-Date) %>% 
+# Assume stock returns and ETF returns are in two separate dataframes
+stock_returns <- returns_df %>% 
+  spread(key = symbol, value = returns) %>%
+  select(Date, AAPL) %>% 
   na.omit()
 
-pca_sectors <- prcomp(pca_data)
-pca_sectors$scores
-pca_sectors$sdev
+ETF_returns <- allsectors_returns %>% 
+  select(Date, XLK_returns) %>% 
+  na.omit()
 
-# Calculate correlation matrix
-cor_matrix <- cor(pca_data)
+df_lm <- stock_returns %>% 
+  left_join(ETF_returns, by = "Date") %>% 
+  na.omit()
 
-# Calculate eigenvectors and eigenvalues
-eigen_results <- eigen(cor_matrix)
-eigenvectors <- eigen_results$vectors
+# Perform the regression
+regression_result <- lm(df_lm$AAPL ~ df_lm$XLK_returns)
 
-# Create eigenportfolio
-eigenportfolio <- eigenvectors[,1]
+# Extract the residuals
+residuals <- residuals(regression_result)
 
+plot(residuals)
 
-# Checking shape of data
-bartlett.test(returns_df_ts)
+# Define the auxiliary process X
+X <- cumsum(residuals)
 
-# Calculate the Kaiser-Meyer-Olkin (KMO) measure for the dataset
-KMO(returns_df_ts)
+# Set X60 to zero (as described in the text)
+X[60] <- 0
 
-pca_summary  <- summary(pca_sectors)
-pca_variances  <- var(pca_summary$scores)
-pca_cumulative_variances  <- cumsum(pca_variances)
+# Estimate the 1-lag regression model for X
+regression_X <- lm(X[2:60] ~ X[1:59])
 
-pca_var  <- pca_sectors$sdev^2 / sum(pca_sectors$sdev^2)
-barplot(pca_var, xlab="Principal Component", ylab="Proportion of Variance Explained")
-screeplot(pca_sectors, type="line", main="Scree Plot")
+# Extract the parameters from the regression
+a <- coef(regression_X)[1]
+b <- coef(regression_X)[2]
+sigma <- summary(regression_X)$sigma
 
-plot(pca_sectors$scores[,1:2], col=1:nrow(pca_sectors$scores), xlab="PC1", ylab="PC2")
+# Calculate the mean reversion rate
+kappa <- -log(b) * 252
 
-pca_scores <- as.data.frame(pca_sectors$scores) %>% 
-  select(Comp.1)
+# Calculate the s-score
+s <- -a / sqrt(1 - b^2) * sigma
 
 
 ```
+
 
 
