@@ -1,0 +1,170 @@
+---
+title: "try"
+output: html_document
+date: "2023-01-19"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyquant)
+library(psych)
+library(dplyr)
+library(tidyr)
+library(urca)
+library(graphics)
+library(broom)
+```
+
+# Random ten stocks
+```{r}
+
+data <- tq_get(c("AAPL", "GOOGL", "AMZN", "MSFT", "TSLA", "META", "BABA", "NFLX", "INTC", "WMT"),
+                      from = "2021-01-01",
+                      get = "stock.prices")
+
+daily_returns <- data %>%
+  group_by(symbol) %>%                            
+  tq_transmute(select = adjusted,
+               mutate_fun = periodReturn,
+               period = 'daily',
+               col_rename = 'returns',
+               type = "log") %>% 
+  na.omit()
+
+df <- daily_returns %>% 
+  pivot_wider(names_from = symbol, values_from = returns) %>% 
+  group_by(date) %>%
+  summarize_all(sum, na.rm = TRUE) %>% 
+  select(-date)
+
+df_DATE <- daily_returns %>% 
+  pivot_wider(names_from = symbol, values_from = returns) %>% 
+  group_by(date) %>%
+  summarize_all(sum, na.rm = TRUE)
+
+df_ts <- as.xts(df_DATE, order.by = df_DATE$date)
+```
+
+
+# PCA
+```{r}
+# normalize returns
+norm_returns <- scale(df)
+
+# calculate correlation matrix
+corr_matrix <- as.data.frame(cor(norm_returns))
+
+# perform asymptotic PCA
+pca <- principal(corr_matrix)
+
+```
+
+
+# COINTEGRATION TESTS
+```{r}
+
+# Extract columns for AAPL and AMZN from dataset
+aapl <- as.data.frame(scale(df$AAPL)) %>% 
+  rename(AAPL = V1)
+
+amzn <- as.data.frame(scale(df$AMZN)) %>% 
+  rename(AMZN = V1)
+
+# Perform Engle-Granger cointegration test
+result_eg <- ca.jo(cbind(aapl, amzn), K = 2, type = "eigen", ecdet = "none")
+
+# Peform Johansen cointegration test
+result_j <- ca.jo(cbind(aapl, amzn), K = 2, type = "trace", ecdet = "none")
+
+# Result of the test
+summary(result_eg)
+summary(result_j)
+
+```
+
+
+# Calculation of score and Augmented Dickey Fuller test for stationarity
+```{r}
+
+merged <- df_DATE %>% 
+  select(date, AAPL, AMZN)
+
+merged$score <- 1.00 * df_DATE$AAPL - 0.2871955 * df_DATE$AMZN
+
+s = merged %>% 
+  select(date, score)
+
+plot(s, type = "l")
+
+library(tseries)
+s_ts <- ts(s)
+
+s_ts_vector <- as.vector(s_ts)
+
+adf.test(s_ts_vector)
+
+```
+
+
+```{r}
+
+library(xts)
+aapl_xts <- df_ts[, "AAPL"]
+amzn_xts <- df_ts[, "AMZN"]
+
+
+```
+
+# LOOOOOOP NOT WORKING
+#```{r}
+
+# Get all unique stock symbols
+stock_symbols <- unique(daily_returns$symbol)
+
+# Initialize a list to store the test results
+johansen_results <- list()
+
+# Loop through all combinations of stock symbols
+for(i in 1:(length(stock_symbols)-1)){
+  for(j in (i+1):length(stock_symbols)){
+    # Subset the data for the current pair of stocks
+    pair_data <- daily_returns %>%
+      filter(symbol == stock_symbols[i] | symbol == stock_symbols[j]) %>%
+      select(date, returns) %>%
+      pivot_wider(names_from = symbol, values_from = returns) %>% 
+      select(-date)
+    # Perform the Johansen test
+    test_result <- ca.jo(pair_data, ecdet = "const", type = "eigen", K = 2)
+    # Add the test results to the list
+    johansen_results[[paste0(stock_symbols[i], "_", stock_symbols[j])]] <- test_result
+  }
+}
+
+
+# extract the test statistics and critical values 
+johansen_tidy <- lapply(johansen_results, function(x) data.frame(pair = paste0(stock_symbols[i], "_", stock_symbols[j]), 
+                                                                statistic = c(x@teststat),
+                                                                cval = c(x@cval)))
+
+# Extract test statistics and critical values from results
+#johansen_tidy <- lapply(johansen_results, tidy)
+johansen_tidy <- bind_rows(johansen_tidy, .id = "pair")
+
+# Add a column indicating the level of significance
+johansen_tidy$significance <- c("1%", "5%", "10%")
+
+# Pivot the data frame to create the table
+johansen_table <- johansen_tidy %>%
+  pivot_wider(names_from = significance, values_from = statistic)
+
+# Rename the columns
+colnames(johansen_table) <- c("pair", "1%_stat", "5%_stat", "10%_stat", "1%_cval", "5%_cval", "10%_cval")
+
+# Print the table
+print(johansen_table)
+
+```
+
