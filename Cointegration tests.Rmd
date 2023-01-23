@@ -16,6 +16,10 @@ library(tidyr)
 library(urca)
 library(graphics)
 library(broom)
+library(ggplot2)
+library(purrr)
+#install.packages("goffda")
+library(goffda)
 ```
 
 # Random ten stocks
@@ -24,6 +28,12 @@ library(broom)
 data <- tq_get(c("AAPL", "GOOGL", "AMZN", "MSFT", "TSLA", "META", "BABA", "NFLX", "INTC", "WMT"),
                       from = "2021-01-01",
                       get = "stock.prices")
+
+data_df <- data %>% 
+  select(symbol, date, adjusted) %>% 
+  pivot_wider(names_from = symbol, values_from = adjusted) %>% 
+  group_by(date) %>%
+  summarize_all(sum, na.rm = TRUE)
 
 daily_returns <- data %>%
   group_by(symbol) %>%                            
@@ -46,6 +56,52 @@ df_DATE <- daily_returns %>%
   summarize_all(sum, na.rm = TRUE)
 
 df_ts <- as.xts(df_DATE, order.by = df_DATE$date)
+
+data_df %>% 
+  ggplot(aes(x = date, y = AAPL))+
+  geom_line()+
+  geom_line(aes(x = date, y= AMZN))
+
+data_df %>% 
+  ggplot(aes(x = date, y = AAPL - AMZN))+
+  geom_line()
+
+df_DATE %>% 
+  ggplot(aes(x = date, y = AAPL))+
+  geom_line()+
+  geom_line(aes(x = date, y= AMZN))
+
+df_DATE %>% 
+  ggplot(aes(x = date, y = AAPL - AMZN))+
+  geom_line()
+```
+
+# Estimation of coefficients and z-score
+```{r}
+
+# Simple linear model
+lm <- lm(df_DATE$AAPL~df_DATE$AMZN)
+
+alpha <- as.data.frame(lm$coefficients)[1,]
+beta <- as.data.frame(lm$coefficients)[2,]
+residuals <- as.data.frame(lm$residuals)
+
+
+plot(lm$residuals, type = "l")
+
+#AAPL = alpha + beta * AMZN + residuals
+
+# Analysis of residuals
+res <- as.data.frame(summary(residuals))
+
+mean <- mean(residuals$`lm$residuals`)
+sd <- sd(residuals$`lm$residuals`)
+
+residuals$z <- (residuals$`lm$residuals` - mean)/sd
+
+plot(residuals$z, type = "l")
+
+
 ```
 
 
@@ -58,9 +114,107 @@ norm_returns <- scale(df)
 corr_matrix <- as.data.frame(cor(norm_returns))
 
 # perform asymptotic PCA
-pca <- principal(corr_matrix)
+pca <- prcomp(corr_matrix)
+
+# Checks
+print(pca$x)
+print(pca$sdev)
+
+pca_summary  <- summary(pca)
+pca_variances  <- var(pca$x)
+pca_cumulative_variances  <- cumsum(pca_variances)
+
+pca_var  <- pca$sdev^2 / sum(pca$sdev^2)
+barplot(pca_var, xlab="Principal Component", ylab="Proportion of Variance Explained")
+screeplot(pca, type="line", main="Scree Plot")
+
+plot(pca$x[,1:2], col=1:nrow(pca$x), xlab="PC1", ylab="PC2")
+
+# Creation of eigenportfolios
+eigenvectors <- pca$rotation
+
+# Calculation and assigning weights
+weights <- as.data.frame(eigenvectors[,1] / sum(eigenvectors[,1]))
+weights <- add_rownames(weights, var = "rowname")
+
+colnames(weights)[1] <- "symbol"
+colnames(weights)[2] <- "weight"
+
+# Merged data and creation of portfolio return
+merged_data <- merge(daily_returns, weights, by = "symbol")
+merged_data$portfolio <- merged_data$weight * merged_data$returns
+
+# Creation of eigenportfolio
+eigenportfolio1 <- merged_data %>% 
+  pivot_wider(names_from = symbol, values_from = portfolio) %>% 
+  select(-weight, -returns) %>% 
+  group_by(date) %>%
+  summarize_all(sum, na.rm = TRUE)
+
+eigenportfolio1$return <- rowSums(eigenportfolio1[,-1], na.rm = TRUE)
+
+# Plotting historical portfolio returns
+eigenportfolio1 %>% 
+  ggplot(aes(x = date, y = return)) +
+           geom_line()
+
+# Plotting cumulative portfolio returns
+eigenportfolio1$cumulative <- cumprod(eigenportfolio1$return+1)-1
+
+eigenportfolio1 %>% 
+  ggplot(aes(x = date, y = cumulative)) +
+           geom_line()
 
 ```
+
+# AAPLreturn = alpha + beta * eigenportfolio1return + Ornstein–Uhlenbeck process for residuals
+```{r}
+# Simple linear model
+lm <- lm(df_DATE$AAPL~eigenportfolio1$return)
+
+alpha <- as.data.frame(lm$coefficients)[1,]
+beta <- as.data.frame(lm$coefficients)[2,]
+residuals <- as.data.frame(lm$residuals)
+
+
+plot(lm$residuals, type = "l")
+
+# Analysis of residuals
+res <- as.data.frame(summary(residuals))
+
+mean <- mean(residuals$`lm$residuals`)
+sd <- sd(residuals$`lm$residuals`)
+
+residuals$z <- (residuals$`lm$residuals` - mean)/sd
+
+plot(residuals$z, type = "l")
+
+```
+
+# Ornstein–Uhlenbeck process for residuals NEED TO FIX
+```{r}
+#install.packages("rugarch")
+library(rugarch)
+
+# Set the mean reversion rate (theta), volatility (sigma), and long-term mean (mu) of the process
+theta <- 0.1
+sigma <- sd
+mu <- mean
+
+# Use the ugarchspec() function to specify the Ornstein-Uhlenbeck GARCH(1,1) model
+spec <- ugarchspec(mean.model = list(armaOrder = c(0,0), include.mean = TRUE),
+                   variance.model = list(garchOrder = c(1,1), model = "sGARCH", external.regressors = data.frame(residuals), variance.targeting = theta),
+                   distribution.model = "norm")
+
+# Fit the model to the residuals using the ugarchfit() function
+fit <- ugarchfit(data = residuals, spec = spec)
+
+# Extract the estimated mean reversion rate (theta)
+theta <- fit@fit$coef[2]
+
+
+```
+
 
 
 # COINTEGRATION TESTS
